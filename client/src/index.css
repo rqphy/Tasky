@@ -5,6 +5,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* preset: b3ktUx7BI */
+
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: 'Figtree Variable', sans-serif;

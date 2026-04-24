@@ -7,7 +7,16 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import type { TaskLabel } from "@/types/task"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { MoreVerticalIcon } from "@hugeicons/core-free-icons"
 
 interface TaskCardProps {
 	id: string
@@ -18,6 +27,9 @@ interface TaskCardProps {
 		avatarUrl?: string
 	}
 	label?: TaskLabel
+	onEdit?: (id: string) => void
+	onDelete?: (id: string) => void
+	onAttribute?: (id: string) => void
 }
 
 const labelConfig: Record<TaskLabel, { text: string; className: string }> = {
@@ -63,6 +75,9 @@ export function TaskCard({
 	description,
 	assignee,
 	label,
+	onEdit,
+	onDelete,
+	onAttribute,
 }: TaskCardProps) {
 	const labelMeta = label ? labelConfig[label] : null
 
@@ -95,8 +110,8 @@ export function TaskCard({
 				</CardContent>
 			)}
 
-			{assignee && (
-				<CardFooter className="pt-0">
+			<CardFooter className="pt-0 flex items-center justify-between">
+				{assignee ? (
 					<div className="flex items-center gap-2">
 						<Avatar className="size-6">
 							{assignee.avatarUrl && (
@@ -113,8 +128,36 @@ export function TaskCard({
 							{assignee.name}
 						</span>
 					</div>
-				</CardFooter>
-			)}
+				) : (
+					<span className="text-xs text-muted-foreground/50 italic">
+						Unassigned
+					</span>
+				)}
+
+				<DropdownMenu>
+					<DropdownMenuTrigger
+						className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<HugeiconsIcon icon={MoreVerticalIcon} size={16} />
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuItem onClick={() => onEdit?.(id)}>
+							Edit
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => onAttribute?.(id)}>
+							Attribute
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem
+							variant="destructive"
+							onClick={() => onDelete?.(id)}
+						>
+							Delete
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</CardFooter>
 		</Card>
 	)
 }
