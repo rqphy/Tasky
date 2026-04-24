@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -14,9 +15,14 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { TaskDetailDialog } from "@/components/TaskDetailDialog"
 import type { TaskLabel } from "@/types/task"
+import type { TaskComment } from "@/types/task"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { MoreVerticalIcon } from "@hugeicons/core-free-icons"
+import {
+	MoreVerticalIcon,
+	MessageMultiple01Icon,
+} from "@hugeicons/core-free-icons"
 
 interface TaskCardProps {
 	id: string
@@ -27,6 +33,7 @@ interface TaskCardProps {
 		avatarUrl?: string
 	}
 	label?: TaskLabel
+	comments?: TaskComment[]
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
 	onAttribute?: (id: string) => void
@@ -75,89 +82,137 @@ export function TaskCard({
 	description,
 	assignee,
 	label,
+	comments = [],
 	onEdit,
 	onDelete,
 	onAttribute,
 }: TaskCardProps) {
+	const [dialogOpen, setDialogOpen] = useState(false)
 	const labelMeta = label ? labelConfig[label] : null
 
 	return (
-		<Card className="w-full max-w-sm cursor-pointer transition-shadow hover:shadow-md">
-			<CardHeader className="pb-2">
-				<div className="flex items-start justify-between gap-2">
-					<span className="text-xs font-mono text-muted-foreground">
-						{id}
-					</span>
-					{labelMeta && (
-						<Badge
-							variant="outline"
-							className={labelMeta.className}
-						>
-							{labelMeta.text}
-						</Badge>
-					)}
-				</div>
-				<CardTitle className="text-sm font-semibold leading-snug">
-					{title}
-				</CardTitle>
-			</CardHeader>
-
-			{description && (
-				<CardContent className="pb-3">
-					<p className="text-xs text-muted-foreground line-clamp-2">
-						{description}
-					</p>
-				</CardContent>
-			)}
-
-			<CardFooter className="pt-0 flex items-center justify-between">
-				{assignee ? (
-					<div className="flex items-center gap-2">
-						<Avatar className="size-6">
-							{assignee.avatarUrl && (
-								<AvatarImage
-									src={assignee.avatarUrl}
-									alt={assignee.name}
-								/>
-							)}
-							<AvatarFallback className="text-[10px]">
-								{getInitials(assignee.name)}
-							</AvatarFallback>
-						</Avatar>
-						<span className="text-xs text-muted-foreground">
-							{assignee.name}
+		<>
+			<Card
+				className="w-full max-w-sm cursor-pointer transition-shadow hover:shadow-md"
+				onClick={() => setDialogOpen(true)}
+			>
+				<CardHeader className="pb-2">
+					<div className="flex items-start justify-between gap-2">
+						<span className="text-xs font-mono text-muted-foreground">
+							{id}
 						</span>
+						{labelMeta && (
+							<Badge
+								variant="outline"
+								className={labelMeta.className}
+							>
+								{labelMeta.text}
+							</Badge>
+						)}
 					</div>
-				) : (
-					<span className="text-xs text-muted-foreground/50 italic">
-						Unassigned
-					</span>
+					<CardTitle className="text-sm font-semibold leading-snug">
+						{title}
+					</CardTitle>
+				</CardHeader>
+
+				{description && (
+					<CardContent className="pb-3">
+						<p className="text-xs text-muted-foreground line-clamp-2">
+							{description}
+						</p>
+					</CardContent>
 				)}
 
-				<DropdownMenu>
-					<DropdownMenuTrigger
-						className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<HugeiconsIcon icon={MoreVerticalIcon} size={16} />
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						<DropdownMenuItem onClick={() => onEdit?.(id)}>
-							Edit
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => onAttribute?.(id)}>
-							Attribute
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							variant="destructive"
-							onClick={() => onDelete?.(id)}
-						>
-							Delete
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			</CardFooter>
-		</Card>
+				<CardFooter className="pt-0 flex items-center justify-between">
+					{assignee ? (
+						<div className="flex items-center gap-2">
+							<Avatar className="size-6">
+								{assignee.avatarUrl && (
+									<AvatarImage
+										src={assignee.avatarUrl}
+										alt={assignee.name}
+									/>
+								)}
+								<AvatarFallback className="text-[10px]">
+									{getInitials(assignee.name)}
+								</AvatarFallback>
+							</Avatar>
+							<span className="text-xs text-muted-foreground">
+								{assignee.name}
+							</span>
+						</div>
+					) : (
+						<span className="text-xs text-muted-foreground/50 italic">
+							Unassigned
+						</span>
+					)}
+
+					<div className="flex items-center gap-1">
+						{comments.length > 0 && (
+							<div className="flex items-center gap-1 text-muted-foreground mr-1">
+								<HugeiconsIcon
+									icon={MessageMultiple01Icon}
+									size={13}
+								/>
+								<span className="text-xs">
+									{comments.length}
+								</span>
+							</div>
+						)}
+
+						<DropdownMenu>
+							<DropdownMenuTrigger
+								className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+								onClick={(e) => e.stopPropagation()}
+							>
+								<HugeiconsIcon
+									icon={MoreVerticalIcon}
+									size={16}
+								/>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem
+									onClick={(e) => {
+										e.stopPropagation()
+										onEdit?.(id)
+									}}
+								>
+									Edit
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={(e) => {
+										e.stopPropagation()
+										onAttribute?.(id)
+									}}
+								>
+									Attribute
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem
+									variant="destructive"
+									onClick={(e) => {
+										e.stopPropagation()
+										onDelete?.(id)
+									}}
+								>
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+				</CardFooter>
+			</Card>
+
+			<TaskDetailDialog
+				open={dialogOpen}
+				onOpenChange={setDialogOpen}
+				id={id}
+				title={title}
+				description={description}
+				assignee={assignee}
+				label={label}
+				initialComments={comments}
+			/>
+		</>
 	)
 }
