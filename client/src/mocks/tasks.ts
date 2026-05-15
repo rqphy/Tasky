@@ -1,4 +1,4 @@
-import type { TaskLabel } from "@/types/task"
+import type { TaskLabel, TaskPriority } from "@/types/task"
 import type { TaskComment } from "@/types/task"
 
 export interface Task {
@@ -10,6 +10,7 @@ export interface Task {
 		avatarUrl?: string
 	}
 	label?: TaskLabel
+	priority?: TaskPriority
 	comments?: TaskComment[]
 }
 
@@ -21,6 +22,7 @@ export const mockTasks: Task[] = [
 			"Integrate GitHub OAuth so users can sign in without a password. Should support refresh tokens and silent refresh. We also need to handle edge cases like expired sessions gracefully — ideally redirect to a login screen with a friendly message rather than a blank error page.",
 		assignee: { name: "Alice Martin" },
 		label: "feature",
+		priority: "urgent",
 		comments: [
 			{
 				id: "c1",
@@ -61,6 +63,7 @@ export const mockTasks: Task[] = [
 			"Cards can't be dragged on touch screens. Investigate pointer events and consider using a touch-friendly DnD library.",
 		assignee: { name: "Bob Chen" },
 		label: "bug",
+		priority: "high",
 		comments: [
 			{
 				id: "c4",
@@ -74,5 +77,6 @@ export const mockTasks: Task[] = [
 		id: "TSK-003",
 		title: "Write API documentation",
 		label: "documentation",
+		priority: "low",
 	},
 ]

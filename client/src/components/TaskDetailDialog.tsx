@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import type { TaskLabel } from "@/types/task"
+import type { TaskLabel, TaskPriority } from "@/types/task"
 import type { TaskComment } from "@/types/task"
+import { priorityConfig } from "@/lib/priority"
 
 interface TaskDetailDialogProps {
 	open: boolean
@@ -24,6 +25,7 @@ interface TaskDetailDialogProps {
 		avatarUrl?: string
 	}
 	label?: TaskLabel
+	priority?: TaskPriority
 	initialComments?: TaskComment[]
 }
 
@@ -83,6 +85,7 @@ export function TaskDetailDialog({
 	description,
 	assignee,
 	label,
+	priority,
 	initialComments = [],
 }: TaskDetailDialogProps) {
 	const [comments, setComments] = useState<TaskComment[]>(initialComments)
@@ -114,10 +117,14 @@ export function TaskDetailDialog({
 			<DialogContent className="max-w-2xl w-full flex flex-col gap-0 p-0 overflow-hidden h-[90vh]">
 				{/* ── Header ── */}
 				<DialogHeader className="px-6 pt-6 pb-4 shrink-0">
-					<div className="flex items-center gap-2 mb-1">
-						<span className="text-xs font-mono text-muted-foreground">
-							{id}
-						</span>
+					<span className="text-xs font-mono text-muted-foreground">
+						{id}
+					</span>
+					<DialogTitle className="text-lg font-semibold leading-snug mt-0.5">
+						{title}
+					</DialogTitle>
+					{/* Metadata row: label + priority + assignee */}
+					<div className="flex items-center gap-3 mt-2 flex-wrap">
 						{labelMeta && (
 							<Badge
 								variant="outline"
@@ -126,29 +133,42 @@ export function TaskDetailDialog({
 								{labelMeta.text}
 							</Badge>
 						)}
+						{priority &&
+							priority !== "none" &&
+							(() => {
+								const p = priorityConfig[priority]
+								return (
+									<div
+										className={`flex items-center gap-1.5 ${p.color}`}
+									>
+										<span
+											className={`size-2 rounded-full shrink-0 ${p.dotColor}`}
+										/>
+										<span className="text-xs font-medium">
+											{p.label}
+										</span>
+									</div>
+								)
+							})()}
+						{assignee && (
+							<div className="flex items-center gap-2">
+								<Avatar className="size-5">
+									{assignee.avatarUrl && (
+										<AvatarImage
+											src={assignee.avatarUrl}
+											alt={assignee.name}
+										/>
+									)}
+									<AvatarFallback className="text-[10px]">
+										{getInitials(assignee.name)}
+									</AvatarFallback>
+								</Avatar>
+								<span className="text-xs text-muted-foreground">
+									{assignee.name}
+								</span>
+							</div>
+						)}
 					</div>
-					<DialogTitle className="text-lg font-semibold leading-snug">
-						{title}
-					</DialogTitle>
-
-					{assignee && (
-						<div className="flex items-center gap-2 mt-2">
-							<Avatar className="size-6">
-								{assignee.avatarUrl && (
-									<AvatarImage
-										src={assignee.avatarUrl}
-										alt={assignee.name}
-									/>
-								)}
-								<AvatarFallback className="text-[10px]">
-									{getInitials(assignee.name)}
-								</AvatarFallback>
-							</Avatar>
-							<span className="text-xs text-muted-foreground">
-								{assignee.name}
-							</span>
-						</div>
-					)}
 				</DialogHeader>
 
 				<Separator />

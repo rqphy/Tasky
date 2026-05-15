@@ -16,8 +16,9 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { TaskDetailDialog } from "@/components/TaskDetailDialog"
-import type { TaskLabel } from "@/types/task"
+import type { TaskLabel, TaskPriority } from "@/types/task"
 import type { TaskComment } from "@/types/task"
+import { priorityConfig } from "@/lib/priority"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
 	MoreVerticalIcon,
@@ -33,6 +34,7 @@ interface TaskCardProps {
 		avatarUrl?: string
 	}
 	label?: TaskLabel
+	priority?: TaskPriority
 	comments?: TaskComment[]
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
@@ -82,6 +84,7 @@ export function TaskCard({
 	description,
 	assignee,
 	label,
+	priority,
 	comments = [],
 	onEdit,
 	onDelete,
@@ -101,14 +104,33 @@ export function TaskCard({
 						<span className="text-xs font-mono text-muted-foreground">
 							{id}
 						</span>
-						{labelMeta && (
-							<Badge
-								variant="outline"
-								className={labelMeta.className}
-							>
-								{labelMeta.text}
-							</Badge>
-						)}
+						<div className="flex items-center gap-1.5">
+							{priority &&
+								priority !== "none" &&
+								(() => {
+									const p = priorityConfig[priority]
+									return (
+										<div
+											className={`flex items-center gap-1 ${p.color}`}
+										>
+											<span
+												className={`size-1.5 rounded-full shrink-0 ${p.dotColor}`}
+											/>
+											<span className="text-[10px] font-medium">
+												{p.label}
+											</span>
+										</div>
+									)
+								})()}
+							{labelMeta && (
+								<Badge
+									variant="outline"
+									className={labelMeta.className}
+								>
+									{labelMeta.text}
+								</Badge>
+							)}
+						</div>
 					</div>
 					<CardTitle className="text-sm font-semibold leading-snug">
 						{title}
@@ -211,6 +233,7 @@ export function TaskCard({
 				description={description}
 				assignee={assignee}
 				label={label}
+				priority={priority}
 				initialComments={comments}
 			/>
 		</>

@@ -5,6 +5,8 @@ export type TaskLabel =
 	| "documentation"
 	| "chore"
 
+export type TaskPriority = "urgent" | "high" | "medium" | "low" | "none"
+
 export interface TaskComment {
 	id: string
 	author: string
