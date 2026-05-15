@@ -111,7 +111,7 @@ export function TaskDetailDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-w-2xl w-full flex flex-col gap-0 p-0 overflow-hidden max-h-[90vh]">
+			<DialogContent className="max-w-2xl w-full flex flex-col gap-0 p-0 overflow-hidden h-[90vh]">
 				{/* ── Header ── */}
 				<DialogHeader className="px-6 pt-6 pb-4 shrink-0">
 					<div className="flex items-center gap-2 mb-1">
