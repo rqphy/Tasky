@@ -1,15 +1,14 @@
-import { TaskCard } from "@/components/TaskCard"
-import { mockTasks } from "@/mocks/tasks"
+import { KanbanBoard } from "@/components/KanbanBoard"
 
 function App() {
 	return (
-		<div className="min-h-screen bg-background p-8">
-			<h1 className="text-2xl font-bold mb-6">Tasky</h1>
-			<div className="flex flex-wrap gap-4">
-				{mockTasks.map((task) => (
-					<TaskCard key={task.id} {...task} />
-				))}
-			</div>
+		<div className="min-h-screen bg-background">
+			<header className="border-b px-8 py-4">
+				<h1 className="text-xl font-bold tracking-tight">Tasky</h1>
+			</header>
+			<main className="px-8 py-6 overflow-x-auto">
+				<KanbanBoard />
+			</main>
 		</div>
 	)
 }

@@ -7,6 +7,8 @@ export type TaskLabel =
 
 export type TaskPriority = "urgent" | "high" | "medium" | "low" | "none"
 
+export type TaskStatus = "incoming" | "progress" | "done"
+
 export interface TaskComment {
 	id: string
 	author: string

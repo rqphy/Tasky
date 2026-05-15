@@ -1,4 +1,4 @@
-import type { TaskLabel, TaskPriority } from "@/types/task"
+import type { TaskLabel, TaskPriority, TaskStatus } from "@/types/task"
 import type { TaskComment } from "@/types/task"
 
 export interface Task {
@@ -11,6 +11,7 @@ export interface Task {
 	}
 	label?: TaskLabel
 	priority?: TaskPriority
+	status: TaskStatus
 	comments?: TaskComment[]
 }
 
@@ -23,6 +24,7 @@ export const mockTasks: Task[] = [
 		assignee: { name: "Alice Martin" },
 		label: "feature",
 		priority: "urgent",
+		status: "progress",
 		comments: [
 			{
 				id: "c1",
@@ -64,6 +66,7 @@ export const mockTasks: Task[] = [
 		assignee: { name: "Bob Chen" },
 		label: "bug",
 		priority: "high",
+		status: "incoming",
 		comments: [
 			{
 				id: "c4",
@@ -78,5 +81,6 @@ export const mockTasks: Task[] = [
 		title: "Write API documentation",
 		label: "documentation",
 		priority: "low",
+		status: "done",
 	},
 ]
