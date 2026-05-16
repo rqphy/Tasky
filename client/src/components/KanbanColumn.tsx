@@ -4,6 +4,8 @@ import { useDroppable } from "@dnd-kit/core"
 import { SortableTaskCard } from "@/components/SortableTaskCard"
 import type { Task } from "@/mocks/tasks"
 import type { TaskStatus } from "@/types/task"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { DragDropVerticalIcon } from "@hugeicons/core-free-icons"
 
 const columnMeta: Record<TaskStatus, { label: string; accent: string }> = {
 	incoming: { label: "Incoming", accent: "bg-slate-400" },
@@ -39,20 +41,7 @@ export function KanbanColumn({
 					className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground transition-colors shrink-0 touch-none"
 					title="Drag to reorder column"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="14"
-						height="14"
-						viewBox="0 0 24 24"
-						fill="currentColor"
-					>
-						<circle cx="9" cy="5" r="1.5" />
-						<circle cx="15" cy="5" r="1.5" />
-						<circle cx="9" cy="12" r="1.5" />
-						<circle cx="15" cy="12" r="1.5" />
-						<circle cx="9" cy="19" r="1.5" />
-						<circle cx="15" cy="19" r="1.5" />
-					</svg>
+					<HugeiconsIcon icon={DragDropVerticalIcon} size={16} />
 				</div>
 				<span
 					className={`size-2 rounded-full shrink-0 ${meta.accent}`}
