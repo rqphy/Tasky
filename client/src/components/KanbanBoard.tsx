@@ -10,17 +10,27 @@ import {
 	type DragOverEvent,
 	type DragEndEvent,
 } from "@dnd-kit/core"
-import { arrayMove } from "@dnd-kit/sortable"
+import {
+	SortableContext,
+	arrayMove,
+	horizontalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { SortableKanbanColumn } from "@/components/SortableKanbanColumn"
 import { KanbanColumn } from "@/components/KanbanColumn"
 import { TaskCard } from "@/components/TaskCard"
 import { mockTasks, type Task } from "@/mocks/tasks"
 import type { TaskStatus } from "@/types/task"
 
-const COLUMNS: TaskStatus[] = ["incoming", "progress", "done"]
+const INITIAL_COLUMNS: TaskStatus[] = ["incoming", "progress", "done"]
+
+type ActiveItem =
+	| { type: "card"; task: Task }
+	| { type: "column"; status: TaskStatus }
 
 export function KanbanBoard() {
 	const [tasks, setTasks] = useState<Task[]>(mockTasks)
-	const [activeTask, setActiveTask] = useState<Task | null>(null)
+	const [columns, setColumns] = useState<TaskStatus[]>(INITIAL_COLUMNS)
+	const [activeItem, setActiveItem] = useState<ActiveItem | null>(null)
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -37,12 +47,21 @@ export function KanbanBoard() {
 	}
 
 	function handleDragStart({ active }: DragStartEvent) {
-		const task = tasks.find((t) => t.id === active.id)
-		setActiveTask(task ?? null)
+		const dragType = active.data.current?.type
+
+		if (dragType === "column") {
+			setActiveItem({ type: "column", status: active.id as TaskStatus })
+		} else {
+			const task = tasks.find((t) => t.id === active.id)
+			if (task) setActiveItem({ type: "card", task })
+		}
 	}
 
 	function handleDragOver({ active, over }: DragOverEvent) {
 		if (!over) return
+		// Only handle card-over-column or card-over-card transitions
+		if (active.data.current?.type === "column") return
+
 		const activeId = active.id as string
 		const overId = over.id as string
 		if (activeId === overId) return
@@ -51,7 +70,7 @@ export function KanbanBoard() {
 		if (!activeTask) return
 
 		// Check if we're hovering over a column (status id) or another card
-		const overIsColumn = COLUMNS.includes(overId as TaskStatus)
+		const overIsColumn = columns.includes(overId as TaskStatus)
 		const overTask = tasks.find((t) => t.id === overId)
 		const targetStatus: TaskStatus | undefined = overIsColumn
 			? (overId as TaskStatus)
@@ -67,14 +86,28 @@ export function KanbanBoard() {
 	}
 
 	function handleDragEnd({ active, over }: DragEndEvent) {
-		setActiveTask(null)
+		const dragType = active.data.current?.type
+
+		// Column reorder
+		if (dragType === "column") {
+			setActiveItem(null)
+			if (!over || active.id === over.id) return
+			setColumns((prev) => {
+				const oldIndex = prev.indexOf(active.id as TaskStatus)
+				const newIndex = prev.indexOf(over.id as TaskStatus)
+				return arrayMove(prev, oldIndex, newIndex)
+			})
+			return
+		}
+
+		// Card reorder within same column
+		setActiveItem(null)
 		if (!over) return
 
 		const activeId = active.id as string
 		const overId = over.id as string
 		if (activeId === overId) return
 
-		// Reorder within the same column
 		const activeTask = tasks.find((t) => t.id === activeId)
 		const overTask = tasks.find((t) => t.id === overId)
 
@@ -103,24 +136,36 @@ export function KanbanBoard() {
 			onDragOver={handleDragOver}
 			onDragEnd={handleDragEnd}
 		>
-			<div className="flex gap-6 h-full items-start">
-				{COLUMNS.map((status) => {
-					const columnTasks = getTasksByStatus(status)
-					return (
-						<KanbanColumn
-							key={status}
-							status={status}
-							tasks={columnTasks}
-						/>
-					)
-				})}
-			</div>
+			<SortableContext
+				items={columns}
+				strategy={horizontalListSortingStrategy}
+			>
+				<div className="flex gap-6 h-full items-start">
+					{columns.map((status) => {
+						const columnTasks = getTasksByStatus(status)
+						return (
+							<SortableKanbanColumn
+								key={status}
+								status={status}
+								tasks={columnTasks}
+							/>
+						)
+					})}
+				</div>
+			</SortableContext>
 
-			{/* Drag overlay — the floating card while dragging */}
+			{/* Drag overlay — the floating item while dragging */}
 			<DragOverlay dropAnimation={null}>
-				{activeTask ? (
+				{activeItem?.type === "card" ? (
 					<div className="rotate-1 shadow-2xl">
-						<TaskCard {...activeTask} />
+						<TaskCard {...activeItem.task} />
+					</div>
+				) : activeItem?.type === "column" ? (
+					<div className="opacity-90 shadow-2xl rotate-1 flex-1 max-w-sm min-w-0 pointer-events-none">
+						<KanbanColumn
+							status={activeItem.status}
+							tasks={getTasksByStatus(activeItem.status)}
+						/>
 					</div>
 				) : null}
 			</DragOverlay>

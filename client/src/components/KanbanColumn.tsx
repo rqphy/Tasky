@@ -1,3 +1,4 @@
+import React from "react"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useDroppable } from "@dnd-kit/core"
 import { SortableTaskCard } from "@/components/SortableTaskCard"
@@ -15,6 +16,7 @@ interface KanbanColumnProps {
 	tasks: Task[]
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
+	dragHandleProps?: React.HTMLAttributes<HTMLDivElement>
 }
 
 export function KanbanColumn({
@@ -22,14 +24,36 @@ export function KanbanColumn({
 	tasks,
 	onEdit,
 	onDelete,
+	dragHandleProps,
 }: KanbanColumnProps) {
 	const meta = columnMeta[status]
 	const { setNodeRef, isOver } = useDroppable({ id: status })
 
 	return (
-		<div className="flex flex-col gap-3 min-w-0 flex-1">
+		<div className="flex flex-col gap-3 w-full">
 			{/* Column header */}
 			<div className="flex items-center gap-2 px-1">
+				{/* Drag handle */}
+				<div
+					{...dragHandleProps}
+					className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground transition-colors shrink-0 touch-none"
+					title="Drag to reorder column"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="14"
+						height="14"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+					>
+						<circle cx="9" cy="5" r="1.5" />
+						<circle cx="15" cy="5" r="1.5" />
+						<circle cx="9" cy="12" r="1.5" />
+						<circle cx="15" cy="12" r="1.5" />
+						<circle cx="9" cy="19" r="1.5" />
+						<circle cx="15" cy="19" r="1.5" />
+					</svg>
+				</div>
 				<span
 					className={`size-2 rounded-full shrink-0 ${meta.accent}`}
 				/>
