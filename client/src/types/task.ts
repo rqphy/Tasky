@@ -7,7 +7,13 @@ export type TaskLabel =
 
 export type TaskPriority = "urgent" | "high" | "medium" | "low" | "none"
 
-export type TaskStatus = "incoming" | "progress" | "done"
+/** A Kanban column. `id` is used as the task status value. */
+export interface Column {
+	id: string
+	label: string
+	/** Tailwind bg-* class for the accent dot, e.g. "bg-violet-500" */
+	color: string
+}
 
 export interface TaskComment {
 	id: string

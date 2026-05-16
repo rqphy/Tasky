@@ -2,34 +2,38 @@ import React from "react"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useDroppable } from "@dnd-kit/core"
 import { SortableTaskCard } from "@/components/SortableTaskCard"
-import type { Task } from "@/mocks/tasks"
-import type { TaskStatus } from "@/types/task"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { DragDropVerticalIcon } from "@hugeicons/core-free-icons"
-
-const columnMeta: Record<TaskStatus, { label: string; accent: string }> = {
-	incoming: { label: "Incoming", accent: "bg-slate-400" },
-	progress: { label: "In Progress", accent: "bg-violet-500" },
-	done: { label: "Done", accent: "bg-emerald-500" },
-}
+import type { Task } from "@/mocks/tasks"
+import type { Column } from "@/types/task"
 
 interface KanbanColumnProps {
-	status: TaskStatus
+	column: Column
 	tasks: Task[]
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
+	onEditColumn?: (column: Column) => void
+	onDeleteColumn?: (columnId: string) => void
 	dragHandleProps?: React.HTMLAttributes<HTMLDivElement>
 }
 
 export function KanbanColumn({
-	status,
+	column,
 	tasks,
 	onEdit,
 	onDelete,
+	onEditColumn,
+	onDeleteColumn,
 	dragHandleProps,
 }: KanbanColumnProps) {
-	const meta = columnMeta[status]
-	const { setNodeRef, isOver } = useDroppable({ id: status })
+	const { setNodeRef, isOver } = useDroppable({ id: column.id })
 
 	return (
 		<div className="flex flex-col gap-3 w-full">
@@ -44,14 +48,50 @@ export function KanbanColumn({
 					<HugeiconsIcon icon={DragDropVerticalIcon} size={16} />
 				</div>
 				<span
-					className={`size-2 rounded-full shrink-0 ${meta.accent}`}
+					className={`size-2 rounded-full shrink-0 ${column.color}`}
 				/>
-				<h2 className="text-sm font-semibold text-foreground">
-					{meta.label}
+				<h2 className="text-sm font-semibold text-foreground truncate">
+					{column.label}
 				</h2>
-				<span className="ml-auto text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5 leading-none">
+				<span className="ml-auto text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5 leading-none shrink-0">
 					{tasks.length}
 				</span>
+
+				{/* Actions menu */}
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<button
+							className="shrink-0 text-muted-foreground/40 hover:text-muted-foreground transition-colors rounded p-0.5 hover:bg-muted focus-visible:outline-none"
+							title="Column options"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="14"
+								height="14"
+								viewBox="0 0 24 24"
+								fill="currentColor"
+							>
+								<circle cx="12" cy="5" r="1.5" />
+								<circle cx="12" cy="12" r="1.5" />
+								<circle cx="12" cy="19" r="1.5" />
+							</svg>
+						</button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end" className="w-40">
+						<DropdownMenuItem
+							onClick={() => onEditColumn?.(column)}
+						>
+							Edit
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem
+							className="text-destructive focus:text-destructive"
+							onClick={() => onDeleteColumn?.(column.id)}
+						>
+							Delete
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</div>
 
 			{/* Drop zone */}

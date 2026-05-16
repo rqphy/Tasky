@@ -2,16 +2,20 @@ import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { KanbanColumn } from "@/components/KanbanColumn"
 import type { Task } from "@/mocks/tasks"
-import type { TaskStatus } from "@/types/task"
+import type { Column } from "@/types/task"
 
 interface SortableKanbanColumnProps {
-	status: TaskStatus
+	column: Column
 	tasks: Task[]
+	onEditColumn: (column: Column) => void
+	onDeleteColumn: (columnId: string) => void
 }
 
 export function SortableKanbanColumn({
-	status,
+	column,
 	tasks,
+	onEditColumn,
+	onDeleteColumn,
 }: SortableKanbanColumnProps) {
 	const {
 		attributes,
@@ -21,7 +25,7 @@ export function SortableKanbanColumn({
 		transition,
 		isDragging,
 	} = useSortable({
-		id: status,
+		id: column.id,
 		data: { type: "column" },
 	})
 
@@ -39,8 +43,10 @@ export function SortableKanbanColumn({
 			className="flex flex-col gap-3 min-w-0 flex-1 max-w-sm"
 		>
 			<KanbanColumn
-				status={status}
+				column={column}
 				tasks={tasks}
+				onEditColumn={onEditColumn}
+				onDeleteColumn={onDeleteColumn}
 				dragHandleProps={{ ...attributes, ...listeners }}
 			/>
 		</div>

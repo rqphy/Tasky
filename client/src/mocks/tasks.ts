@@ -1,5 +1,4 @@
-import type { TaskLabel, TaskPriority, TaskStatus } from "@/types/task"
-import type { TaskComment } from "@/types/task"
+import type { TaskLabel, TaskPriority, TaskComment } from "@/types/task"
 
 export interface Task {
 	id: string
@@ -11,7 +10,8 @@ export interface Task {
 	}
 	label?: TaskLabel
 	priority?: TaskPriority
-	status: TaskStatus
+	/** Holds the id of the Column this task belongs to */
+	status: string
 	comments?: TaskComment[]
 }
 

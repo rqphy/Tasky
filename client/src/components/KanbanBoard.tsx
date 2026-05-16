@@ -17,40 +17,87 @@ import {
 } from "@dnd-kit/sortable"
 import { SortableKanbanColumn } from "@/components/SortableKanbanColumn"
 import { KanbanColumn } from "@/components/KanbanColumn"
+import { ColumnDialog } from "@/components/ColumnDialog"
 import { TaskCard } from "@/components/TaskCard"
 import { mockTasks, type Task } from "@/mocks/tasks"
-import type { TaskStatus } from "@/types/task"
+import type { Column } from "@/types/task"
 
-const INITIAL_COLUMNS: TaskStatus[] = ["incoming", "progress", "done"]
+const DEFAULT_COLUMNS: Column[] = [
+	{ id: "incoming", label: "Incoming", color: "bg-slate-400" },
+	{ id: "progress", label: "In Progress", color: "bg-violet-500" },
+	{ id: "done", label: "Done", color: "bg-emerald-500" },
+]
 
 type ActiveItem =
 	| { type: "card"; task: Task }
-	| { type: "column"; status: TaskStatus }
+	| { type: "column"; column: Column }
+
+type DialogState = { mode: "add" } | { mode: "edit"; column: Column } | null
 
 export function KanbanBoard() {
 	const [tasks, setTasks] = useState<Task[]>(mockTasks)
-	const [columns, setColumns] = useState<TaskStatus[]>(INITIAL_COLUMNS)
+	const [columns, setColumns] = useState<Column[]>(DEFAULT_COLUMNS)
 	const [activeItem, setActiveItem] = useState<ActiveItem | null>(null)
+	const [dialog, setDialog] = useState<DialogState>(null)
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
-			activationConstraint: {
-				// Require 8px movement before starting a drag —
-				// so clicks (to open the dialog) still work normally
-				distance: 8,
-			},
+			activationConstraint: { distance: 8 },
 		}),
 	)
 
-	function getTasksByStatus(status: TaskStatus) {
-		return tasks.filter((t) => t.status === status)
+	// ── Helpers ──────────────────────────────────────────────────────────────
+
+	function getTasksByColumnId(columnId: string) {
+		return tasks.filter((t) => t.status === columnId)
 	}
+
+	function getColumnById(id: string) {
+		return columns.find((c) => c.id === id) ?? null
+	}
+
+	// ── Column CRUD ───────────────────────────────────────────────────────────
+
+	function handleAddColumn(column: Column) {
+		setColumns((prev) => [...prev, column])
+	}
+
+	function handleEditColumn(updated: Column) {
+		setColumns((prev) =>
+			prev.map((c) => (c.id === updated.id ? updated : c)),
+		)
+	}
+
+	function handleDeleteColumn(columnId: string) {
+		setColumns((prev) => {
+			const remaining = prev.filter((c) => c.id !== columnId)
+			// Move orphaned tasks to the first remaining column (if any)
+			if (remaining.length > 0) {
+				const fallbackId = remaining[0].id
+				setTasks((prevTasks) =>
+					prevTasks.map((t) =>
+						t.status === columnId
+							? { ...t, status: fallbackId }
+							: t,
+					),
+				)
+			} else {
+				// No columns left — drop all tasks from deleted column
+				setTasks((prevTasks) =>
+					prevTasks.filter((t) => t.status !== columnId),
+				)
+			}
+			return remaining
+		})
+	}
+
+	// ── Drag & Drop ───────────────────────────────────────────────────────────
 
 	function handleDragStart({ active }: DragStartEvent) {
 		const dragType = active.data.current?.type
-
 		if (dragType === "column") {
-			setActiveItem({ type: "column", status: active.id as TaskStatus })
+			const col = getColumnById(active.id as string)
+			if (col) setActiveItem({ type: "column", column: col })
 		} else {
 			const task = tasks.find((t) => t.id === active.id)
 			if (task) setActiveItem({ type: "card", task })
@@ -59,7 +106,6 @@ export function KanbanBoard() {
 
 	function handleDragOver({ active, over }: DragOverEvent) {
 		if (!over) return
-		// Only handle card-over-column or card-over-card transitions
 		if (active.data.current?.type === "column") return
 
 		const activeId = active.id as string
@@ -69,12 +115,9 @@ export function KanbanBoard() {
 		const activeTask = tasks.find((t) => t.id === activeId)
 		if (!activeTask) return
 
-		// Check if we're hovering over a column (status id) or another card
-		const overIsColumn = columns.includes(overId as TaskStatus)
+		const overIsColumn = columns.some((c) => c.id === overId)
 		const overTask = tasks.find((t) => t.id === overId)
-		const targetStatus: TaskStatus | undefined = overIsColumn
-			? (overId as TaskStatus)
-			: overTask?.status
+		const targetStatus = overIsColumn ? overId : overTask?.status
 
 		if (!targetStatus || activeTask.status === targetStatus) return
 
@@ -88,19 +131,17 @@ export function KanbanBoard() {
 	function handleDragEnd({ active, over }: DragEndEvent) {
 		const dragType = active.data.current?.type
 
-		// Column reorder
 		if (dragType === "column") {
 			setActiveItem(null)
 			if (!over || active.id === over.id) return
 			setColumns((prev) => {
-				const oldIndex = prev.indexOf(active.id as TaskStatus)
-				const newIndex = prev.indexOf(over.id as TaskStatus)
+				const oldIndex = prev.findIndex((c) => c.id === active.id)
+				const newIndex = prev.findIndex((c) => c.id === over.id)
 				return arrayMove(prev, oldIndex, newIndex)
 			})
 			return
 		}
 
-		// Card reorder within same column
 		setActiveItem(null)
 		if (!over) return
 
@@ -118,7 +159,6 @@ export function KanbanBoard() {
 			const oldIndex = statusTasks.findIndex((t) => t.id === activeId)
 			const newIndex = statusTasks.findIndex((t) => t.id === overId)
 			const reordered = arrayMove(statusTasks, oldIndex, newIndex)
-
 			setTasks((prev) => {
 				const others = prev.filter(
 					(t) => t.status !== activeTask.status,
@@ -128,47 +168,86 @@ export function KanbanBoard() {
 		}
 	}
 
-	return (
-		<DndContext
-			sensors={sensors}
-			collisionDetection={closestCorners}
-			onDragStart={handleDragStart}
-			onDragOver={handleDragOver}
-			onDragEnd={handleDragEnd}
-		>
-			<SortableContext
-				items={columns}
-				strategy={horizontalListSortingStrategy}
-			>
-				<div className="flex gap-6 h-full items-start">
-					{columns.map((status) => {
-						const columnTasks = getTasksByStatus(status)
-						return (
-							<SortableKanbanColumn
-								key={status}
-								status={status}
-								tasks={columnTasks}
-							/>
-						)
-					})}
-				</div>
-			</SortableContext>
+	// ── Render ────────────────────────────────────────────────────────────────
 
-			{/* Drag overlay — the floating item while dragging */}
-			<DragOverlay dropAnimation={null}>
-				{activeItem?.type === "card" ? (
-					<div className="rotate-1 shadow-2xl">
-						<TaskCard {...activeItem.task} />
+	return (
+		<>
+			<DndContext
+				sensors={sensors}
+				collisionDetection={closestCorners}
+				onDragStart={handleDragStart}
+				onDragOver={handleDragOver}
+				onDragEnd={handleDragEnd}
+			>
+				<SortableContext
+					items={columns.map((c) => c.id)}
+					strategy={horizontalListSortingStrategy}
+				>
+					<div className="flex gap-6 h-full items-start">
+						{columns.map((column) => (
+							<SortableKanbanColumn
+								key={column.id}
+								column={column}
+								tasks={getTasksByColumnId(column.id)}
+								onEditColumn={(col) =>
+									setDialog({ mode: "edit", column: col })
+								}
+								onDeleteColumn={handleDeleteColumn}
+							/>
+						))}
+
+						{/* Add column button */}
+						<button
+							onClick={() => setDialog({ mode: "add" })}
+							className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-border text-muted-foreground text-sm hover:border-foreground/30 hover:text-foreground hover:bg-muted/40 transition-colors shrink-0 self-start mt-0"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="14"
+								height="14"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<line x1="12" y1="5" x2="12" y2="19" />
+								<line x1="5" y1="12" x2="19" y2="12" />
+							</svg>
+							Add column
+						</button>
 					</div>
-				) : activeItem?.type === "column" ? (
-					<div className="opacity-90 shadow-2xl rotate-1 flex-1 max-w-sm min-w-0 pointer-events-none">
-						<KanbanColumn
-							status={activeItem.status}
-							tasks={getTasksByStatus(activeItem.status)}
-						/>
-					</div>
-				) : null}
-			</DragOverlay>
-		</DndContext>
+				</SortableContext>
+
+				{/* Drag overlay */}
+				<DragOverlay dropAnimation={null}>
+					{activeItem?.type === "card" ? (
+						<div className="rotate-1 shadow-2xl">
+							<TaskCard {...activeItem.task} />
+						</div>
+					) : activeItem?.type === "column" ? (
+						<div className="opacity-90 shadow-2xl rotate-1 flex-1 max-w-sm min-w-0 pointer-events-none">
+							<KanbanColumn
+								column={activeItem.column}
+								tasks={getTasksByColumnId(activeItem.column.id)}
+							/>
+						</div>
+					) : null}
+				</DragOverlay>
+			</DndContext>
+
+			{/* Column dialog */}
+			<ColumnDialog
+				open={dialog !== null}
+				onOpenChange={(open) => {
+					if (!open) setDialog(null)
+				}}
+				column={dialog?.mode === "edit" ? dialog.column : undefined}
+				onSave={
+					dialog?.mode === "edit" ? handleEditColumn : handleAddColumn
+				}
+			/>
+		</>
 	)
 }
