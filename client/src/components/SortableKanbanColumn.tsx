@@ -40,7 +40,7 @@ export function SortableKanbanColumn({
 		<div
 			ref={setNodeRef}
 			style={style}
-			className="flex flex-col gap-3 min-w-0 flex-1 max-w-sm"
+			className="flex flex-col gap-3 min-w-[280px] w-[280px]"
 		>
 			<KanbanColumn
 				column={column}
