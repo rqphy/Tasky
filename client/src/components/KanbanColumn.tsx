@@ -105,6 +105,14 @@ export function KanbanColumn({
 						: "bg-muted/40"
 				}`}
 			>
+				{/* Add task button */}
+				<button
+					onClick={() => onAddTask?.(column.id)}
+					className="flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-xs text-muted-foreground/60 hover:text-muted-foreground hover:bg-background/60 transition-colors group"
+				>
+					<HugeiconsIcon icon={PlusSignIcon} size={12} />
+					Add task
+				</button>
 				<SortableContext
 					items={tasks.map((t) => t.id)}
 					strategy={verticalListSortingStrategy}
@@ -126,15 +134,6 @@ export function KanbanColumn({
 						</p>
 					</div>
 				)}
-
-				{/* Add task button */}
-				<button
-					onClick={() => onAddTask?.(column.id)}
-					className="flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-xs text-muted-foreground/60 hover:text-muted-foreground hover:bg-background/60 transition-colors group"
-				>
-					<HugeiconsIcon icon={PlusSignIcon} size={12} />
-					Add task
-				</button>
 			</div>
 		</div>
 	)
