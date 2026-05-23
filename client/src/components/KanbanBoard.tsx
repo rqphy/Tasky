@@ -18,6 +18,7 @@ import {
 import { SortableKanbanColumn } from "@/components/SortableKanbanColumn"
 import { KanbanColumn } from "@/components/KanbanColumn"
 import { ColumnDialog } from "@/components/ColumnDialog"
+import { AddTaskDialog } from "@/components/AddTaskDialog"
 import { TaskCard } from "@/components/TaskCard"
 import { mockTasks, type Task } from "@/mocks/tasks"
 import type { Column } from "@/types/task"
@@ -33,12 +34,14 @@ type ActiveItem =
 	| { type: "column"; column: Column }
 
 type DialogState = { mode: "add" } | { mode: "edit"; column: Column } | null
+type AddTaskDialogState = { columnId: string } | null
 
 export function KanbanBoard() {
 	const [tasks, setTasks] = useState<Task[]>(mockTasks)
 	const [columns, setColumns] = useState<Column[]>(DEFAULT_COLUMNS)
 	const [activeItem, setActiveItem] = useState<ActiveItem | null>(null)
 	const [dialog, setDialog] = useState<DialogState>(null)
+	const [addTaskDialog, setAddTaskDialog] = useState<AddTaskDialogState>(null)
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -60,6 +63,10 @@ export function KanbanBoard() {
 
 	function handleAddColumn(column: Column) {
 		setColumns((prev) => [...prev, column])
+	}
+
+	function handleAddTask(task: Task) {
+		setTasks((prev) => [...prev, task])
 	}
 
 	function handleEditColumn(updated: Column) {
@@ -193,6 +200,9 @@ export function KanbanBoard() {
 									setDialog({ mode: "edit", column: col })
 								}
 								onDeleteColumn={handleDeleteColumn}
+								onAddTask={(columnId) =>
+									setAddTaskDialog({ columnId })
+								}
 							/>
 						))}
 
@@ -238,6 +248,16 @@ export function KanbanBoard() {
 			</DndContext>
 
 			{/* Column dialog */}
+			{/* Add task dialog */}
+			<AddTaskDialog
+				open={addTaskDialog !== null}
+				onOpenChange={(open) => {
+					if (!open) setAddTaskDialog(null)
+				}}
+				columnId={addTaskDialog?.columnId ?? ""}
+				onAdd={handleAddTask}
+			/>
+
 			<ColumnDialog
 				open={dialog !== null}
 				onOpenChange={(open) => {

@@ -9,6 +9,7 @@ interface SortableKanbanColumnProps {
 	tasks: Task[]
 	onEditColumn: (column: Column) => void
 	onDeleteColumn: (columnId: string) => void
+	onAddTask: (columnId: string) => void
 }
 
 export function SortableKanbanColumn({
@@ -16,6 +17,7 @@ export function SortableKanbanColumn({
 	tasks,
 	onEditColumn,
 	onDeleteColumn,
+	onAddTask,
 }: SortableKanbanColumnProps) {
 	const {
 		attributes,
@@ -47,6 +49,7 @@ export function SortableKanbanColumn({
 				tasks={tasks}
 				onEditColumn={onEditColumn}
 				onDeleteColumn={onDeleteColumn}
+				onAddTask={onAddTask}
 				dragHandleProps={{ ...attributes, ...listeners }}
 			/>
 		</div>
