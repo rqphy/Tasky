@@ -98,42 +98,50 @@ export function KanbanColumn({
 
 			{/* Drop zone */}
 			<div
-				ref={setNodeRef}
-				className={`flex flex-col gap-3 min-h-32 rounded-xl p-3 transition-colors ${
+				className={`flex flex-col rounded-xl transition-colors ${
 					isOver
 						? "bg-muted/80 ring-2 ring-violet-500/30"
 						: "bg-muted/40"
 				}`}
 			>
-				{/* Add task button */}
-				<button
-					onClick={() => onAddTask?.(column.id)}
-					className="flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-xs text-muted-foreground/60 hover:text-muted-foreground hover:bg-background/60 transition-colors group"
+				{/* Scrollable task list */}
+				<div
+					ref={setNodeRef}
+					className="flex flex-col gap-3 min-h-32 max-h-[calc(100vh-14rem)] overflow-y-auto p-3 pb-1"
 				>
-					<HugeiconsIcon icon={PlusSignIcon} size={12} />
-					Add task
-				</button>
-				<SortableContext
-					items={tasks.map((t) => t.id)}
-					strategy={verticalListSortingStrategy}
-				>
-					{tasks.map((task) => (
-						<SortableTaskCard
-							key={task.id}
-							task={task}
-							onEdit={onEdit}
-							onDelete={onDelete}
-						/>
-					))}
-				</SortableContext>
+					<SortableContext
+						items={tasks.map((t) => t.id)}
+						strategy={verticalListSortingStrategy}
+					>
+						{tasks.map((task) => (
+							<SortableTaskCard
+								key={task.id}
+								task={task}
+								onEdit={onEdit}
+								onDelete={onDelete}
+							/>
+						))}
+					</SortableContext>
 
-				{tasks.length === 0 && (
-					<div className="flex-1 flex items-center justify-center">
-						<p className="text-xs text-muted-foreground/50 italic select-none">
-							Drop tasks here
-						</p>
-					</div>
-				)}
+					{tasks.length === 0 && (
+						<div className="flex-1 flex items-center justify-center">
+							<p className="text-xs text-muted-foreground/50 italic select-none">
+								Drop tasks here
+							</p>
+						</div>
+					)}
+				</div>
+
+				{/* Add task button — pinned at the bottom */}
+				<div className="p-1.5 pt-0">
+					<button
+						onClick={() => onAddTask?.(column.id)}
+						className="flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg text-xs text-muted-foreground/60 hover:text-muted-foreground hover:bg-background/60 transition-colors"
+					>
+						<HugeiconsIcon icon={PlusSignIcon} size={12} />
+						Add task
+					</button>
+				</div>
 			</div>
 		</div>
 	)
