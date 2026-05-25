@@ -22,3 +22,19 @@ export interface TaskComment {
 	body: string
 	createdAt: string
 }
+
+export const TASK_LABELS: { value: TaskLabel; label: string }[] = [
+	{ value: "feature", label: "Feature" },
+	{ value: "bug", label: "Bug" },
+	{ value: "improvement", label: "Improvement" },
+	{ value: "documentation", label: "Documentation" },
+	{ value: "chore", label: "Chore" },
+]
+
+export const TASK_PRIORITIES: { value: TaskPriority; label: string }[] = [
+	{ value: "urgent", label: "Urgent" },
+	{ value: "high", label: "High" },
+	{ value: "medium", label: "Medium" },
+	{ value: "low", label: "Low" },
+	{ value: "none", label: "None" },
+]

@@ -9,22 +9,7 @@ import {
 import { Button } from "@/components/ui/button"
 import type { Task } from "@/mocks/tasks"
 import type { TaskLabel, TaskPriority } from "@/types/task"
-
-const LABELS: { value: TaskLabel; label: string }[] = [
-	{ value: "feature", label: "Feature" },
-	{ value: "bug", label: "Bug" },
-	{ value: "improvement", label: "Improvement" },
-	{ value: "documentation", label: "Documentation" },
-	{ value: "chore", label: "Chore" },
-]
-
-const PRIORITIES: { value: TaskPriority; label: string }[] = [
-	{ value: "urgent", label: "Urgent" },
-	{ value: "high", label: "High" },
-	{ value: "medium", label: "Medium" },
-	{ value: "low", label: "Low" },
-	{ value: "none", label: "None" },
-]
+import { TASK_LABELS, TASK_PRIORITIES } from "@/types/task"
 
 interface EditTaskDialogProps {
 	open: boolean
@@ -127,7 +112,7 @@ export function EditTaskDialog({
 								className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
 							>
 								<option value="">None</option>
-								{LABELS.map((l) => (
+								{TASK_LABELS.map((l) => (
 									<option key={l.value} value={l.value}>
 										{l.label}
 									</option>
@@ -146,7 +131,7 @@ export function EditTaskDialog({
 								}
 								className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
 							>
-								{PRIORITIES.map((p) => (
+								{TASK_PRIORITIES.map((p) => (
 									<option key={p.value} value={p.value}>
 										{p.label}
 									</option>
