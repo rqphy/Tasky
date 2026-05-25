@@ -42,7 +42,7 @@ export function AssignTaskDialog({
 					<DialogTitle>Assign task</DialogTitle>
 				</DialogHeader>
 
-				<ul className="flex flex-col gap-1 py-1">
+				<ul className="flex flex-col gap-1 py-1 max-h-[60vh] overflow-y-auto">
 					{/* Unassign row */}
 					<li>
 						<button
