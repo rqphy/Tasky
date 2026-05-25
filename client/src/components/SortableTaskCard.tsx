@@ -7,12 +7,14 @@ interface SortableTaskCardProps {
 	task: Task
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
+	onAttribute?: (id: string) => void
 }
 
 export function SortableTaskCard({
 	task,
 	onEdit,
 	onDelete,
+	onAttribute,
 }: SortableTaskCardProps) {
 	const {
 		attributes,
@@ -32,7 +34,12 @@ export function SortableTaskCard({
 
 	return (
 		<div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-			<TaskCard {...task} onEdit={onEdit} onDelete={onDelete} />
+			<TaskCard
+				{...task}
+				onEdit={onEdit}
+				onDelete={onDelete}
+				onAttribute={onAttribute}
+			/>
 		</div>
 	)
 }

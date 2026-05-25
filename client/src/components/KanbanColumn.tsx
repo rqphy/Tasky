@@ -19,6 +19,7 @@ interface KanbanColumnProps {
 	tasks: Task[]
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
+	onAttribute?: (id: string) => void
 	onEditColumn?: (column: Column) => void
 	onDeleteColumn?: (columnId: string) => void
 	onAddTask?: (columnId: string) => void
@@ -30,6 +31,7 @@ export function KanbanColumn({
 	tasks,
 	onEdit,
 	onDelete,
+	onAttribute,
 	onEditColumn,
 	onDeleteColumn,
 	onAddTask,
@@ -119,6 +121,7 @@ export function KanbanColumn({
 								task={task}
 								onEdit={onEdit}
 								onDelete={onDelete}
+								onAttribute={onAttribute}
 							/>
 						))}
 					</SortableContext>

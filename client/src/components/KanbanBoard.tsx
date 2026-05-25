@@ -20,6 +20,8 @@ import { KanbanColumn } from "@/components/KanbanColumn"
 import { ColumnDialog } from "@/components/ColumnDialog"
 import { AddTaskDialog } from "@/components/AddTaskDialog"
 import { EditTaskDialog } from "@/components/EditTaskDialog"
+import { AssignTaskDialog } from "@/components/AssignTaskDialog"
+import type { User } from "@/mocks/users"
 import { TaskCard } from "@/components/TaskCard"
 import { mockTasks, type Task } from "@/mocks/tasks"
 import type { Column } from "@/types/task"
@@ -37,6 +39,10 @@ type ActiveItem =
 type DialogState = { mode: "add" } | { mode: "edit"; column: Column } | null
 type AddTaskDialogState = { columnId: string } | null
 type EditTaskDialogState = { task: Task } | null
+type AssignTaskDialogState = {
+	taskId: string
+	currentAssigneeName?: string
+} | null
 
 export function KanbanBoard() {
 	const [tasks, setTasks] = useState<Task[]>(mockTasks)
@@ -46,6 +52,8 @@ export function KanbanBoard() {
 	const [addTaskDialog, setAddTaskDialog] = useState<AddTaskDialogState>(null)
 	const [editTaskDialog, setEditTaskDialog] =
 		useState<EditTaskDialogState>(null)
+	const [assignTaskDialog, setAssignTaskDialog] =
+		useState<AssignTaskDialogState>(null)
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -84,6 +92,31 @@ export function KanbanBoard() {
 
 	function handleDeleteTask(id: string) {
 		setTasks((prev) => prev.filter((t) => t.id !== id))
+	}
+
+	function handleOpenAssignTask(id: string) {
+		const task = tasks.find((t) => t.id === id)
+		if (task)
+			setAssignTaskDialog({
+				taskId: id,
+				currentAssigneeName: task.assignee?.name,
+			})
+	}
+
+	function handleAssignTask(user: User | null) {
+		if (!assignTaskDialog) return
+		setTasks((prev) =>
+			prev.map((t) =>
+				t.id === assignTaskDialog.taskId
+					? {
+							...t,
+							assignee: user
+								? { name: user.name, avatarUrl: user.avatarUrl }
+								: undefined,
+						}
+					: t,
+			),
+		)
 	}
 
 	function handleEditColumn(updated: Column) {
@@ -215,6 +248,7 @@ export function KanbanBoard() {
 								tasks={getTasksByColumnId(column.id)}
 								onEdit={handleOpenEditTask}
 								onDelete={handleDeleteTask}
+								onAttribute={handleOpenAssignTask}
 								onEditColumn={(col) =>
 									setDialog({ mode: "edit", column: col })
 								}
@@ -276,6 +310,17 @@ export function KanbanBoard() {
 				columnId={addTaskDialog?.columnId ?? ""}
 				onAdd={handleAddTask}
 			/>
+
+			{assignTaskDialog && (
+				<AssignTaskDialog
+					open={assignTaskDialog !== null}
+					onOpenChange={(open) => {
+						if (!open) setAssignTaskDialog(null)
+					}}
+					currentAssigneeName={assignTaskDialog.currentAssigneeName}
+					onAssign={handleAssignTask}
+				/>
+			)}
 
 			{editTaskDialog && (
 				<EditTaskDialog
