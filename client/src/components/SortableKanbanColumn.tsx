@@ -7,6 +7,8 @@ import type { Column } from "@/types/task"
 interface SortableKanbanColumnProps {
 	column: Column
 	tasks: Task[]
+	onEdit: (id: string) => void
+	onDelete: (id: string) => void
 	onEditColumn: (column: Column) => void
 	onDeleteColumn: (columnId: string) => void
 	onAddTask: (columnId: string) => void
@@ -15,6 +17,8 @@ interface SortableKanbanColumnProps {
 export function SortableKanbanColumn({
 	column,
 	tasks,
+	onEdit,
+	onDelete,
 	onEditColumn,
 	onDeleteColumn,
 	onAddTask,
@@ -47,6 +51,8 @@ export function SortableKanbanColumn({
 			<KanbanColumn
 				column={column}
 				tasks={tasks}
+				onEdit={onEdit}
+				onDelete={onDelete}
 				onEditColumn={onEditColumn}
 				onDeleteColumn={onDeleteColumn}
 				onAddTask={onAddTask}

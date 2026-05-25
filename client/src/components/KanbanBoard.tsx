@@ -19,6 +19,7 @@ import { SortableKanbanColumn } from "@/components/SortableKanbanColumn"
 import { KanbanColumn } from "@/components/KanbanColumn"
 import { ColumnDialog } from "@/components/ColumnDialog"
 import { AddTaskDialog } from "@/components/AddTaskDialog"
+import { EditTaskDialog } from "@/components/EditTaskDialog"
 import { TaskCard } from "@/components/TaskCard"
 import { mockTasks, type Task } from "@/mocks/tasks"
 import type { Column } from "@/types/task"
@@ -35,6 +36,7 @@ type ActiveItem =
 
 type DialogState = { mode: "add" } | { mode: "edit"; column: Column } | null
 type AddTaskDialogState = { columnId: string } | null
+type EditTaskDialogState = { task: Task } | null
 
 export function KanbanBoard() {
 	const [tasks, setTasks] = useState<Task[]>(mockTasks)
@@ -42,6 +44,8 @@ export function KanbanBoard() {
 	const [activeItem, setActiveItem] = useState<ActiveItem | null>(null)
 	const [dialog, setDialog] = useState<DialogState>(null)
 	const [addTaskDialog, setAddTaskDialog] = useState<AddTaskDialogState>(null)
+	const [editTaskDialog, setEditTaskDialog] =
+		useState<EditTaskDialogState>(null)
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -67,6 +71,19 @@ export function KanbanBoard() {
 
 	function handleAddTask(task: Task) {
 		setTasks((prev) => [...prev, task])
+	}
+
+	function handleOpenEditTask(id: string) {
+		const task = tasks.find((t) => t.id === id)
+		if (task) setEditTaskDialog({ task })
+	}
+
+	function handleSaveEditedTask(updated: Task) {
+		setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
+	}
+
+	function handleDeleteTask(id: string) {
+		setTasks((prev) => prev.filter((t) => t.id !== id))
 	}
 
 	function handleEditColumn(updated: Column) {
@@ -196,6 +213,8 @@ export function KanbanBoard() {
 								key={column.id}
 								column={column}
 								tasks={getTasksByColumnId(column.id)}
+								onEdit={handleOpenEditTask}
+								onDelete={handleDeleteTask}
 								onEditColumn={(col) =>
 									setDialog({ mode: "edit", column: col })
 								}
@@ -257,6 +276,17 @@ export function KanbanBoard() {
 				columnId={addTaskDialog?.columnId ?? ""}
 				onAdd={handleAddTask}
 			/>
+
+			{editTaskDialog && (
+				<EditTaskDialog
+					open={editTaskDialog !== null}
+					onOpenChange={(open) => {
+						if (!open) setEditTaskDialog(null)
+					}}
+					task={editTaskDialog.task}
+					onSave={handleSaveEditedTask}
+				/>
+			)}
 
 			<ColumnDialog
 				open={dialog !== null}
