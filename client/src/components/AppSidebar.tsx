@@ -17,6 +17,7 @@ import { mockProjects } from "@/mocks/projects"
 import { mockUsers } from "@/mocks/users"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { AddProjectDialog } from "./AddProjectDialog"
+import { getUnreadCountForProject } from "@/lib/notifications"
 
 const currentUser = mockUsers[0]
 
@@ -63,24 +64,32 @@ export function AppSidebar() {
 						<SidebarGroupLabel>Projects</SidebarGroupLabel>
 						<SidebarGroupContent>
 							<SidebarMenu>
-								{mockProjects.map((project) => (
-									<SidebarMenuItem key={project.id}>
-										<SidebarMenuButton
-											asChild
-											isActive={project.id === projectId}
-											tooltip={project.name}
-										>
-											<NavLink
-												to={`/board/${project.id}`}
+								{mockProjects.map((project) => {
+									const unreadCount = getUnreadCountForProject(
+										project.id
+									)
+									return (
+										<SidebarMenuItem key={project.id}>
+											<SidebarMenuButton
+												asChild
+												isActive={project.id === projectId}
+												tooltip={project.name}
 											>
-												<span className="text-base">
-													{project.emoji}
-												</span>
-												<span>{project.name}</span>
-											</NavLink>
-										</SidebarMenuButton>
-									</SidebarMenuItem>
-								))}
+												<NavLink
+													to={`/board/${project.id}`}
+												>
+													<span className="relative text-base">
+														{project.emoji}
+														{unreadCount > 0 && (
+															<span className="absolute -top-0.5 -right-0.5 size-2 bg-red-500 rounded-full border border-background" />
+														)}
+													</span>
+													<span>{project.name}</span>
+												</NavLink>
+											</SidebarMenuButton>
+										</SidebarMenuItem>
+									)
+								})}
 								<SidebarMenuItem>
 									<SidebarMenuButton
 										className="text-muted-foreground"
