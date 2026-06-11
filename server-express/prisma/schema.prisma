@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id             String          @id @default(cuid())
+  name           String
+  email          String          @unique
+  password       String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  ownedProjects  Project[]       @relation("ProjectOwner")
+  projectMembers ProjectMember[]
+}
+
+model Project {
+  id        String          @id @default(cuid())
+  name      String
+  emoji     String          @default("📋")
+  ownerId   String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  owner     User            @relation("ProjectOwner", fields: [ownerId], references: [id])
+  members   ProjectMember[]
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  userId    String
+  projectId String
+  role      ProjectRole @default(MEMBER)
+  createdAt DateTime    @default(now())
+  project   Project     @relation(fields: [projectId], references: [id])
+  user      User        @relation(fields: [userId], references: [id])
+
+  @@unique([userId, projectId])
+}
+
+enum ProjectRole {
+  OWNER
+  MEMBER
+  VIEWER
+}
