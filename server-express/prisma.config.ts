@@ -9,6 +9,6 @@ export default defineConfig({
 		path: "prisma/migrations",
 	},
 	datasource: {
-		url: "file:../tasky.db",
+		url: env("DATABASE_URL"),
 	},
 })
