@@ -2,17 +2,10 @@ import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
 import dotenv from "dotenv"
-import { PrismaClient } from "./generated/client.js"
-
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
+import apiRoutes from "./routes/api.js"
+import { prisma } from "./lib/db.js"
 
 dotenv.config()
-
-const prisma = new PrismaClient({
-	adapter: new PrismaBetterSqlite3({
-		url: process.env.DATABASE_URL || "file:../tasky.db",
-	}),
-})
 const app = express()
 const PORT = process.env.PORT || 3001
 
@@ -26,10 +19,7 @@ app.use(
 app.use(express.json())
 app.use(cookieParser())
 
-// Test route
-app.get("/health", (req, res) => {
-	res.json({ status: "ok", message: "Server is running" })
-})
+app.use("/api", apiRoutes)
 
 // Test db connection
 async function insertTestUser() {
@@ -46,9 +36,6 @@ async function insertTestUser() {
 	const count = await prisma.user.count()
 	console.log(`📊 Total users in db: ${count}`)
 }
-
-// Auth routes (create in next step)
-// app.use('/api/auth', authRoutes)
 
 app.listen(PORT, async () => {
 	console.log(`🚀 Server running on http://localhost:${PORT}`)
