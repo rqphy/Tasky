@@ -7,6 +7,7 @@ import {
 	generateRefreshToken,
 	getRefreshTokenExpiryDate,
 } from "../lib/jwt.js"
+import { authMiddleware } from "../middleware/auth.js"
 
 const router = express.Router()
 
@@ -159,6 +160,23 @@ router.post("/logout", async (req, res) => {
 		res.status(200).json({ message: "Logged out successfully" })
 	} catch (error) {
 		console.error("Logout error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
+
+router.get("/me", authMiddleware, async (req, res) => {
+	try {
+		const user = await prisma.user.findUnique({
+			where: { id: req.user?.userId },
+		})
+
+		if (!user) {
+			return res.status(404).json({ error: "User not found" })
+		}
+
+		res.status(200).json({ user })
+	} catch (error) {
+		console.error("Me error:", error)
 		res.status(500).json({ error: "Internal server error" })
 	}
 })
