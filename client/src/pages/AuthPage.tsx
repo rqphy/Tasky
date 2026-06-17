@@ -1,14 +1,77 @@
-import { useState } from "react"
+import { useState, type FormEvent } from "react"
+import { Navigate } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function AuthPage() {
+	const { login, register, isAuthenticated, isLoading } = useAuth()
+
 	const [loginEmail, setLoginEmail] = useState("")
 	const [loginPassword, setLoginPassword] = useState("")
 	const [registerName, setRegisterName] = useState("")
 	const [registerEmail, setRegisterEmail] = useState("")
 	const [registerPassword, setRegisterPassword] = useState("")
+
+	const [loginError, setLoginError] = useState("")
+	const [registerError, setRegisterError] = useState("")
+	const [isSubmitting, setIsSubmitting] = useState(false)
+
+	if (isLoading) {
+		return (
+			<div className="flex min-h-screen items-center justify-center">
+				<div className="text-muted-foreground">Loading...</div>
+			</div>
+		)
+	}
+
+	if (isAuthenticated) {
+		return <Navigate to="/" replace />
+	}
+
+	const handleLogin = async (e: FormEvent) => {
+		e.preventDefault()
+		setLoginError("")
+		setIsSubmitting(true)
+
+		try {
+			await login(loginEmail, loginPassword)
+		} catch (error) {
+			if (error instanceof Error) {
+				const axiosError = error as { response?: { data?: { error?: string } } }
+				setLoginError(
+					axiosError.response?.data?.error || "Login failed. Please try again.",
+				)
+			} else {
+				setLoginError("Login failed. Please try again.")
+			}
+		} finally {
+			setIsSubmitting(false)
+		}
+	}
+
+	const handleRegister = async (e: FormEvent) => {
+		e.preventDefault()
+		setRegisterError("")
+		setIsSubmitting(true)
+
+		try {
+			await register(registerName, registerEmail, registerPassword)
+		} catch (error) {
+			if (error instanceof Error) {
+				const axiosError = error as { response?: { data?: { error?: string } } }
+				setRegisterError(
+					axiosError.response?.data?.error ||
+						"Registration failed. Please try again.",
+				)
+			} else {
+				setRegisterError("Registration failed. Please try again.")
+			}
+		} finally {
+			setIsSubmitting(false)
+		}
+	}
 
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-background">
@@ -27,98 +90,120 @@ export function AuthPage() {
 					</TabsList>
 
 					<TabsContent value="login" className="space-y-4 pt-4">
-						<div className="space-y-2">
-							<label
-								htmlFor="login-email"
-								className="text-sm font-medium"
+						<form onSubmit={handleLogin} className="space-y-4">
+							<div className="space-y-2">
+								<label
+									htmlFor="login-email"
+									className="text-sm font-medium"
+								>
+									Email
+								</label>
+								<Input
+									id="login-email"
+									type="email"
+									placeholder="you@example.com"
+									value={loginEmail}
+									onChange={(e) => setLoginEmail(e.target.value)}
+									required
+									disabled={isSubmitting}
+								/>
+							</div>
+							<div className="space-y-2">
+								<label
+									htmlFor="login-password"
+									className="text-sm font-medium"
+								>
+									Password
+								</label>
+								<Input
+									id="login-password"
+									type="password"
+									placeholder="••••••••"
+									value={loginPassword}
+									onChange={(e) => setLoginPassword(e.target.value)}
+									required
+									disabled={isSubmitting}
+								/>
+							</div>
+							{loginError && (
+								<p className="text-sm text-destructive">{loginError}</p>
+							)}
+							<Button
+								type="submit"
+								className="w-full"
+								size="lg"
+								disabled={isSubmitting}
 							>
-								Email
-							</label>
-							<Input
-								id="login-email"
-								type="email"
-								placeholder="you@example.com"
-								value={loginEmail}
-								onChange={(e) => setLoginEmail(e.target.value)}
-							/>
-						</div>
-						<div className="space-y-2">
-							<label
-								htmlFor="login-password"
-								className="text-sm font-medium"
-							>
-								Password
-							</label>
-							<Input
-								id="login-password"
-								type="password"
-								placeholder="••••••••"
-								value={loginPassword}
-								onChange={(e) =>
-									setLoginPassword(e.target.value)
-								}
-							/>
-						</div>
-						<Button className="w-full" size="lg">
-							Sign in
-						</Button>
+								{isSubmitting ? "Signing in..." : "Sign in"}
+							</Button>
+						</form>
 					</TabsContent>
 
 					<TabsContent value="register" className="space-y-4 pt-4">
-						<div className="space-y-2">
-							<label
-								htmlFor="register-name"
-								className="text-sm font-medium"
+						<form onSubmit={handleRegister} className="space-y-4">
+							<div className="space-y-2">
+								<label
+									htmlFor="register-name"
+									className="text-sm font-medium"
+								>
+									Name
+								</label>
+								<Input
+									id="register-name"
+									type="text"
+									placeholder="Your name"
+									value={registerName}
+									onChange={(e) => setRegisterName(e.target.value)}
+									required
+									disabled={isSubmitting}
+								/>
+							</div>
+							<div className="space-y-2">
+								<label
+									htmlFor="register-email"
+									className="text-sm font-medium"
+								>
+									Email
+								</label>
+								<Input
+									id="register-email"
+									type="email"
+									placeholder="you@example.com"
+									value={registerEmail}
+									onChange={(e) => setRegisterEmail(e.target.value)}
+									required
+									disabled={isSubmitting}
+								/>
+							</div>
+							<div className="space-y-2">
+								<label
+									htmlFor="register-password"
+									className="text-sm font-medium"
+								>
+									Password
+								</label>
+								<Input
+									id="register-password"
+									type="password"
+									placeholder="••••••••"
+									value={registerPassword}
+									onChange={(e) => setRegisterPassword(e.target.value)}
+									required
+									disabled={isSubmitting}
+								/>
+							</div>
+							{registerError && (
+								<p className="text-sm text-destructive">{registerError}</p>
+							)}
+							<Button
+								type="submit"
+								className="w-full"
+								size="lg"
+								disabled={isSubmitting}
 							>
-								Name
-							</label>
-							<Input
-								id="register-name"
-								type="text"
-								placeholder="Your name"
-								value={registerName}
-								onChange={(e) =>
-									setRegisterName(e.target.value)
-								}
-							/>
-						</div>
-						<div className="space-y-2">
-							<label
-								htmlFor="register-email"
-								className="text-sm font-medium"
-							>
-								Email
-							</label>
-							<Input
-								id="register-email"
-								type="email"
-								placeholder="you@example.com"
-								value={registerEmail}
-								onChange={(e) =>
-									setRegisterEmail(e.target.value)
-								}
-							/>
-						</div>
-						<div className="space-y-2">
-							<label
-								htmlFor="register-password"
-								className="text-sm font-medium"
-							>
-								Password
-							</label>
-							<Input
-								id="register-password"
-								type="password"
-								placeholder="••••••••"
-								value={registerPassword}
-								onChange={(e) =>
-									setRegisterPassword(e.target.value)
-								}
-							/>
-						</div>
-						<Button className="w-full" size="lg">
-							Create account
-						</Button>
+								{isSubmitting ? "Creating account..." : "Create account"}
+							</Button>
+						</form>
 					</TabsContent>
 				</Tabs>
 			</div>

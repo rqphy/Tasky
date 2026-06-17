@@ -5,6 +5,8 @@ import "./index.css"
 import { AuthPage } from "@/pages/AuthPage"
 import { AppLayout } from "@/layouts/AppLayout"
 import { BoardPage } from "@/pages/BoardPage"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { AuthProvider } from "@/contexts/AuthContext"
 import { mockProjects } from "@/mocks/projects"
 
 const router = createBrowserRouter([
@@ -14,17 +16,22 @@ const router = createBrowserRouter([
 	},
 	{
 		path: "/",
-		element: <AppLayout />,
+		element: <ProtectedRoute />,
 		children: [
 			{
-				index: true,
-				element: (
-					<Navigate to={`/board/${mockProjects[0].id}`} replace />
-				),
-			},
-			{
-				path: "board/:projectId",
-				element: <BoardPage />,
+				element: <AppLayout />,
+				children: [
+					{
+						index: true,
+						element: (
+							<Navigate to={`/board/${mockProjects[0].id}`} replace />
+						),
+					},
+					{
+						path: "board/:projectId",
+						element: <BoardPage />,
+					},
+				],
 			},
 		],
 	},
@@ -32,6 +39,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
-		<RouterProvider router={router} />
+		<AuthProvider>
+			<RouterProvider router={router} />
+		</AuthProvider>
 	</StrictMode>,
 )
