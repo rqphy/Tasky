@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { NavLink, useParams } from "react-router-dom"
+import { NavLink, useParams, useNavigate } from "react-router-dom"
 import {
 	Sidebar,
 	SidebarContent,
@@ -13,18 +13,26 @@ import {
 	SidebarMenuItem,
 	SidebarRail,
 } from "@/components/ui/sidebar"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { mockProjects } from "@/mocks/projects"
-import { mockUsers } from "@/mocks/users"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { AddProjectDialog } from "./AddProjectDialog"
 import { getUnreadCountForProject } from "@/lib/notifications"
-
-const currentUser = mockUsers[0]
+import { useAuth } from "@/contexts/AuthContext"
 
 export function AppSidebar() {
 	const { projectId } = useParams<{ projectId: string }>()
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [projectName, setProjectName] = useState("")
+	const { user, logout } = useAuth()
+	const navigate = useNavigate()
 
 	function handleCreate() {
 		if (!projectName.trim()) return
@@ -32,6 +40,11 @@ export function AppSidebar() {
 		console.log("Creating project:", projectName.trim())
 		setProjectName("")
 		setDialogOpen(false)
+	}
+
+	async function handleLogout() {
+		await logout()
+		navigate("/auth")
 	}
 
 	return (
@@ -65,14 +78,15 @@ export function AppSidebar() {
 						<SidebarGroupContent>
 							<SidebarMenu>
 								{mockProjects.map((project) => {
-									const unreadCount = getUnreadCountForProject(
-										project.id
-									)
+									const unreadCount =
+										getUnreadCountForProject(project.id)
 									return (
 										<SidebarMenuItem key={project.id}>
 											<SidebarMenuButton
 												asChild
-												isActive={project.id === projectId}
+												isActive={
+													project.id === projectId
+												}
 												tooltip={project.name}
 											>
 												<NavLink
@@ -106,24 +120,44 @@ export function AppSidebar() {
 				<SidebarFooter>
 					<SidebarMenu>
 						<SidebarMenuItem>
-							<SidebarMenuButton size="lg">
-								<Avatar className="size-8">
-									<AvatarFallback className="text-xs">
-										{currentUser.name
-											.split(" ")
-											.map((n) => n[0])
-											.join("")}
-									</AvatarFallback>
-								</Avatar>
-								<div className="flex flex-col gap-0.5 leading-none">
-									<span className="text-sm font-medium">
-										{currentUser.name}
-									</span>
-									<span className="text-xs text-muted-foreground">
-										Free plan
-									</span>
-								</div>
-							</SidebarMenuButton>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<SidebarMenuButton size="lg">
+										<Avatar className="size-8">
+											<AvatarFallback className="text-xs">
+												{user?.name
+													.split(" ")
+													.map((n) => n[0])
+													.join("") || "U"}
+											</AvatarFallback>
+										</Avatar>
+										<div className="flex flex-col gap-0.5 leading-none">
+											<span className="text-sm font-medium">
+												{user?.name}
+											</span>
+											<span className="text-xs text-muted-foreground">
+												{user?.email}
+											</span>
+										</div>
+									</SidebarMenuButton>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent
+									side="top"
+									align="start"
+									className="w-56"
+								>
+									<DropdownMenuLabel>
+										My Account
+									</DropdownMenuLabel>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem disabled>
+										Profile
+									</DropdownMenuItem>
+									<DropdownMenuItem onClick={handleLogout}>
+										Logout
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						</SidebarMenuItem>
 					</SidebarMenu>
 				</SidebarFooter>
