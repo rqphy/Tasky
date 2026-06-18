@@ -1,9 +1,6 @@
 import express from "express"
 import { prisma } from "../lib/db.js"
-import {
-	createProjectSchema,
-	updateProjectSchema,
-} from "../lib/validation.js"
+import { createProjectSchema, updateProjectSchema } from "../lib/validation.js"
 import { authMiddleware } from "../middleware/auth.js"
 
 const router = express.Router()
@@ -38,6 +35,14 @@ router.post("/", async (req, res) => {
 				name: validatedData.name,
 				emoji: validatedData.emoji ?? "📋",
 				ownerId: userId,
+			},
+		})
+
+		await prisma.projectMember.create({
+			data: {
+				userId: userId,
+				projectId: project.id,
+				role: "OWNER",
 			},
 		})
 
@@ -105,7 +110,9 @@ router.patch("/:id", async (req, res) => {
 		}
 
 		if (project.ownerId !== userId) {
-			return res.status(403).json({ error: "Only the owner can update this project" })
+			return res
+				.status(403)
+				.json({ error: "Only the owner can update this project" })
 		}
 
 		const updatedProject = await prisma.project.update({
@@ -140,7 +147,9 @@ router.delete("/:id", async (req, res) => {
 		}
 
 		if (project.ownerId !== userId) {
-			return res.status(403).json({ error: "Only the owner can delete this project" })
+			return res
+				.status(403)
+				.json({ error: "Only the owner can delete this project" })
 		}
 
 		await prisma.project.delete({
@@ -150,6 +159,21 @@ router.delete("/:id", async (req, res) => {
 		res.status(204).send()
 	} catch (error) {
 		console.error("Delete project error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
+
+router.get("/:id/members", async (req, res) => {
+	try {
+		const { id } = req.params
+
+		const members = await prisma.projectMember.findMany({
+			where: { projectId: id },
+		})
+
+		res.status(200).json(members)
+	} catch (error) {
+		console.error("Get project members error:", error)
 		res.status(500).json({ error: "Internal server error" })
 	}
 })
