@@ -1,5 +1,6 @@
 import express from "express"
 import authRoutes from "./auth.js"
+import projectRoutes from "./projects.js"
 
 const router = express.Router()
 
@@ -10,9 +11,9 @@ router.get("/health", (req, res) => {
 
 // Mount route modules
 router.use("/auth", authRoutes)
+router.use("/projects", projectRoutes)
 
 // TODO: Add other route modules as you build them
-// router.use("/projects", projectRoutes)
 // router.use("/tasks", taskRoutes)
 // router.use("/users", userRoutes)
 
