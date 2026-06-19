@@ -28,3 +28,23 @@ export const updateProjectSchema = z.object({
 })
 
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>
+
+export const createColumnSchema = z.object({
+	name: z.string().min(1, "Name is required").max(100, "Name too long"),
+	color: z.string().optional(),
+})
+
+export type CreateColumnInput = z.infer<typeof createColumnSchema>
+
+export const updateColumnSchema = z.object({
+	name: z.string().min(1, "Name is required").max(100, "Name too long").optional(),
+	color: z.string().optional(),
+})
+
+export type UpdateColumnInput = z.infer<typeof updateColumnSchema>
+
+export const reorderColumnsSchema = z.object({
+	columnIds: z.array(z.string()).min(1, "At least one column is required"),
+})
+
+export type ReorderColumnsInput = z.infer<typeof reorderColumnsSchema>
