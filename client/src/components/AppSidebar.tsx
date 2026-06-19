@@ -21,11 +21,13 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { mockProjects } from "@/mocks/projects"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { AddProjectDialog } from "./AddProjectDialog"
 import { getUnreadCountForProject } from "@/lib/notifications"
 import { useAuth } from "@/contexts/AuthContext"
+import { useProjects, useCreateProject } from "@/hooks/useProjects"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Loading01Icon } from "@hugeicons/core-free-icons"
 
 export function AppSidebar() {
 	const { projectId } = useParams<{ projectId: string }>()
@@ -34,12 +36,21 @@ export function AppSidebar() {
 	const { user, logout } = useAuth()
 	const navigate = useNavigate()
 
+	const { data: projects, isLoading } = useProjects()
+	const createProject = useCreateProject()
+
 	function handleCreate() {
 		if (!projectName.trim()) return
-		// TODO: wire up to actual project creation logic
-		console.log("Creating project:", projectName.trim())
-		setProjectName("")
-		setDialogOpen(false)
+		createProject.mutate(
+			{ name: projectName.trim() },
+			{
+				onSuccess: (newProject) => {
+					setProjectName("")
+					setDialogOpen(false)
+					navigate(`/board/${newProject.id}`)
+				},
+			}
+		)
 	}
 
 	async function handleLogout() {
@@ -77,39 +88,56 @@ export function AppSidebar() {
 						<SidebarGroupLabel>Projects</SidebarGroupLabel>
 						<SidebarGroupContent>
 							<SidebarMenu>
-								{mockProjects.map((project) => {
-									const unreadCount =
-										getUnreadCountForProject(project.id)
-									return (
-										<SidebarMenuItem key={project.id}>
-											<SidebarMenuButton
-												asChild
-												isActive={
-													project.id === projectId
-												}
-												tooltip={project.name}
-											>
-												<NavLink
-													to={`/board/${project.id}`}
+								{isLoading ? (
+									<SidebarMenuItem>
+										<SidebarMenuButton disabled>
+											<HugeiconsIcon
+												icon={Loading01Icon}
+												size={24}
+												strokeWidth={2}
+												className="animate-spin"
+											/>
+											<span>Loading...</span>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								) : (
+									projects?.map((project) => {
+										const unreadCount =
+											getUnreadCountForProject(project.id)
+										return (
+											<SidebarMenuItem key={project.id}>
+												<SidebarMenuButton
+													asChild
+													isActive={
+														project.id === projectId
+													}
+													tooltip={project.name}
 												>
-													<span className="relative text-base">
-														{project.emoji}
-														{unreadCount > 0 && (
-															<span className="absolute -top-0.5 -right-0.5 size-2 bg-red-500 rounded-full border border-background" />
-														)}
-													</span>
-													<span>{project.name}</span>
-												</NavLink>
-											</SidebarMenuButton>
-										</SidebarMenuItem>
-									)
-								})}
+													<NavLink
+														to={`/board/${project.id}`}
+													>
+														<span className="relative text-base">
+															{project.emoji}
+															{unreadCount > 0 && (
+																<span className="absolute -top-0.5 -right-0.5 size-2 bg-red-500 rounded-full border border-background" />
+															)}
+														</span>
+														<span>{project.name}</span>
+													</NavLink>
+												</SidebarMenuButton>
+											</SidebarMenuItem>
+										)
+									})
+								)}
 								<SidebarMenuItem>
 									<SidebarMenuButton
 										className="text-muted-foreground"
 										onClick={() => setDialogOpen(true)}
+										disabled={createProject.isPending}
 									>
-										+ Create a new project
+										{createProject.isPending
+											? "Creating..."
+											: "+ Create a new project"}
 									</SidebarMenuButton>
 								</SidebarMenuItem>
 							</SidebarMenu>

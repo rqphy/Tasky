@@ -1,13 +1,23 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom"
+import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import "./index.css"
 import { AuthPage } from "@/pages/AuthPage"
 import { AppLayout } from "@/layouts/AppLayout"
 import { BoardPage } from "@/pages/BoardPage"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { AuthProvider } from "@/contexts/AuthContext"
-import { mockProjects } from "@/mocks/projects"
+import { ProjectRedirect } from "@/components/ProjectRedirect"
+
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			staleTime: 1000 * 60,
+			retry: 1,
+		},
+	},
+})
 
 const router = createBrowserRouter([
 	{
@@ -23,9 +33,7 @@ const router = createBrowserRouter([
 				children: [
 					{
 						index: true,
-						element: (
-							<Navigate to={`/board/${mockProjects[0].id}`} replace />
-						),
+						element: <ProjectRedirect />,
 					},
 					{
 						path: "board/:projectId",
@@ -39,8 +47,10 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
-		<AuthProvider>
-			<RouterProvider router={router} />
-		</AuthProvider>
+		<QueryClientProvider client={queryClient}>
+			<AuthProvider>
+				<RouterProvider router={router} />
+			</AuthProvider>
+		</QueryClientProvider>
 	</StrictMode>,
 )

@@ -1,6 +1,5 @@
 import { useState } from "react"
-import { type Project, type ProjectRole } from "@/mocks/projects"
-import { mockUsers } from "@/mocks/users"
+import { type Project, type ProjectRole } from "@/lib/projects"
 import {
 	Sheet,
 	SheetContent,
@@ -16,9 +15,9 @@ import { UserAdd01Icon } from "@hugeicons/core-free-icons"
 import { InviteMemberDialog } from "@/components/InviteMemberDialog"
 
 const roleBadgeClass: Record<ProjectRole, string> = {
-	owner: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-	member: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
-	viewer: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
+	OWNER: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+	MEMBER: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
+	VIEWER: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
 }
 
 interface ProjectMembersPanelProps {
@@ -33,6 +32,7 @@ export function ProjectMembersPanel({
 	onOpenChange,
 }: ProjectMembersPanelProps) {
 	const [inviteOpen, setInviteOpen] = useState(false)
+	const members = project.members ?? []
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -40,8 +40,8 @@ export function ProjectMembersPanel({
 				<SheetHeader>
 					<SheetTitle>Members</SheetTitle>
 					<SheetDescription>
-						{project.members.length} member
-						{project.members.length !== 1 && "s"} in {project.name}
+						{members.length} member
+						{members.length !== 1 && "s"} in {project.name}
 					</SheetDescription>
 				</SheetHeader>
 				<div className="px-6 pb-6">
@@ -59,8 +59,8 @@ export function ProjectMembersPanel({
 					</Button>
 				</div>
 				<div className="flex flex-col gap-1 px-6 pb-6 overflow-y-auto">
-					{project.members.map((pm) => {
-						const user = mockUsers.find((u) => u.id === pm.userId)
+					{members.map((pm) => {
+						const user = pm.user
 						if (!user) return null
 						return (
 							<div
@@ -82,7 +82,7 @@ export function ProjectMembersPanel({
 									variant="secondary"
 									className={roleBadgeClass[pm.role]}
 								>
-									{pm.role}
+									{pm.role.toLowerCase()}
 								</Badge>
 							</div>
 						)

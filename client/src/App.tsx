@@ -1,5 +1,3 @@
-import { KanbanBoard } from "@/components/KanbanBoard"
-
 function App() {
 	return (
 		<div className="h-screen flex flex-col bg-background">
@@ -7,7 +5,7 @@ function App() {
 				<h1 className="text-xl font-bold tracking-tight">Tasky</h1>
 			</header>
 			<main className="flex-1 px-8 py-6 overflow-x-auto min-h-0">
-				<KanbanBoard />
+				<p>App is now using main.tsx with routing</p>
 			</main>
 		</div>
 	)

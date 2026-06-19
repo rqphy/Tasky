@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import {
 	DndContext,
 	DragOverlay,
@@ -24,19 +24,26 @@ import { AssignTaskDialog } from "@/components/AssignTaskDialog"
 import type { User } from "@/mocks/users"
 import { TaskCard } from "@/components/TaskCard"
 import { mockTasks, type Task } from "@/mocks/tasks"
-import type { Column } from "@/types/task"
+import type { Column as UIColumn } from "@/types/task"
+import type { Column as BackendColumn } from "@/lib/projects"
+import { hexToTailwind, tailwindToHex } from "@/lib/colors"
+import {
+	useCreateColumn,
+	useUpdateColumn,
+	useDeleteColumn,
+	useReorderColumns,
+} from "@/hooks/useProjects"
 
-const DEFAULT_COLUMNS: Column[] = [
-	{ id: "incoming", label: "Incoming", color: "bg-slate-400" },
-	{ id: "progress", label: "In Progress", color: "bg-violet-500" },
-	{ id: "done", label: "Done", color: "bg-emerald-500" },
-]
+interface KanbanBoardProps {
+	projectId: string
+	columns: BackendColumn[]
+}
 
 type ActiveItem =
 	| { type: "card"; task: Task }
-	| { type: "column"; column: Column }
+	| { type: "column"; column: UIColumn }
 
-type DialogState = { mode: "add" } | { mode: "edit"; column: Column } | null
+type DialogState = { mode: "add" } | { mode: "edit"; column: UIColumn } | null
 type AddTaskDialogState = { columnId: string } | null
 type EditTaskDialogState = { task: Task } | null
 type AssignTaskDialogState = {
@@ -44,9 +51,8 @@ type AssignTaskDialogState = {
 	currentAssigneeName?: string
 } | null
 
-export function KanbanBoard() {
+export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardProps) {
 	const [tasks, setTasks] = useState<Task[]>(mockTasks)
-	const [columns, setColumns] = useState<Column[]>(DEFAULT_COLUMNS)
 	const [activeItem, setActiveItem] = useState<ActiveItem | null>(null)
 	const [dialog, setDialog] = useState<DialogState>(null)
 	const [addTaskDialog, setAddTaskDialog] = useState<AddTaskDialogState>(null)
@@ -54,6 +60,21 @@ export function KanbanBoard() {
 		useState<EditTaskDialogState>(null)
 	const [assignTaskDialog, setAssignTaskDialog] =
 		useState<AssignTaskDialogState>(null)
+
+	const createColumn = useCreateColumn(projectId)
+	const updateColumn = useUpdateColumn(projectId)
+	const deleteColumn = useDeleteColumn(projectId)
+	const reorderColumns = useReorderColumns(projectId)
+
+	const columns: UIColumn[] = useMemo(
+		() =>
+			backendColumns.map((col) => ({
+				id: col.id,
+				label: col.name,
+				color: hexToTailwind(col.color),
+			})),
+		[backendColumns]
+	)
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -73,8 +94,11 @@ export function KanbanBoard() {
 
 	// ── Column CRUD ───────────────────────────────────────────────────────────
 
-	function handleAddColumn(column: Column) {
-		setColumns((prev) => [...prev, column])
+	function handleAddColumn(column: UIColumn) {
+		createColumn.mutate({
+			name: column.label,
+			color: tailwindToHex(column.color),
+		})
 	}
 
 	function handleAddTask(task: Task) {
@@ -119,33 +143,18 @@ export function KanbanBoard() {
 		)
 	}
 
-	function handleEditColumn(updated: Column) {
-		setColumns((prev) =>
-			prev.map((c) => (c.id === updated.id ? updated : c)),
-		)
+	function handleEditColumn(updated: UIColumn) {
+		updateColumn.mutate({
+			columnId: updated.id,
+			data: {
+				name: updated.label,
+				color: tailwindToHex(updated.color),
+			},
+		})
 	}
 
 	function handleDeleteColumn(columnId: string) {
-		setColumns((prev) => {
-			const remaining = prev.filter((c) => c.id !== columnId)
-			// Move orphaned tasks to the first remaining column (if any)
-			if (remaining.length > 0) {
-				const fallbackId = remaining[0].id
-				setTasks((prevTasks) =>
-					prevTasks.map((t) =>
-						t.status === columnId
-							? { ...t, status: fallbackId }
-							: t,
-					),
-				)
-			} else {
-				// No columns left — drop all tasks from deleted column
-				setTasks((prevTasks) =>
-					prevTasks.filter((t) => t.status !== columnId),
-				)
-			}
-			return remaining
-		})
+		deleteColumn.mutate(columnId)
 	}
 
 	// ── Drag & Drop ───────────────────────────────────────────────────────────
@@ -191,11 +200,10 @@ export function KanbanBoard() {
 		if (dragType === "column") {
 			setActiveItem(null)
 			if (!over || active.id === over.id) return
-			setColumns((prev) => {
-				const oldIndex = prev.findIndex((c) => c.id === active.id)
-				const newIndex = prev.findIndex((c) => c.id === over.id)
-				return arrayMove(prev, oldIndex, newIndex)
-			})
+			const oldIndex = columns.findIndex((c) => c.id === active.id)
+			const newIndex = columns.findIndex((c) => c.id === over.id)
+			const reordered = arrayMove(columns, oldIndex, newIndex)
+			reorderColumns.mutate(reordered.map((c) => c.id))
 			return
 		}
 

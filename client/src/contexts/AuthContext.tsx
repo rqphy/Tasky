@@ -6,6 +6,7 @@ import {
 	useCallback,
 	type ReactNode,
 } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import {
 	type User,
 	login as apiLogin,
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthContextType | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
+	const queryClient = useQueryClient()
 
 	const checkAuth = useCallback(async () => {
 		if (!checkIsAuthenticated()) {
@@ -65,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const logout = async () => {
 		await apiLogout()
 		setUser(null)
+		queryClient.clear()
 	}
 
 	return (
