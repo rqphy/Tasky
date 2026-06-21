@@ -6,6 +6,8 @@ import {
 	createColumnSchema,
 	updateColumnSchema,
 	reorderColumnsSchema,
+	createTaskSchema,
+	updateTaskSchema,
 } from "../lib/validation.js"
 import { authMiddleware } from "../middleware/auth.js"
 
@@ -192,9 +194,16 @@ router.get("/:id/members", async (req, res) => {
 	}
 })
 
-async function verifyProjectOwner(projectId: string, userId: string): Promise<
+async function verifyProjectOwner(
+	projectId: string,
+	userId: string,
+): Promise<
 	| { error: string; status: number }
-	| { project: NonNullable<Awaited<ReturnType<typeof prisma.project.findUnique>>> }
+	| {
+			project: NonNullable<
+				Awaited<ReturnType<typeof prisma.project.findUnique>>
+			>
+	  }
 > {
 	const project = await prisma.project.findUnique({
 		where: { id: projectId },
@@ -202,6 +211,34 @@ async function verifyProjectOwner(projectId: string, userId: string): Promise<
 	if (!project) return { error: "Project not found", status: 404 }
 	if (project.ownerId !== userId)
 		return { error: "Only the owner can manage columns", status: 403 }
+	return { project }
+}
+
+async function verifyProjectMember(
+	projectId: string,
+	userId: string,
+): Promise<
+	| { error: string; status: number }
+	| {
+			project: NonNullable<
+				Awaited<ReturnType<typeof prisma.project.findUnique>>
+			>
+	  }
+> {
+	const project = await prisma.project.findUnique({
+		where: { id: projectId },
+		include: { members: { where: { userId } } },
+	})
+	if (!project) return { error: "Project not found", status: 404 }
+
+	const isOwner = project.ownerId === userId
+	const isMember = project.members.some(
+		(m) => m.role === "OWNER" || m.role === "MEMBER",
+	)
+
+	if (!isOwner && !isMember) {
+		return { error: "Access denied", status: 403 }
+	}
 	return { project }
 }
 
@@ -213,7 +250,9 @@ router.post("/:id/columns", async (req, res) => {
 
 		const ownerCheck = await verifyProjectOwner(id, userId)
 		if ("error" in ownerCheck) {
-			return res.status(ownerCheck.status).json({ error: ownerCheck.error })
+			return res
+				.status(ownerCheck.status)
+				.json({ error: ownerCheck.error })
 		}
 
 		const lastColumn = await prisma.column.findFirst({
@@ -252,7 +291,9 @@ router.patch("/:id/columns/:columnId", async (req, res) => {
 
 		const ownerCheck = await verifyProjectOwner(id, userId)
 		if ("error" in ownerCheck) {
-			return res.status(ownerCheck.status).json({ error: ownerCheck.error })
+			return res
+				.status(ownerCheck.status)
+				.json({ error: ownerCheck.error })
 		}
 
 		const column = await prisma.column.findUnique({
@@ -288,7 +329,9 @@ router.delete("/:id/columns/:columnId", async (req, res) => {
 
 		const ownerCheck = await verifyProjectOwner(id, userId)
 		if ("error" in ownerCheck) {
-			return res.status(ownerCheck.status).json({ error: ownerCheck.error })
+			return res
+				.status(ownerCheck.status)
+				.json({ error: ownerCheck.error })
 		}
 
 		const column = await prisma.column.findUnique({
@@ -318,7 +361,9 @@ router.post("/:id/columns/reorder", async (req, res) => {
 
 		const ownerCheck = await verifyProjectOwner(id, userId)
 		if ("error" in ownerCheck) {
-			return res.status(ownerCheck.status).json({ error: ownerCheck.error })
+			return res
+				.status(ownerCheck.status)
+				.json({ error: ownerCheck.error })
 		}
 
 		const columns = await prisma.column.findMany({
@@ -328,13 +373,15 @@ router.post("/:id/columns/reorder", async (req, res) => {
 
 		const existingIds = new Set(columns.map((c) => c.id))
 		const allBelongToProject = validatedData.columnIds.every((cid) =>
-			existingIds.has(cid)
+			existingIds.has(cid),
 		)
 
 		if (!allBelongToProject) {
 			return res
 				.status(400)
-				.json({ error: "Some column IDs do not belong to this project" })
+				.json({
+					error: "Some column IDs do not belong to this project",
+				})
 		}
 
 		await prisma.$transaction(
@@ -342,8 +389,8 @@ router.post("/:id/columns/reorder", async (req, res) => {
 				prisma.column.update({
 					where: { id: columnId },
 					data: { position: index + 1 },
-				})
-			)
+				}),
+			),
 		)
 
 		res.status(200).json({ message: "Columns reordered" })
@@ -358,5 +405,205 @@ router.post("/:id/columns/reorder", async (req, res) => {
 		res.status(500).json({ error: "Internal server error" })
 	}
 })
+
+router.post("/:projectId/tasks", async (req, res) => {
+	try {
+		const userId = req.user!.userId
+		const { projectId } = req.params
+		const validatedData = createTaskSchema.parse(req.body)
+
+		const memberCheck = await verifyProjectMember(projectId, userId)
+		if ("error" in memberCheck) {
+			return res
+				.status(memberCheck.status)
+				.json({ error: memberCheck.error })
+		}
+
+		// Verify columnId belongs to project
+		const column = await prisma.column.findUnique({
+			where: { id: validatedData.columnId },
+		})
+
+		if (!column || column.projectId !== projectId) {
+			return res.status(400).json({ error: "Invalid column ID" })
+		}
+
+		// Calculate position
+		const lastTask = await prisma.task.findFirst({
+			where: { columnId: validatedData.columnId },
+			orderBy: { position: "desc" },
+		})
+		const position = lastTask ? lastTask.position + 1 : 1.0
+
+		const task = await prisma.task.create({
+			data: {
+				columnId: validatedData.columnId,
+				title: validatedData.title,
+				description: validatedData.description,
+				assigneeId: validatedData.assigneeId,
+				label: validatedData.label,
+				priority: validatedData.priority ?? "MEDIUM",
+				position,
+			},
+		})
+
+		res.status(201).json(task)
+	} catch (error) {
+		if (error instanceof Error && error.name === "ZodError") {
+			return res
+				.status(400)
+				.json({ error: "Validation failed", details: error })
+		}
+
+		console.error("Create task error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
+
+router.get("/:projectId/tasks/:taskId", async (req, res) => {
+	try {
+		const userId = req.user!.userId
+		const { projectId, taskId } = req.params
+
+		const memberCheck = await verifyProjectMember(projectId, userId)
+		if ("error" in memberCheck) {
+			return res
+				.status(memberCheck.status)
+				.json({ error: memberCheck.error })
+		}
+
+		const task = await prisma.task.findUnique({
+			where: { id: taskId },
+			include: {
+				column: true,
+				assignee: {
+					select: { id: true, name: true, email: true },
+				},
+			},
+		})
+
+		if (!task) {
+			return res.status(404).json({ error: "Task not found" })
+		}
+
+		// Verify task's column belongs to project
+		if (task.column.projectId !== projectId) {
+			return res.status(404).json({ error: "Task not found" })
+		}
+
+		res.status(200).json(task)
+	} catch (error) {
+		console.error("Get task error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
+
+router.patch("/:projectId/tasks/:taskId", async (req, res) => {
+	try {
+		const userId = req.user!.userId
+		const { projectId, taskId } = req.params
+		const validatedData = updateTaskSchema.parse(req.body)
+
+		const memberCheck = await verifyProjectMember(projectId, userId)
+		if ("error" in memberCheck) {
+			return res
+				.status(memberCheck.status)
+				.json({ error: memberCheck.error })
+		}
+
+		const task = await prisma.task.findUnique({
+			where: { id: taskId },
+			include: { column: true },
+		})
+
+		if (!task) {
+			return res.status(404).json({ error: "Task not found" })
+		}
+
+		// Verify task's column belongs to project
+		if (task.column.projectId !== projectId) {
+			return res.status(404).json({ error: "Task not found" })
+		}
+
+		// If columnId is being changed, verify new column belongs to project
+		let updateData: any = { ...validatedData }
+		if (
+			validatedData.columnId &&
+			validatedData.columnId !== task.columnId
+		) {
+			const newColumn = await prisma.column.findUnique({
+				where: { id: validatedData.columnId },
+			})
+
+			if (!newColumn || newColumn.projectId !== projectId) {
+				return res.status(400).json({ error: "Invalid column ID" })
+			}
+
+			// Recalculate position in new column
+			const lastTask = await prisma.task.findFirst({
+				where: { columnId: validatedData.columnId },
+				orderBy: { position: "desc" },
+			})
+			updateData.position = lastTask ? lastTask.position + 1 : 1.0
+		}
+
+		const updatedTask = await prisma.task.update({
+			where: { id: taskId },
+			data: updateData,
+		})
+
+		res.status(200).json(updatedTask)
+	} catch (error) {
+		if (error instanceof Error && error.name === "ZodError") {
+			return res
+				.status(400)
+				.json({ error: "Validation failed", details: error })
+		}
+
+		console.error("Update task error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
+
+router.delete("/:projectId/tasks/:taskId", async (req, res) => {
+	try {
+		const userId = req.user!.userId
+		const { projectId, taskId } = req.params
+
+		const memberCheck = await verifyProjectMember(projectId, userId)
+		if ("error" in memberCheck) {
+			return res
+				.status(memberCheck.status)
+				.json({ error: memberCheck.error })
+		}
+
+		const task = await prisma.task.findUnique({
+			where: { id: taskId },
+			include: { column: true },
+		})
+
+		if (!task) {
+			return res.status(404).json({ error: "Task not found" })
+		}
+
+		// Verify task's column belongs to project
+		if (task.column.projectId !== projectId) {
+			return res.status(404).json({ error: "Task not found" })
+		}
+
+		await prisma.task.delete({
+			where: { id: taskId },
+		})
+
+		res.status(204).send()
+	} catch (error) {
+		console.error("Delete task error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
+
+// TODO: POST /:projectId/tasks/:taskId/move
+// Will handle moving tasks between columns and reordering within columns
+// Requires coordination with client drag-and-drop implementation
 
 export default router

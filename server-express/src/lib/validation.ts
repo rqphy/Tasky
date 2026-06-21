@@ -48,3 +48,34 @@ export const reorderColumnsSchema = z.object({
 })
 
 export type ReorderColumnsInput = z.infer<typeof reorderColumnsSchema>
+
+export const createTaskSchema = z.object({
+	columnId: z.string(),
+	title: z.string().min(1, "Title is required").max(200, "Title too long"),
+	description: z.string().optional(),
+	assigneeId: z.string().optional(),
+	label: z
+		.enum(["BUG", "FEATURE", "IMPROVEMENT", "DOCUMENTATION", "CHORE"])
+		.optional(),
+	priority: z.enum(["URGENT", "HIGH", "MEDIUM", "LOW", "NONE"]).optional(),
+})
+
+export type CreateTaskInput = z.infer<typeof createTaskSchema>
+
+export const updateTaskSchema = z.object({
+	columnId: z.string().optional(),
+	title: z
+		.string()
+		.min(1, "Title is required")
+		.max(200, "Title too long")
+		.optional(),
+	description: z.string().optional(),
+	assigneeId: z.string().nullable().optional(),
+	label: z
+		.enum(["BUG", "FEATURE", "IMPROVEMENT", "DOCUMENTATION", "CHORE"])
+		.nullable()
+		.optional(),
+	priority: z.enum(["URGENT", "HIGH", "MEDIUM", "LOW", "NONE"]).optional(),
+})
+
+export type UpdateTaskInput = z.infer<typeof updateTaskSchema>
