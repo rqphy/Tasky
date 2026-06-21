@@ -118,7 +118,7 @@ export function TaskDetailDialog({
 				{/* ── Header ── */}
 				<DialogHeader className="px-6 pt-6 pb-4 shrink-0">
 					<span className="text-xs font-mono text-muted-foreground">
-						{id}
+						TSK: {id}
 					</span>
 					<DialogTitle className="text-lg font-semibold leading-snug mt-0.5">
 						{title}

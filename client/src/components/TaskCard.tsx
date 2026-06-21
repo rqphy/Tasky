@@ -101,9 +101,6 @@ export function TaskCard({
 			>
 				<CardHeader className="pb-2">
 					<div className="flex items-start justify-between gap-2">
-						<span className="text-xs font-mono text-muted-foreground">
-							{id}
-						</span>
 						<div className="flex items-center gap-1.5">
 							{priority &&
 								priority !== "none" &&
