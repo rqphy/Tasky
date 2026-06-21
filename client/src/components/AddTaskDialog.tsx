@@ -7,30 +7,30 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import type { Task } from "@/mocks/tasks"
 import type { TaskLabel, TaskPriority } from "@/types/task"
 import { TASK_LABELS, TASK_PRIORITIES } from "@/types/task"
+import { useCreateTask } from "@/hooks/useProjects"
+import type { CreateTaskInput } from "@/lib/projects"
 
 interface AddTaskDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
-	/** The column this task will be added to */
+	projectId: string
 	columnId: string
-	onAdd: (task: Task) => void
 }
-
-let taskCounter = 100
 
 export function AddTaskDialog({
 	open,
 	onOpenChange,
+	projectId,
 	columnId,
-	onAdd,
 }: AddTaskDialogProps) {
 	const [title, setTitle] = useState("")
 	const [description, setDescription] = useState("")
 	const [label, setLabel] = useState<TaskLabel | "">("")
 	const [priority, setPriority] = useState<TaskPriority>("medium")
+
+	const createTask = useCreateTask(projectId)
 
 	// Reset form whenever dialog opens
 	useEffect(() => {
@@ -45,17 +45,21 @@ export function AddTaskDialog({
 	function handleSave() {
 		const trimmedTitle = title.trim()
 		if (!trimmedTitle) return
-		taskCounter++
-		const task: Task = {
-			id: `TSK-${String(taskCounter).padStart(3, "0")}`,
-			title: trimmedTitle,
-			description: description.trim() || undefined,
-			label: label || undefined,
-			priority,
-			status: columnId,
-		}
-		onAdd(task)
-		onOpenChange(false)
+
+		createTask.mutate(
+			{
+				columnId,
+				title: trimmedTitle,
+				description: description.trim() || undefined,
+				label: label
+					? (label.toUpperCase() as CreateTaskInput["label"])
+					: undefined,
+				priority: priority.toUpperCase() as CreateTaskInput["priority"],
+			},
+			{
+				onSuccess: () => onOpenChange(false),
+			}
+		)
 	}
 
 	function handleKeyDown(e: React.KeyboardEvent) {
@@ -149,11 +153,15 @@ export function AddTaskDialog({
 					<Button
 						variant="outline"
 						onClick={() => onOpenChange(false)}
+						disabled={createTask.isPending}
 					>
 						Cancel
 					</Button>
-					<Button onClick={handleSave} disabled={!title.trim()}>
-						Add task
+					<Button
+						onClick={handleSave}
+						disabled={!title.trim() || createTask.isPending}
+					>
+						{createTask.isPending ? "Adding…" : "Add task"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
 	DndContext,
 	DragOverlay,
@@ -23,8 +23,8 @@ import { EditTaskDialog } from "@/components/EditTaskDialog"
 import { AssignTaskDialog } from "@/components/AssignTaskDialog"
 import type { User } from "@/mocks/users"
 import { TaskCard } from "@/components/TaskCard"
-import { mockTasks, type Task } from "@/mocks/tasks"
-import type { Column as UIColumn } from "@/types/task"
+import { type Task } from "@/mocks/tasks"
+import type { Column as UIColumn, TaskLabel, TaskPriority } from "@/types/task"
 import type { Column as BackendColumn } from "@/lib/projects"
 import { hexToTailwind, tailwindToHex } from "@/lib/colors"
 import {
@@ -52,7 +52,22 @@ type AssignTaskDialogState = {
 } | null
 
 export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardProps) {
-	const [tasks, setTasks] = useState<Task[]>(mockTasks)
+	const backendTasks = useMemo(
+		() =>
+			backendColumns.flatMap((col) =>
+				(col.tasks ?? []).map((t) => ({
+					id: t.id,
+					title: t.title,
+					description: t.description,
+					label: t.label?.toLowerCase() as TaskLabel | undefined,
+					priority: t.priority?.toLowerCase() as TaskPriority | undefined,
+					status: t.columnId,
+				}))
+			),
+		[backendColumns]
+	)
+
+	const [tasks, setTasks] = useState<Task[]>(backendTasks)
 	const [activeItem, setActiveItem] = useState<ActiveItem | null>(null)
 	const [dialog, setDialog] = useState<DialogState>(null)
 	const [addTaskDialog, setAddTaskDialog] = useState<AddTaskDialogState>(null)
@@ -75,6 +90,10 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 			})),
 		[backendColumns]
 	)
+
+	useEffect(() => {
+		setTasks(backendTasks)
+	}, [backendTasks])
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -99,10 +118,6 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 			name: column.label,
 			color: tailwindToHex(column.color),
 		})
-	}
-
-	function handleAddTask(task: Task) {
-		setTasks((prev) => [...prev, task])
 	}
 
 	function handleOpenEditTask(id: string) {
@@ -315,8 +330,8 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 				onOpenChange={(open) => {
 					if (!open) setAddTaskDialog(null)
 				}}
+				projectId={projectId}
 				columnId={addTaskDialog?.columnId ?? ""}
-				onAdd={handleAddTask}
 			/>
 
 			{assignTaskDialog && (

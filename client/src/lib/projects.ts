@@ -70,6 +70,33 @@ export interface UpdateColumnInput {
 	color?: string
 }
 
+export type TaskLabel =
+	| "BUG"
+	| "FEATURE"
+	| "IMPROVEMENT"
+	| "DOCUMENTATION"
+	| "CHORE"
+
+export type TaskPriority = "URGENT" | "HIGH" | "MEDIUM" | "LOW" | "NONE"
+
+export interface CreateTaskInput {
+	columnId: string
+	title: string
+	description?: string
+	assigneeId?: string
+	label?: TaskLabel
+	priority?: TaskPriority
+}
+
+export interface UpdateTaskInput {
+	columnId?: string
+	title?: string
+	description?: string
+	assigneeId?: string | null
+	label?: TaskLabel | null
+	priority?: TaskPriority
+}
+
 export const projectsApi = {
 	list: () => api.get<Project[]>("/projects"),
 
@@ -93,4 +120,16 @@ export const projectsApi = {
 
 	reorderColumns: (projectId: string, columnIds: string[]) =>
 		api.post(`/projects/${projectId}/columns/reorder`, { columnIds }),
+
+	createTask: (projectId: string, data: CreateTaskInput) =>
+		api.post<Task>(`/projects/${projectId}/tasks`, data),
+
+	getTask: (projectId: string, taskId: string) =>
+		api.get<Task>(`/projects/${projectId}/tasks/${taskId}`),
+
+	updateTask: (projectId: string, taskId: string, data: UpdateTaskInput) =>
+		api.patch<Task>(`/projects/${projectId}/tasks/${taskId}`, data),
+
+	deleteTask: (projectId: string, taskId: string) =>
+		api.delete(`/projects/${projectId}/tasks/${taskId}`),
 }

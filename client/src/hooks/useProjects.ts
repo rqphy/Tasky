@@ -5,6 +5,8 @@ import {
 	type UpdateProjectInput,
 	type CreateColumnInput,
 	type UpdateColumnInput,
+	type CreateTaskInput,
+	type UpdateTaskInput,
 } from "@/lib/projects"
 
 export function useProjects() {
@@ -107,6 +109,48 @@ export function useReorderColumns(projectId: string) {
 	return useMutation({
 		mutationFn: (columnIds: string[]) =>
 			projectsApi.reorderColumns(projectId, columnIds),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+		},
+	})
+}
+
+export function useCreateTask(projectId: string) {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: (data: CreateTaskInput) =>
+			projectsApi.createTask(projectId, data).then((r) => r.data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+		},
+	})
+}
+
+export function useUpdateTask(projectId: string) {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({
+			taskId,
+			data,
+		}: {
+			taskId: string
+			data: UpdateTaskInput
+		}) =>
+			projectsApi.updateTask(projectId, taskId, data).then((r) => r.data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+		},
+	})
+}
+
+export function useDeleteTask(projectId: string) {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: (taskId: string) =>
+			projectsApi.deleteTask(projectId, taskId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["project", projectId] })
 		},
