@@ -79,3 +79,10 @@ export const updateTaskSchema = z.object({
 })
 
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>
+
+export const moveTaskSchema = z.object({
+	columnId: z.string(),
+	position: z.number(),
+})
+
+export type MoveTaskInput = z.infer<typeof moveTaskSchema>

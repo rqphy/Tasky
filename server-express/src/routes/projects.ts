@@ -8,6 +8,7 @@ import {
 	reorderColumnsSchema,
 	createTaskSchema,
 	updateTaskSchema,
+	moveTaskSchema,
 } from "../lib/validation.js"
 import { authMiddleware } from "../middleware/auth.js"
 
@@ -377,11 +378,9 @@ router.post("/:id/columns/reorder", async (req, res) => {
 		)
 
 		if (!allBelongToProject) {
-			return res
-				.status(400)
-				.json({
-					error: "Some column IDs do not belong to this project",
-				})
+			return res.status(400).json({
+				error: "Some column IDs do not belong to this project",
+			})
 		}
 
 		await prisma.$transaction(
@@ -602,8 +601,59 @@ router.delete("/:projectId/tasks/:taskId", async (req, res) => {
 	}
 })
 
-// TODO: POST /:projectId/tasks/:taskId/move
-// Will handle moving tasks between columns and reordering within columns
-// Requires coordination with client drag-and-drop implementation
+router.post("/:projectId/tasks/:taskId/move", async (req, res) => {
+	try {
+		const userId = req.user!.userId
+		const { projectId, taskId } = req.params
+		const validatedData = moveTaskSchema.parse(req.body)
+
+		const memberCheck = await verifyProjectMember(projectId, userId)
+		if ("error" in memberCheck) {
+			return res
+				.status(memberCheck.status)
+				.json({ error: memberCheck.error })
+		}
+
+		const task = await prisma.task.findUnique({
+			where: { id: taskId },
+			include: { column: true },
+		})
+
+		if (!task) {
+			return res.status(404).json({ error: "Task not found" })
+		}
+
+		if (task.column.projectId !== projectId) {
+			return res.status(404).json({ error: "Task not found" })
+		}
+
+		const column = await prisma.column.findUnique({
+			where: { id: validatedData.columnId },
+		})
+
+		if (!column || column.projectId !== projectId) {
+			return res.status(400).json({ error: "Invalid column ID" })
+		}
+
+		const updatedTask = await prisma.task.update({
+			where: { id: taskId },
+			data: {
+				columnId: validatedData.columnId,
+				position: validatedData.position,
+			},
+		})
+
+		res.status(200).json(updatedTask)
+	} catch (error) {
+		if (error instanceof Error && error.name === "ZodError") {
+			return res
+				.status(400)
+				.json({ error: "Validation failed", details: error })
+		}
+
+		console.error("Move task error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
 
 export default router
