@@ -155,7 +155,7 @@ export function AppSidebar() {
 								<DropdownMenuTrigger asChild>
 									<SidebarMenuButton size="lg">
 										<Avatar className="size-8">
-											{user && (
+											{user?.name && (
 												<AvatarFallback className="text-xs">
 													{user?.name
 														.split(" ")
