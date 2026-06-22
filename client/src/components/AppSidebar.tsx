@@ -49,7 +49,7 @@ export function AppSidebar() {
 					setDialogOpen(false)
 					navigate(`/board/${newProject.id}`)
 				},
-			}
+			},
 		)
 	}
 
@@ -118,11 +118,14 @@ export function AppSidebar() {
 													>
 														<span className="relative text-base">
 															{project.emoji}
-															{unreadCount > 0 && (
+															{unreadCount >
+																0 && (
 																<span className="absolute -top-0.5 -right-0.5 size-2 bg-red-500 rounded-full border border-background" />
 															)}
 														</span>
-														<span>{project.name}</span>
+														<span>
+															{project.name}
+														</span>
 													</NavLink>
 												</SidebarMenuButton>
 											</SidebarMenuItem>
@@ -152,12 +155,14 @@ export function AppSidebar() {
 								<DropdownMenuTrigger asChild>
 									<SidebarMenuButton size="lg">
 										<Avatar className="size-8">
-											<AvatarFallback className="text-xs">
-												{user?.name
-													.split(" ")
-													.map((n) => n[0])
-													.join("") || "U"}
-											</AvatarFallback>
+											{user && (
+												<AvatarFallback className="text-xs">
+													{user?.name
+														.split(" ")
+														.map((n) => n[0])
+														.join("") || "U"}
+												</AvatarFallback>
+											)}
 										</Avatar>
 										<div className="flex flex-col gap-0.5 leading-none">
 											<span className="text-sm font-medium">
