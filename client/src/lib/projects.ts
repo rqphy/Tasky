@@ -97,6 +97,11 @@ export interface UpdateTaskInput {
 	priority?: TaskPriority
 }
 
+export interface MoveTaskInput {
+	columnId: string
+	position: number
+}
+
 export const projectsApi = {
 	list: () => api.get<Project[]>("/projects"),
 
@@ -129,6 +134,9 @@ export const projectsApi = {
 
 	updateTask: (projectId: string, taskId: string, data: UpdateTaskInput) =>
 		api.patch<Task>(`/projects/${projectId}/tasks/${taskId}`, data),
+
+	moveTask: (projectId: string, taskId: string, data: MoveTaskInput) =>
+		api.post<Task>(`/projects/${projectId}/tasks/${taskId}/move`, data),
 
 	deleteTask: (projectId: string, taskId: string) =>
 		api.delete(`/projects/${projectId}/tasks/${taskId}`),

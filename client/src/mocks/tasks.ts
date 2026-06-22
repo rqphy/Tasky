@@ -12,6 +12,7 @@ export interface Task {
 	priority?: TaskPriority
 	/** Holds the id of the Column this task belongs to */
 	status: string
+	position: number
 	comments?: TaskComment[]
 }
 
@@ -25,6 +26,7 @@ export const mockTasks: Task[] = [
 		label: "feature",
 		priority: "urgent",
 		status: "progress",
+		position: 1,
 		comments: [
 			{
 				id: "c1",
@@ -67,6 +69,7 @@ export const mockTasks: Task[] = [
 		label: "bug",
 		priority: "high",
 		status: "incoming",
+		position: 1,
 		comments: [
 			{
 				id: "c4",
@@ -82,5 +85,6 @@ export const mockTasks: Task[] = [
 		label: "documentation",
 		priority: "low",
 		status: "done",
+		position: 1,
 	},
 ]

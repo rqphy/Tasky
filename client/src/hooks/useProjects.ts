@@ -7,6 +7,7 @@ import {
 	type UpdateColumnInput,
 	type CreateTaskInput,
 	type UpdateTaskInput,
+	type MoveTaskInput,
 } from "@/lib/projects"
 
 export function useProjects() {
@@ -154,5 +155,17 @@ export function useDeleteTask(projectId: string) {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["project", projectId] })
 		},
+	})
+}
+
+export function useMoveTask(projectId: string) {
+	return useMutation({
+		mutationFn: ({
+			taskId,
+			data,
+		}: {
+			taskId: string
+			data: MoveTaskInput
+		}) => projectsApi.moveTask(projectId, taskId, data).then((r) => r.data),
 	})
 }

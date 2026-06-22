@@ -32,11 +32,26 @@ import {
 	useUpdateColumn,
 	useDeleteColumn,
 	useReorderColumns,
+	useMoveTask,
 } from "@/hooks/useProjects"
 
 interface KanbanBoardProps {
 	projectId: string
 	columns: BackendColumn[]
+}
+
+function computeInsertPosition(
+	sortedTasks: { position: number }[],
+	insertIndex: number,
+): number {
+	if (sortedTasks.length === 0) return 1.0
+	if (insertIndex === 0) return sortedTasks[0].position / 2
+	if (insertIndex >= sortedTasks.length) {
+		return sortedTasks[sortedTasks.length - 1].position + 1
+	}
+	const prev = sortedTasks[insertIndex - 1].position
+	const next = sortedTasks[insertIndex].position
+	return (prev + next) / 2
 }
 
 type ActiveItem =
@@ -62,6 +77,7 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 					label: t.label?.toLowerCase() as TaskLabel | undefined,
 					priority: t.priority?.toLowerCase() as TaskPriority | undefined,
 					status: t.columnId,
+					position: t.position,
 				}))
 			),
 		[backendColumns]
@@ -80,6 +96,7 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 	const updateColumn = useUpdateColumn(projectId)
 	const deleteColumn = useDeleteColumn(projectId)
 	const reorderColumns = useReorderColumns(projectId)
+	const moveTask = useMoveTask(projectId)
 
 	const columns: UIColumn[] = useMemo(
 		() =>
@@ -104,7 +121,9 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 	// ── Helpers ──────────────────────────────────────────────────────────────
 
 	function getTasksByColumnId(columnId: string) {
-		return tasks.filter((t) => t.status === columnId)
+		return tasks
+			.filter((t) => t.status === columnId)
+			.sort((a, b) => a.position - b.position)
 	}
 
 	function getColumnById(id: string) {
@@ -230,22 +249,66 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 		if (activeId === overId) return
 
 		const activeTask = tasks.find((t) => t.id === activeId)
-		const overTask = tasks.find((t) => t.id === overId)
+		if (!activeTask) return
 
-		if (activeTask && overTask && activeTask.status === overTask.status) {
-			const statusTasks = tasks.filter(
-				(t) => t.status === activeTask.status,
-			)
-			const oldIndex = statusTasks.findIndex((t) => t.id === activeId)
-			const newIndex = statusTasks.findIndex((t) => t.id === overId)
-			const reordered = arrayMove(statusTasks, oldIndex, newIndex)
-			setTasks((prev) => {
-				const others = prev.filter(
-					(t) => t.status !== activeTask.status,
-				)
-				return [...others, ...reordered]
-			})
+		const overIsColumn = columns.some((c) => c.id === overId)
+		const overTask = tasks.find((t) => t.id === overId)
+		const targetColumnId = overIsColumn ? overId : overTask?.status
+
+		if (!targetColumnId) return
+
+		let columnTasks = tasks
+			.filter((t) => t.status === targetColumnId)
+			.sort((a, b) => a.position - b.position)
+
+		if (!columnTasks.some((t) => t.id === activeId)) {
+			columnTasks = [
+				...columnTasks,
+				{ ...activeTask, status: targetColumnId },
+			].sort((a, b) => a.position - b.position)
 		}
+
+		const oldIndex = columnTasks.findIndex((t) => t.id === activeId)
+		const newIndex = overIsColumn
+			? columnTasks.length - 1
+			: columnTasks.findIndex((t) => t.id === overId)
+
+		if (newIndex === -1) return
+
+		const columnChanged = activeTask.status !== targetColumnId
+		if (!columnChanged && oldIndex === newIndex) return
+
+		const reordered = arrayMove(columnTasks, oldIndex, newIndex)
+		const insertIndex = reordered.findIndex((t) => t.id === activeId)
+		const position = computeInsertPosition(
+			reordered.filter((t) => t.id !== activeId),
+			insertIndex,
+		)
+
+		const snapshot = tasks
+		const updatedActiveTask = {
+			...activeTask,
+			status: targetColumnId,
+			position,
+		}
+
+		setTasks((prev) => {
+			const others = prev.filter(
+				(t) => t.status !== targetColumnId && t.id !== activeId,
+			)
+			const columnReordered = reordered.map((t) =>
+				t.id === activeId ? updatedActiveTask : t,
+			)
+			return [...others, ...columnReordered]
+		})
+
+		moveTask.mutate(
+			{
+				taskId: activeId,
+				data: { columnId: targetColumnId, position },
+			},
+			{ onError: () => setTasks(snapshot) },
+		)
 	}
 
 	// ── Render ────────────────────────────────────────────────────────────────
