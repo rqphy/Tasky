@@ -6,6 +6,8 @@ import {
 	useSensor,
 	useSensors,
 	closestCorners,
+	type DragCancelEvent,
+	type DragOverEvent,
 	type DragStartEvent,
 	type DragEndEvent,
 } from "@dnd-kit/core"
@@ -200,6 +202,20 @@ export function KanbanBoard({
 
 	// ── Drag & Drop ───────────────────────────────────────────────────────────
 
+	function clearDragOrigin() {
+		dragOriginColumnRef.current = null
+	}
+
+	function revertDragPreview(activeId: string) {
+		const originColumnId = dragOriginColumnRef.current
+		if (!originColumnId) return
+		setTasks((prev) =>
+			prev.map((t) =>
+				t.id === activeId ? { ...t, status: originColumnId } : t,
+			),
+		)
+	}
+
 	function handleDragStart({ active }: DragStartEvent) {
 		const dragType = active.data.current?.type
 		if (dragType === "column") {
@@ -212,6 +228,35 @@ export function KanbanBoard({
 				setActiveItem({ type: "card", task })
 			}
 		}
+	}
+
+	function handleDragOver({ active, over }: DragOverEvent) {
+		if (!over || active.data.current?.type === "column") return
+
+		const activeId = active.id as string
+		const overId = over.id as string
+		if (activeId === overId) return
+
+		const activeTask = tasksRef.current.find((t) => t.id === activeId)
+		if (!activeTask) return
+
+		const overIsColumn = columns.some((c) => c.id === overId)
+		const overTask = tasksRef.current.find((t) => t.id === overId)
+		const targetStatus = overIsColumn ? overId : overTask?.status
+
+		if (!targetStatus || activeTask.status === targetStatus) return
+
+		setTasks((prev) =>
+			prev.map((t) =>
+				t.id === activeId ? { ...t, status: targetStatus } : t,
+			),
+		)
+	}
+
+	function handleDragCancel({ active }: DragCancelEvent) {
+		setActiveItem(null)
+		revertDragPreview(active.id as string)
+		clearDragOrigin()
 	}
 
 	function handleDragEnd({ active, over }: DragEndEvent) {
@@ -229,25 +274,19 @@ export function KanbanBoard({
 
 		setActiveItem(null)
 
-		const clearDragOrigin = () => {
-			dragOriginColumnRef.current = null
-		}
-
 		if (!over) {
+			revertDragPreview(active.id as string)
 			clearDragOrigin()
 			return
 		}
 
 		const activeId = active.id as string
 		const overId = over.id as string
-		if (activeId === overId) {
-			clearDragOrigin()
-			return
-		}
 
 		const currentTasks = tasksRef.current
 		const activeTask = currentTasks.find((t) => t.id === activeId)
 		if (!activeTask) {
+			revertDragPreview(activeId)
 			clearDragOrigin()
 			return
 		}
@@ -257,6 +296,7 @@ export function KanbanBoard({
 		const targetColumnId = overIsColumn ? overId : overTask?.status
 
 		if (!targetColumnId) {
+			revertDragPreview(activeId)
 			clearDragOrigin()
 			return
 		}
@@ -275,9 +315,22 @@ export function KanbanBoard({
 
 			if (overIsColumn) {
 				insertIndex = siblings.length
+			} else if (overId === activeId) {
+				const previewedColumnTasks = currentTasks
+					.filter((t) => t.status === targetColumnId)
+					.sort((a, b) => a.position - b.position)
+				insertIndex = previewedColumnTasks.findIndex(
+					(t) => t.id === activeId,
+				)
+				if (insertIndex === -1) {
+					insertIndex = siblings.length
+				}
 			} else {
 				insertIndex = siblings.findIndex((t) => t.id === overId)
-				if (insertIndex === -1) return
+				if (insertIndex === -1) {
+					revertDragPreview(activeId)
+					return
+				}
 			}
 
 			position = computeInsertPosition(siblings, insertIndex)
@@ -338,6 +391,8 @@ export function KanbanBoard({
 				sensors={sensors}
 				collisionDetection={closestCorners}
 				onDragStart={handleDragStart}
+				onDragOver={handleDragOver}
+				onDragCancel={handleDragCancel}
 				onDragEnd={handleDragEnd}
 			>
 				<SortableContext
