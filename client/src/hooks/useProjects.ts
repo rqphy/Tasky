@@ -22,6 +22,7 @@ export function useProject(id: string | undefined) {
 		queryKey: ["project", id],
 		queryFn: () => projectsApi.get(id!).then((r) => r.data),
 		enabled: !!id,
+		refetchOnMount: "always",
 	})
 }
 

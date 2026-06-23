@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import {
 	DndContext,
 	DragOverlay,
@@ -7,7 +7,6 @@ import {
 	useSensors,
 	closestCorners,
 	type DragStartEvent,
-	type DragOverEvent,
 	type DragEndEvent,
 } from "@dnd-kit/core"
 import {
@@ -66,7 +65,10 @@ type AssignTaskDialogState = {
 	currentAssigneeName?: string
 } | null
 
-export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardProps) {
+export function KanbanBoard({
+	projectId,
+	columns: backendColumns,
+}: KanbanBoardProps) {
 	const backendTasks = useMemo(
 		() =>
 			backendColumns.flatMap((col) =>
@@ -75,12 +77,14 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 					title: t.title,
 					description: t.description,
 					label: t.label?.toLowerCase() as TaskLabel | undefined,
-					priority: t.priority?.toLowerCase() as TaskPriority | undefined,
+					priority: t.priority?.toLowerCase() as
+						| TaskPriority
+						| undefined,
 					status: t.columnId,
 					position: t.position,
-				}))
+				})),
 			),
-		[backendColumns]
+		[backendColumns],
 	)
 
 	const [tasks, setTasks] = useState<Task[]>(backendTasks)
@@ -91,6 +95,9 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 		useState<EditTaskDialogState>(null)
 	const [assignTaskDialog, setAssignTaskDialog] =
 		useState<AssignTaskDialogState>(null)
+	const dragOriginColumnRef = useRef<string | null>(null)
+	const tasksRef = useRef(tasks)
+	tasksRef.current = tasks
 
 	const createColumn = useCreateColumn(projectId)
 	const updateColumn = useUpdateColumn(projectId)
@@ -105,7 +112,7 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 				label: col.name,
 				color: hexToTailwind(col.color),
 			})),
-		[backendColumns]
+		[backendColumns],
 	)
 
 	useEffect(() => {
@@ -199,33 +206,12 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 			const col = getColumnById(active.id as string)
 			if (col) setActiveItem({ type: "column", column: col })
 		} else {
-			const task = tasks.find((t) => t.id === active.id)
-			if (task) setActiveItem({ type: "card", task })
+			const task = tasksRef.current.find((t) => t.id === active.id)
+			if (task) {
+				dragOriginColumnRef.current = task.status
+				setActiveItem({ type: "card", task })
+			}
 		}
-	}
-
-	function handleDragOver({ active, over }: DragOverEvent) {
-		if (!over) return
-		if (active.data.current?.type === "column") return
-
-		const activeId = active.id as string
-		const overId = over.id as string
-		if (activeId === overId) return
-
-		const activeTask = tasks.find((t) => t.id === activeId)
-		if (!activeTask) return
-
-		const overIsColumn = columns.some((c) => c.id === overId)
-		const overTask = tasks.find((t) => t.id === overId)
-		const targetStatus = overIsColumn ? overId : overTask?.status
-
-		if (!targetStatus || activeTask.status === targetStatus) return
-
-		setTasks((prev) =>
-			prev.map((t) =>
-				t.id === activeId ? { ...t, status: targetStatus } : t,
-			),
-		)
 	}
 
 	function handleDragEnd({ active, over }: DragEndEvent) {
@@ -242,50 +228,80 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 		}
 
 		setActiveItem(null)
-		if (!over) return
+
+		const clearDragOrigin = () => {
+			dragOriginColumnRef.current = null
+		}
+
+		if (!over) {
+			clearDragOrigin()
+			return
+		}
 
 		const activeId = active.id as string
 		const overId = over.id as string
-		if (activeId === overId) return
-
-		const activeTask = tasks.find((t) => t.id === activeId)
-		if (!activeTask) return
-
-		const overIsColumn = columns.some((c) => c.id === overId)
-		const overTask = tasks.find((t) => t.id === overId)
-		const targetColumnId = overIsColumn ? overId : overTask?.status
-
-		if (!targetColumnId) return
-
-		let columnTasks = tasks
-			.filter((t) => t.status === targetColumnId)
-			.sort((a, b) => a.position - b.position)
-
-		if (!columnTasks.some((t) => t.id === activeId)) {
-			columnTasks = [
-				...columnTasks,
-				{ ...activeTask, status: targetColumnId },
-			].sort((a, b) => a.position - b.position)
+		if (activeId === overId) {
+			clearDragOrigin()
+			return
 		}
 
-		const oldIndex = columnTasks.findIndex((t) => t.id === activeId)
-		const newIndex = overIsColumn
-			? columnTasks.length - 1
-			: columnTasks.findIndex((t) => t.id === overId)
+		const currentTasks = tasksRef.current
+		const activeTask = currentTasks.find((t) => t.id === activeId)
+		if (!activeTask) {
+			clearDragOrigin()
+			return
+		}
 
-		if (newIndex === -1) return
+		const overIsColumn = columns.some((c) => c.id === overId)
+		const overTask = currentTasks.find((t) => t.id === overId)
+		const targetColumnId = overIsColumn ? overId : overTask?.status
 
-		const columnChanged = activeTask.status !== targetColumnId
-		if (!columnChanged && oldIndex === newIndex) return
+		if (!targetColumnId) {
+			clearDragOrigin()
+			return
+		}
 
-		const reordered = arrayMove(columnTasks, oldIndex, newIndex)
-		const insertIndex = reordered.findIndex((t) => t.id === activeId)
-		const position = computeInsertPosition(
-			reordered.filter((t) => t.id !== activeId),
-			insertIndex,
-		)
+		const originColumnId = dragOriginColumnRef.current ?? activeTask.status
+		clearDragOrigin()
 
-		const snapshot = tasks
+		const columnChanged = originColumnId !== targetColumnId
+		let insertIndex: number
+		let position: number
+
+		if (columnChanged) {
+			const siblings = currentTasks
+				.filter((t) => t.status === targetColumnId && t.id !== activeId)
+				.sort((a, b) => a.position - b.position)
+
+			if (overIsColumn) {
+				insertIndex = siblings.length
+			} else {
+				insertIndex = siblings.findIndex((t) => t.id === overId)
+				if (insertIndex === -1) return
+			}
+
+			position = computeInsertPosition(siblings, insertIndex)
+		} else {
+			const columnTasks = currentTasks
+				.filter((t) => t.status === targetColumnId)
+				.sort((a, b) => a.position - b.position)
+
+			const oldIndex = columnTasks.findIndex((t) => t.id === activeId)
+			const newIndex = overIsColumn
+				? columnTasks.length - 1
+				: columnTasks.findIndex((t) => t.id === overId)
+
+			if (newIndex === -1 || oldIndex === newIndex) return
+
+			const reordered = arrayMove(columnTasks, oldIndex, newIndex)
+			insertIndex = reordered.findIndex((t) => t.id === activeId)
+			position = computeInsertPosition(
+				reordered.filter((t) => t.id !== activeId),
+				insertIndex,
+			)
+		}
+
+		const snapshot = currentTasks
 		const updatedActiveTask = {
 			...activeTask,
 			status: targetColumnId,
@@ -293,13 +309,16 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 		}
 
 		setTasks((prev) => {
-			const others = prev.filter(
-				(t) => t.status !== targetColumnId && t.id !== activeId,
+			const withoutActive = prev.filter((t) => t.id !== activeId)
+			const siblings = withoutActive
+				.filter((t) => t.status === targetColumnId)
+				.sort((a, b) => a.position - b.position)
+			const columnTasks = [...siblings]
+			columnTasks.splice(insertIndex, 0, updatedActiveTask)
+			const others = withoutActive.filter(
+				(t) => t.status !== targetColumnId,
 			)
-			const columnReordered = reordered.map((t) =>
-				t.id === activeId ? updatedActiveTask : t,
-			)
-			return [...others, ...columnReordered]
+			return [...others, ...columnTasks]
 		})
 
 		moveTask.mutate(
@@ -319,7 +338,6 @@ export function KanbanBoard({ projectId, columns: backendColumns }: KanbanBoardP
 				sensors={sensors}
 				collisionDetection={closestCorners}
 				onDragStart={handleDragStart}
-				onDragOver={handleDragOver}
 				onDragEnd={handleDragEnd}
 			>
 				<SortableContext
