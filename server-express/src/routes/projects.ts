@@ -88,6 +88,11 @@ router.get("/:id", async (req, res) => {
 					include: {
 						tasks: {
 							orderBy: { position: "asc" },
+							include: {
+								assignee: {
+									select: { id: true, name: true, email: true },
+								},
+							},
 						},
 					},
 				},
@@ -186,6 +191,11 @@ router.get("/:id/members", async (req, res) => {
 
 		const members = await prisma.projectMember.findMany({
 			where: { projectId: id },
+			include: {
+				user: {
+					select: { id: true, name: true, email: true },
+				},
+			},
 		})
 
 		res.status(200).json(members)
@@ -544,6 +554,23 @@ router.patch("/:projectId/tasks/:taskId", async (req, res) => {
 				orderBy: { position: "desc" },
 			})
 			updateData.position = lastTask ? lastTask.position + 1 : 1.0
+		}
+
+		if (validatedData.assigneeId) {
+			const assigneeMember = await prisma.projectMember.findUnique({
+				where: {
+					userId_projectId: {
+						userId: validatedData.assigneeId,
+						projectId,
+					},
+				},
+			})
+
+			if (!assigneeMember) {
+				return res
+					.status(400)
+					.json({ error: "Assignee is not a project member" })
+			}
 		}
 
 		const updatedTask = await prisma.task.update({

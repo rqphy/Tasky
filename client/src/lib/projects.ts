@@ -21,6 +21,11 @@ export interface Task {
 	title: string
 	description?: string
 	assigneeId?: string
+	assignee?: {
+		id: string
+		name: string
+		email: string
+	}
 	label?: string
 	priority: string
 	position: number
@@ -106,6 +111,9 @@ export const projectsApi = {
 	list: () => api.get<Project[]>("/projects"),
 
 	get: (id: string) => api.get<Project>(`/projects/${id}`),
+
+	getMembers: (id: string) =>
+		api.get<ProjectMember[]>(`/projects/${id}/members`),
 
 	create: (data: CreateProjectInput) => api.post<Project>("/projects", data),
 

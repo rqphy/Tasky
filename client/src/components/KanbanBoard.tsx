@@ -21,8 +21,10 @@ import { KanbanColumn } from "@/components/KanbanColumn"
 import { ColumnDialog } from "@/components/ColumnDialog"
 import { AddTaskDialog } from "@/components/AddTaskDialog"
 import { EditTaskDialog } from "@/components/EditTaskDialog"
-import { AssignTaskDialog } from "@/components/AssignTaskDialog"
-import type { User } from "@/mocks/users"
+import {
+	AssignTaskDialog,
+	type Assignee,
+} from "@/components/AssignTaskDialog"
 import { TaskCard } from "@/components/TaskCard"
 import { type Task } from "@/mocks/tasks"
 import type { Column as UIColumn, TaskLabel, TaskPriority } from "@/types/task"
@@ -34,6 +36,7 @@ import {
 	useDeleteColumn,
 	useReorderColumns,
 	useMoveTask,
+	useUpdateTask,
 } from "@/hooks/useProjects"
 
 interface KanbanBoardProps {
@@ -64,7 +67,7 @@ type AddTaskDialogState = { columnId: string } | null
 type EditTaskDialogState = { task: Task } | null
 type AssignTaskDialogState = {
 	taskId: string
-	currentAssigneeName?: string
+	currentAssigneeId?: string
 } | null
 
 export function KanbanBoard({
@@ -82,6 +85,9 @@ export function KanbanBoard({
 					priority: t.priority?.toLowerCase() as
 						| TaskPriority
 						| undefined,
+					assignee: t.assignee
+						? { id: t.assignee.id, name: t.assignee.name }
+						: undefined,
 					status: t.columnId,
 					position: t.position,
 				})),
@@ -106,6 +112,7 @@ export function KanbanBoard({
 	const deleteColumn = useDeleteColumn(projectId)
 	const reorderColumns = useReorderColumns(projectId)
 	const moveTask = useMoveTask(projectId)
+	const updateTask = useUpdateTask(projectId)
 
 	const columns: UIColumn[] = useMemo(
 		() =>
@@ -166,24 +173,16 @@ export function KanbanBoard({
 		if (task)
 			setAssignTaskDialog({
 				taskId: id,
-				currentAssigneeName: task.assignee?.name,
+				currentAssigneeId: task.assignee?.id,
 			})
 	}
 
-	function handleAssignTask(user: User | null) {
+	function handleAssignTask(user: Assignee | null) {
 		if (!assignTaskDialog) return
-		setTasks((prev) =>
-			prev.map((t) =>
-				t.id === assignTaskDialog.taskId
-					? {
-							...t,
-							assignee: user
-								? { name: user.name, avatarUrl: user.avatarUrl }
-								: undefined,
-						}
-					: t,
-			),
-		)
+		updateTask.mutate({
+			taskId: assignTaskDialog.taskId,
+			data: { assigneeId: user?.id ?? null },
+		})
 	}
 
 	function handleEditColumn(updated: UIColumn) {
@@ -476,7 +475,8 @@ export function KanbanBoard({
 					onOpenChange={(open) => {
 						if (!open) setAssignTaskDialog(null)
 					}}
-					currentAssigneeName={assignTaskDialog.currentAssigneeName}
+					projectId={projectId}
+					currentAssigneeId={assignTaskDialog.currentAssigneeId}
 					onAssign={handleAssignTask}
 				/>
 			)}

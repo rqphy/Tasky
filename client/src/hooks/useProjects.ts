@@ -26,6 +26,14 @@ export function useProject(id: string | undefined) {
 	})
 }
 
+export function useProjectMembers(projectId: string | undefined, enabled = true) {
+	return useQuery({
+		queryKey: ["project", projectId, "members"],
+		queryFn: () => projectsApi.getMembers(projectId!).then((r) => r.data),
+		enabled: !!projectId && enabled,
+	})
+}
+
 export function useCreateProject() {
 	const queryClient = useQueryClient()
 

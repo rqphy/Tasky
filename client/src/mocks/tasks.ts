@@ -5,6 +5,7 @@ export interface Task {
 	title: string
 	description?: string
 	assignee?: {
+		id?: string
 		name: string
 		avatarUrl?: string
 	}
