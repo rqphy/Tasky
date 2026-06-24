@@ -1,22 +1,4 @@
-import type { TaskLabel, TaskPriority, TaskComment } from "@/types/task"
-
-export interface Task {
-	id: string
-	title: string
-	description?: string
-	assignee?: {
-		id?: string
-		name: string
-		avatarUrl?: string
-	}
-	label?: TaskLabel
-	priority?: TaskPriority
-	/** Holds the id of the Column this task belongs to */
-	status: string
-	position: number
-	commentCount?: number
-	comments?: TaskComment[]
-}
+import type { Task } from "@/types/task"
 
 export const mockTasks: Task[] = [
 	{
@@ -32,33 +14,24 @@ export const mockTasks: Task[] = [
 		comments: [
 			{
 				id: "c1",
+				authorId: "user-bob",
 				author: "Bob Chen",
 				body: "Should we also support Google OAuth in the first iteration, or keep it GitHub-only for now?",
 				createdAt: "2026-04-22T09:15:00Z",
 			},
 			{
 				id: "c2",
+				authorId: "user-alice",
 				author: "Alice Martin",
 				body: "Let's keep it GitHub-only for the MVP. We can add Google later behind a feature flag.",
 				createdAt: "2026-04-22T10:02:00Z",
 			},
 			{
 				id: "c3",
+				authorId: "user-carol",
 				author: "Carol Lee",
 				body: "Reminder: refresh token rotation must be enabled in the GitHub app settings, otherwise silent refresh won't work.",
 				createdAt: "2026-04-23T14:30:00Z",
-			},
-			{
-				id: "c4",
-				author: "Carol Lee",
-				body: "Reminder: refresh token rotation must be enabled in the GitHub app settings, otherwise silent refresh won't work.",
-				createdAt: "2026-04-23T15:30:00Z",
-			},
-			{
-				id: "c5",
-				author: "Carol Lee",
-				body: "Reminder: refresh token rotation must be enabled in the GitHub app settings, otherwise silent refresh won't work.",
-				createdAt: "2026-04-23T16:30:00Z",
 			},
 		],
 	},
@@ -75,6 +48,7 @@ export const mockTasks: Task[] = [
 		comments: [
 			{
 				id: "c4",
+				authorId: "user-alice",
 				author: "Alice Martin",
 				body: "I can reproduce this on iOS 17 with Safari. Chrome Android seems fine.",
 				createdAt: "2026-04-23T11:00:00Z",

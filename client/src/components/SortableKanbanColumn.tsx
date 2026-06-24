@@ -1,7 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { KanbanColumn } from "@/components/KanbanColumn"
-import type { Task } from "@/mocks/tasks"
+import type { Task } from "@/types/task"
 import type { Column } from "@/types/task"
 
 interface SortableKanbanColumnProps {

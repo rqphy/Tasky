@@ -24,18 +24,21 @@ export interface TaskComment {
 	createdAt: string
 }
 
-export const TASK_LABELS: { value: TaskLabel; label: string }[] = [
-	{ value: "feature", label: "Feature" },
-	{ value: "bug", label: "Bug" },
-	{ value: "improvement", label: "Improvement" },
-	{ value: "documentation", label: "Documentation" },
-	{ value: "chore", label: "Chore" },
-]
-
-export const TASK_PRIORITIES: { value: TaskPriority; label: string }[] = [
-	{ value: "urgent", label: "Urgent" },
-	{ value: "high", label: "High" },
-	{ value: "medium", label: "Medium" },
-	{ value: "low", label: "Low" },
-	{ value: "none", label: "None" },
-]
+/** UI task shape used on the Kanban board and in dialogs. */
+export interface Task {
+	id: string
+	title: string
+	description?: string
+	assignee?: {
+		id?: string
+		name: string
+		avatarUrl?: string
+	}
+	label?: TaskLabel
+	priority?: TaskPriority
+	/** Holds the id of the Column this task belongs to */
+	status: string
+	position: number
+	commentCount?: number
+	comments?: TaskComment[]
+}

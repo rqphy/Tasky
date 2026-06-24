@@ -1,5 +1,13 @@
 import type { TaskPriority } from "@/types/task"
 
+export const TASK_PRIORITIES: { value: TaskPriority; label: string }[] = [
+	{ value: "urgent", label: "Urgent" },
+	{ value: "high", label: "High" },
+	{ value: "medium", label: "Medium" },
+	{ value: "low", label: "Low" },
+	{ value: "none", label: "None" },
+]
+
 export const priorityConfig: Record<
 	TaskPriority,
 	{ label: string; color: string; dotColor: string }

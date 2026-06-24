@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { DragDropVerticalIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
-import type { Task } from "@/mocks/tasks"
+import type { Task } from "@/types/task"
 import type { Column } from "@/types/task"
 
 interface KanbanColumnProps {

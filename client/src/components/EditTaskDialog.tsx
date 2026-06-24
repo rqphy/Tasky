@@ -7,9 +7,10 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import type { Task } from "@/mocks/tasks"
+import type { Task } from "@/types/task"
 import type { TaskLabel, TaskPriority } from "@/types/task"
-import { TASK_LABELS, TASK_PRIORITIES } from "@/types/task"
+import { TASK_LABELS } from "@/lib/labels"
+import { TASK_PRIORITIES } from "@/lib/priority"
 
 interface EditTaskDialogProps {
 	open: boolean

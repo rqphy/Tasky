@@ -26,7 +26,7 @@ import {
 	type Assignee,
 } from "@/components/AssignTaskDialog"
 import { TaskCard } from "@/components/TaskCard"
-import { type Task } from "@/mocks/tasks"
+import type { Task } from "@/types/task"
 import type { Column as UIColumn, TaskLabel, TaskPriority } from "@/types/task"
 import type { Column as BackendColumn } from "@/lib/projects"
 import { hexToTailwind, tailwindToHex } from "@/lib/colors"
