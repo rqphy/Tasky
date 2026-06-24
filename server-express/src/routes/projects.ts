@@ -93,17 +93,8 @@ router.get("/:id", async (req, res) => {
 								assignee: {
 									select: { id: true, name: true, email: true },
 								},
-								comments: {
-									orderBy: { createdAt: "asc" },
-									include: {
-										author: {
-											select: {
-												id: true,
-												name: true,
-												email: true,
-											},
-										},
-									},
+								_count: {
+									select: { comments: true },
 								},
 							},
 						},

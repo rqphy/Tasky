@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useParams } from "react-router-dom"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,8 +12,14 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import type { TaskLabel, TaskPriority } from "@/types/task"
-import type { TaskComment } from "@/types/task"
 import { priorityConfig } from "@/lib/priority"
+import { mapComment } from "@/lib/projects"
+import {
+	useTask,
+	useCreateComment,
+	useDeleteComment,
+} from "@/hooks/useProjects"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface TaskDetailDialogProps {
 	open: boolean
@@ -26,7 +33,6 @@ interface TaskDetailDialogProps {
 	}
 	label?: TaskLabel
 	priority?: TaskPriority
-	initialComments?: TaskComment[]
 }
 
 const labelConfig: Record<TaskLabel, { text: string; className: string }> = {
@@ -75,8 +81,6 @@ function formatDate(iso: string) {
 	})
 }
 
-let commentIdCounter = 100
-
 export function TaskDetailDialog({
 	open,
 	onOpenChange,
@@ -86,24 +90,33 @@ export function TaskDetailDialog({
 	assignee,
 	label,
 	priority,
-	initialComments = [],
 }: TaskDetailDialogProps) {
-	const [comments, setComments] = useState<TaskComment[]>(initialComments)
+	const { projectId } = useParams<{ projectId: string }>()
+	const { user } = useAuth()
+	const { data: task, isLoading } = useTask(projectId, id, open)
+	const createComment = useCreateComment(projectId!)
+	const deleteComment = useDeleteComment(projectId!)
 	const [draft, setDraft] = useState("")
 
+	const comments = (task?.comments ?? []).map(mapComment)
 	const labelMeta = label ? labelConfig[label] : null
+
+	useEffect(() => {
+		if (!open) setDraft("")
+	}, [open])
 
 	function handleAddComment() {
 		const trimmed = draft.trim()
-		if (!trimmed) return
-		const newComment: TaskComment = {
-			id: `new-${++commentIdCounter}`,
-			author: "You",
-			body: trimmed,
-			createdAt: new Date().toISOString(),
-		}
-		setComments((prev) => [...prev, newComment])
-		setDraft("")
+		if (!trimmed || !projectId) return
+
+		createComment.mutate(
+			{ taskId: id, content: trimmed },
+			{ onSuccess: () => setDraft("") },
+		)
+	}
+
+	function handleDeleteComment(commentId: string) {
+		deleteComment.mutate({ taskId: id, commentId })
 	}
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -115,7 +128,6 @@ export function TaskDetailDialog({
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-w-2xl w-full flex flex-col gap-0 p-0 overflow-hidden h-[90vh]">
-				{/* ── Header ── */}
 				<DialogHeader className="px-6 pt-6 pb-4 shrink-0">
 					<span className="text-xs font-mono text-muted-foreground">
 						TSK: {id}
@@ -123,7 +135,6 @@ export function TaskDetailDialog({
 					<DialogTitle className="text-lg font-semibold leading-snug mt-0.5">
 						{title}
 					</DialogTitle>
-					{/* Metadata row: label + priority + assignee */}
 					<div className="flex items-center gap-3 mt-2 flex-wrap">
 						{labelMeta && (
 							<Badge
@@ -173,10 +184,8 @@ export function TaskDetailDialog({
 
 				<Separator />
 
-				{/* ── Scrollable body ── */}
 				<ScrollArea className="flex-1 min-h-0">
 					<div className="px-6 py-5 space-y-6">
-						{/* Description */}
 						{description ? (
 							<section>
 								<h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
@@ -194,7 +203,6 @@ export function TaskDetailDialog({
 
 						<Separator />
 
-						{/* Comments */}
 						<section>
 							<h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
 								Comments{" "}
@@ -205,11 +213,15 @@ export function TaskDetailDialog({
 								)}
 							</h3>
 
-							{comments.length === 0 && (
+							{isLoading ? (
+								<p className="text-sm text-muted-foreground italic mb-4">
+									Loading comments…
+								</p>
+							) : comments.length === 0 ? (
 								<p className="text-sm text-muted-foreground italic mb-4">
 									No comments yet. Be the first!
 								</p>
-							)}
+							) : null}
 
 							<ul className="space-y-4 mb-4">
 								{comments.map((comment) => (
@@ -235,6 +247,23 @@ export function TaskDetailDialog({
 														comment.createdAt,
 													)}
 												</span>
+												{comment.authorId ===
+													user?.id && (
+													<button
+														type="button"
+														onClick={() =>
+															handleDeleteComment(
+																comment.id,
+															)
+														}
+														disabled={
+															deleteComment.isPending
+														}
+														className="ml-auto text-[10px] text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
+													>
+														Delete
+													</button>
+												)}
 											</div>
 											<p className="text-sm text-foreground leading-relaxed">
 												{comment.body}
@@ -244,11 +273,10 @@ export function TaskDetailDialog({
 								))}
 							</ul>
 
-							{/* Reply input */}
 							<div className="flex gap-3 items-start">
 								<Avatar className="size-7 shrink-0 mt-0.5">
 									<AvatarFallback className="text-[10px]">
-										YO
+										{getInitials(user?.name ?? "")}
 									</AvatarFallback>
 								</Avatar>
 								<div className="flex-1 space-y-2">
@@ -266,7 +294,10 @@ export function TaskDetailDialog({
 										<Button
 											size="sm"
 											onClick={handleAddComment}
-											disabled={!draft.trim()}
+											disabled={
+												!draft.trim() ||
+												createComment.isPending
+											}
 										>
 											Comment
 										</Button>

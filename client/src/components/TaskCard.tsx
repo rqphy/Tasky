@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { TaskDetailDialog } from "@/components/TaskDetailDialog"
 import type { TaskLabel, TaskPriority } from "@/types/task"
-import type { TaskComment } from "@/types/task"
 import { priorityConfig } from "@/lib/priority"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -35,7 +34,7 @@ interface TaskCardProps {
 	}
 	label?: TaskLabel
 	priority?: TaskPriority
-	comments?: TaskComment[]
+	commentCount?: number
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
 	onAttribute?: (id: string) => void
@@ -85,7 +84,7 @@ export function TaskCard({
 	assignee,
 	label,
 	priority,
-	comments = [],
+	commentCount = 0,
 	onEdit,
 	onDelete,
 	onAttribute,
@@ -167,15 +166,13 @@ export function TaskCard({
 					)}
 
 					<div className="flex items-center gap-1">
-						{comments.length > 0 && (
+						{commentCount > 0 && (
 							<div className="flex items-center gap-1 text-muted-foreground mr-1">
 								<HugeiconsIcon
 									icon={MessageMultiple01Icon}
 									size={13}
 								/>
-								<span className="text-xs">
-									{comments.length}
-								</span>
+								<span className="text-xs">{commentCount}</span>
 							</div>
 						)}
 
@@ -231,7 +228,6 @@ export function TaskCard({
 				assignee={assignee}
 				label={label}
 				priority={priority}
-				initialComments={comments}
 			/>
 		</>
 	)

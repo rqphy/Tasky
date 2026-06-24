@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
 	projectsApi,
+	patchTaskCount,
 	type CreateProjectInput,
 	type UpdateProjectInput,
 	type CreateColumnInput,
@@ -8,6 +9,9 @@ import {
 	type CreateTaskInput,
 	type UpdateTaskInput,
 	type MoveTaskInput,
+	type Project,
+	type Task,
+	type Comment,
 } from "@/lib/projects"
 
 export function useProjects() {
@@ -176,5 +180,84 @@ export function useMoveTask(projectId: string) {
 			taskId: string
 			data: MoveTaskInput
 		}) => projectsApi.moveTask(projectId, taskId, data).then((r) => r.data),
+	})
+}
+
+export function useTask(
+	projectId: string | undefined,
+	taskId: string,
+	enabled: boolean,
+) {
+	return useQuery({
+		queryKey: ["project", projectId, "task", taskId],
+		queryFn: () => projectsApi.getTask(projectId!, taskId).then((r) => r.data),
+		enabled: !!projectId && !!taskId && enabled,
+	})
+}
+
+export function useCreateComment(projectId: string) {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({
+			taskId,
+			content,
+		}: {
+			taskId: string
+			content: string
+		}) =>
+			projectsApi
+				.createComment(projectId, taskId, { content })
+				.then((r) => r.data),
+		onSuccess: (comment, { taskId }) => {
+			queryClient.setQueryData(
+				["project", projectId, "task", taskId],
+				(old: Task | undefined) =>
+					old
+						? {
+								...old,
+								comments: [...(old.comments ?? []), comment],
+							}
+						: old,
+			)
+			queryClient.setQueryData(
+				["project", projectId],
+				(old: Project | undefined) =>
+					old ? patchTaskCount(old, taskId, 1) : old,
+			)
+		},
+	})
+}
+
+export function useDeleteComment(projectId: string) {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({
+			taskId,
+			commentId,
+		}: {
+			taskId: string
+			commentId: string
+		}) => projectsApi.deleteComment(projectId, taskId, commentId),
+		onSuccess: (_, { taskId, commentId }) => {
+			queryClient.setQueryData(
+				["project", projectId, "task", taskId],
+				(old: Task | undefined) =>
+					old
+						? {
+								...old,
+								comments: (old.comments ?? []).filter(
+									(c: Comment) => c.id !== commentId,
+								),
+							}
+						: old,
+			)
+			queryClient.setQueryData(
+				["project", projectId],
+				(old: Project | undefined) =>
+					old ? patchTaskCount(old, taskId, -1) : old,
+			)
+		},
 	})
 }

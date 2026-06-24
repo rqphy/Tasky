@@ -90,6 +90,7 @@ export function KanbanBoard({
 						: undefined,
 					status: t.columnId,
 					position: t.position,
+					commentCount: t._count?.comments ?? 0,
 				})),
 			),
 		[backendColumns],

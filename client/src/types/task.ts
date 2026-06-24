@@ -17,6 +17,7 @@ export interface Column {
 
 export interface TaskComment {
 	id: string
+	authorId: string
 	author: string
 	avatarUrl?: string
 	body: string

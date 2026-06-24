@@ -14,6 +14,7 @@ export interface Task {
 	/** Holds the id of the Column this task belongs to */
 	status: string
 	position: number
+	commentCount?: number
 	comments?: TaskComment[]
 }
 

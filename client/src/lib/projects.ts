@@ -1,4 +1,5 @@
 import { api } from "./api"
+import type { TaskComment } from "@/types/task"
 
 export type ProjectRole = "OWNER" | "MEMBER" | "VIEWER"
 
@@ -31,6 +32,21 @@ export interface Task {
 	position: number
 	createdAt: string
 	updatedAt: string
+	comments?: Comment[]
+	_count?: { comments: number }
+}
+
+export interface Comment {
+	id: string
+	content: string
+	taskId: string
+	authorId: string
+	createdAt: string
+	author: {
+		id: string
+		name: string
+		email: string
+	}
 }
 
 export interface Column {
@@ -107,6 +123,48 @@ export interface MoveTaskInput {
 	position: number
 }
 
+export interface CreateCommentInput {
+	content: string
+}
+
+export function mapComment(comment: Comment): TaskComment {
+	return {
+		id: comment.id,
+		authorId: comment.authorId,
+		author: comment.author.name,
+		body: comment.content,
+		createdAt: comment.createdAt,
+	}
+}
+
+export function patchTaskCount(
+	project: Project,
+	taskId: string,
+	delta: number,
+): Project {
+	if (!project.columns) return project
+
+	return {
+		...project,
+		columns: project.columns.map((column) => ({
+			...column,
+			tasks: column.tasks?.map((task) =>
+				task.id === taskId
+					? {
+							...task,
+							_count: {
+								comments: Math.max(
+									0,
+									(task._count?.comments ?? 0) + delta,
+								),
+							},
+						}
+					: task,
+			),
+		})),
+	}
+}
+
 export const projectsApi = {
 	list: () => api.get<Project[]>("/projects"),
 
@@ -148,4 +206,19 @@ export const projectsApi = {
 
 	deleteTask: (projectId: string, taskId: string) =>
 		api.delete(`/projects/${projectId}/tasks/${taskId}`),
+
+	createComment: (
+		projectId: string,
+		taskId: string,
+		data: CreateCommentInput,
+	) =>
+		api.post<Comment>(
+			`/projects/${projectId}/tasks/${taskId}/comments`,
+			data,
+		),
+
+	deleteComment: (projectId: string, taskId: string, commentId: string) =>
+		api.delete(
+			`/projects/${projectId}/tasks/${taskId}/comments/${commentId}`,
+		),
 }
