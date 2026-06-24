@@ -86,3 +86,12 @@ export const moveTaskSchema = z.object({
 })
 
 export type MoveTaskInput = z.infer<typeof moveTaskSchema>
+
+export const createCommentSchema = z.object({
+	content: z
+		.string()
+		.min(1, "Content is required")
+		.max(5000, "Comment too long"),
+})
+
+export type CreateCommentInput = z.infer<typeof createCommentSchema>
