@@ -11,7 +11,11 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { DragDropVerticalIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import {
+	DragDropVerticalIcon,
+	PlusSignIcon,
+	MoreVerticalIcon,
+} from "@hugeicons/core-free-icons"
 import type { Task } from "@/types/task"
 import type { Column } from "@/types/task"
 
@@ -75,17 +79,10 @@ export function KanbanColumn({
 								className="shrink-0 text-muted-foreground/40 hover:text-muted-foreground transition-colors rounded p-0.5 hover:bg-muted focus-visible:outline-none"
 								title="Column options"
 							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="14"
-									height="14"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-								>
-									<circle cx="12" cy="5" r="1.5" />
-									<circle cx="12" cy="12" r="1.5" />
-									<circle cx="12" cy="19" r="1.5" />
-								</svg>
+								<HugeiconsIcon
+									icon={MoreVerticalIcon}
+									size={16}
+								/>
 							</button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="w-40">
