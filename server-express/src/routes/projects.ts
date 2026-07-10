@@ -1,4 +1,5 @@
 import express from "express"
+import crypto from "crypto"
 import { prisma } from "../lib/db.js"
 import {
 	createProjectSchema,
@@ -10,8 +11,11 @@ import {
 	updateTaskSchema,
 	moveTaskSchema,
 	createCommentSchema,
+	updateShareLinkSchema,
 } from "../lib/validation.js"
 import { authMiddleware } from "../middleware/auth.js"
+import { projectWithMembersInclude } from "../lib/projectIncludes.js"
+import { buildShareUrl } from "../lib/share.js"
 
 const router = express.Router()
 
@@ -76,31 +80,7 @@ router.get("/:id", async (req, res) => {
 
 		const project = await prisma.project.findUnique({
 			where: { id },
-			include: {
-				members: {
-					include: {
-						user: {
-							select: { id: true, name: true, email: true },
-						},
-					},
-				},
-				columns: {
-					orderBy: { position: "asc" },
-					include: {
-						tasks: {
-							orderBy: { position: "asc" },
-							include: {
-								assignee: {
-									select: { id: true, name: true, email: true },
-								},
-								_count: {
-									select: { comments: true },
-								},
-							},
-						},
-					},
-				},
-			},
+			include: projectWithMembersInclude,
 		})
 
 		if (!project) {
@@ -205,6 +185,116 @@ router.get("/:id/members", async (req, res) => {
 		res.status(200).json(members)
 	} catch (error) {
 		console.error("Get project members error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
+
+async function verifyProjectAccess(
+	projectId: string,
+	userId: string,
+): Promise<
+	| { error: string; status: number }
+	| {
+			project: NonNullable<
+				Awaited<ReturnType<typeof prisma.project.findUnique>>
+			>
+	  }
+> {
+	const project = await prisma.project.findUnique({
+		where: { id: projectId },
+		include: { members: { where: { userId } } },
+	})
+	if (!project) return { error: "Project not found", status: 404 }
+
+	const isOwner = project.ownerId === userId
+	const isMember = project.members.some((m) => m.userId === userId)
+
+	if (!isOwner && !isMember) {
+		return { error: "Access denied", status: 403 }
+	}
+	return { project }
+}
+
+router.get("/:id/share", async (req, res) => {
+	try {
+		const userId = req.user!.userId
+		const { id } = req.params
+
+		const accessCheck = await verifyProjectAccess(id, userId)
+		if ("error" in accessCheck) {
+			return res
+				.status(accessCheck.status)
+				.json({ error: accessCheck.error })
+		}
+
+		const shareToken = await prisma.projectShareToken.findUnique({
+			where: { projectId: id },
+		})
+
+		if (!shareToken || !shareToken.isActive) {
+			return res.status(200).json({ isActive: false })
+		}
+
+		res.status(200).json({
+			isActive: true,
+			url: buildShareUrl(shareToken.token),
+		})
+	} catch (error) {
+		console.error("Get share link error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
+
+router.patch("/:id/share", async (req, res) => {
+	try {
+		const userId = req.user!.userId
+		const { id } = req.params
+		const { isActive } = updateShareLinkSchema.parse(req.body)
+
+		const ownerCheck = await verifyProjectOwner(id, userId)
+		if ("error" in ownerCheck) {
+			return res
+				.status(ownerCheck.status)
+				.json({ error: ownerCheck.error })
+		}
+
+		if (!isActive) {
+			const existing = await prisma.projectShareToken.findUnique({
+				where: { projectId: id },
+			})
+
+			if (existing) {
+				await prisma.projectShareToken.update({
+					where: { projectId: id },
+					data: { isActive: false },
+				})
+			}
+
+			return res.status(200).json({ isActive: false })
+		}
+
+		const shareToken = await prisma.projectShareToken.upsert({
+			where: { projectId: id },
+			create: {
+				projectId: id,
+				token: crypto.randomBytes(32).toString("hex"),
+				isActive: true,
+			},
+			update: { isActive: true },
+		})
+
+		res.status(200).json({
+			isActive: true,
+			url: buildShareUrl(shareToken.token),
+		})
+	} catch (error) {
+		if (error instanceof Error && error.name === "ZodError") {
+			return res
+				.status(400)
+				.json({ error: "Validation failed", details: error })
+		}
+
+		console.error("Update share link error:", error)
 		res.status(500).json({ error: "Internal server error" })
 	}
 })

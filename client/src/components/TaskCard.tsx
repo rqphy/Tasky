@@ -36,6 +36,7 @@ interface TaskCardProps {
 	label?: TaskLabel
 	priority?: TaskPriority
 	commentCount?: number
+	readOnly?: boolean
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
 	onAttribute?: (id: string) => void
@@ -58,6 +59,7 @@ export function TaskCard({
 	label,
 	priority,
 	commentCount = 0,
+	readOnly = false,
 	onEdit,
 	onDelete,
 	onAttribute,
@@ -68,8 +70,12 @@ export function TaskCard({
 	return (
 		<>
 			<Card
-				className="w-full max-w-sm cursor-pointer transition-shadow hover:shadow-md"
-				onClick={() => setDialogOpen(true)}
+				className={
+					readOnly
+						? "w-full max-w-sm"
+						: "w-full max-w-sm cursor-pointer transition-shadow hover:shadow-md"
+				}
+				onClick={readOnly ? undefined : () => setDialogOpen(true)}
 			>
 				<CardHeader className="pb-2">
 					<div className="flex items-start justify-between gap-2">
@@ -149,59 +155,63 @@ export function TaskCard({
 							</div>
 						)}
 
-						<DropdownMenu>
-							<DropdownMenuTrigger
-								className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-								onClick={(e) => e.stopPropagation()}
-							>
-								<HugeiconsIcon
-									icon={MoreVerticalIcon}
-									size={16}
-								/>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuItem
-									onClick={(e) => {
-										e.stopPropagation()
-										onEdit?.(id)
-									}}
+						{!readOnly && (
+							<DropdownMenu>
+								<DropdownMenuTrigger
+									className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+									onClick={(e) => e.stopPropagation()}
 								>
-									Edit
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={(e) => {
-										e.stopPropagation()
-										onAttribute?.(id)
-									}}
-								>
-									Attribute
-								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem
-									variant="destructive"
-									onClick={(e) => {
-										e.stopPropagation()
-										onDelete?.(id)
-									}}
-								>
-									Delete
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+									<HugeiconsIcon
+										icon={MoreVerticalIcon}
+										size={16}
+									/>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem
+										onClick={(e) => {
+											e.stopPropagation()
+											onEdit?.(id)
+										}}
+									>
+										Edit
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										onClick={(e) => {
+											e.stopPropagation()
+											onAttribute?.(id)
+										}}
+									>
+										Attribute
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										variant="destructive"
+										onClick={(e) => {
+											e.stopPropagation()
+											onDelete?.(id)
+										}}
+									>
+										Delete
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						)}
 					</div>
 				</CardFooter>
 			</Card>
 
-			<TaskDetailDialog
-				open={dialogOpen}
-				onOpenChange={setDialogOpen}
-				id={id}
-				title={title}
-				description={description}
-				assignee={assignee}
-				label={label}
-				priority={priority}
-			/>
+			{!readOnly && (
+				<TaskDetailDialog
+					open={dialogOpen}
+					onOpenChange={setDialogOpen}
+					id={id}
+					title={title}
+					description={description}
+					assignee={assignee}
+					label={label}
+					priority={priority}
+				/>
+			)}
 		</>
 	)
 }

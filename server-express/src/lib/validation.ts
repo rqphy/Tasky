@@ -95,3 +95,9 @@ export const createCommentSchema = z.object({
 })
 
 export type CreateCommentInput = z.infer<typeof createCommentSchema>
+
+export const updateShareLinkSchema = z.object({
+	isActive: z.boolean(),
+})
+
+export type UpdateShareLinkInput = z.infer<typeof updateShareLinkSchema>

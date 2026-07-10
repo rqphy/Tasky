@@ -42,6 +42,7 @@ import {
 interface KanbanBoardProps {
 	projectId: string
 	columns: BackendColumn[]
+	readOnly?: boolean
 }
 
 function computeInsertPosition(
@@ -73,6 +74,7 @@ type AssignTaskDialogState = {
 export function KanbanBoard({
 	projectId,
 	columns: backendColumns,
+	readOnly = false,
 }: KanbanBoardProps) {
 	const backendTasks = useMemo(
 		() =>
@@ -384,6 +386,25 @@ export function KanbanBoard({
 	}
 
 	// ── Render ────────────────────────────────────────────────────────────────
+
+	if (readOnly) {
+		return (
+			<div className="flex gap-6 h-full items-start w-max">
+				{columns.map((column) => (
+					<div
+						key={column.id}
+						className="flex flex-col gap-3 min-w-[280px] w-[280px]"
+					>
+						<KanbanColumn
+							column={column}
+							tasks={getTasksByColumnId(column.id)}
+							readOnly
+						/>
+					</div>
+				))}
+			</div>
+		)
+	}
 
 	return (
 		<>

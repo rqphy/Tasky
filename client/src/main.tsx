@@ -6,6 +6,7 @@ import "./index.css"
 import { AuthPage } from "@/pages/AuthPage"
 import { AppLayout } from "@/layouts/AppLayout"
 import { BoardPage } from "@/pages/BoardPage"
+import { ShareBoardPage } from "@/pages/ShareBoardPage"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { ProjectRedirect } from "@/components/ProjectRedirect"
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
 	{
 		path: "/auth",
 		element: <AuthPage />,
+	},
+	{
+		path: "/share/:token",
+		element: <ShareBoardPage />,
 	},
 	{
 		path: "/",

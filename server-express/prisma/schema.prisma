@@ -31,15 +31,25 @@ model RefreshToken {
 }
 
 model Project {
-  id        String          @id @default(cuid())
-  name      String
-  emoji     String          @default("📋")
-  ownerId   String
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  owner     User            @relation("ProjectOwner", fields: [ownerId], references: [id])
-  members   ProjectMember[]
-  columns   Column[]
+  id         String             @id @default(cuid())
+  name       String
+  emoji      String             @default("📋")
+  ownerId    String
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  owner      User               @relation("ProjectOwner", fields: [ownerId], references: [id])
+  members    ProjectMember[]
+  columns    Column[]
+  shareToken ProjectShareToken?
+}
+
+model ProjectShareToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  projectId String   @unique
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model ProjectMember {

@@ -5,17 +5,39 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ProjectMembersPanel } from "@/components/ProjectMembersPanel"
 import { NotificationPanel } from "@/components/NotificationPanel"
+import { ShareLinkDialog } from "@/components/ShareLinkDialog"
 import { useNotifications } from "@/hooks/useNotifications"
 import { useProject } from "@/hooks/useProjects"
+import { useShareLink } from "@/hooks/useShare"
+import { useAuth } from "@/contexts/AuthContext"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Notification02Icon, Loading01Icon } from "@hugeicons/core-free-icons"
+import {
+	Notification02Icon,
+	Loading01Icon,
+	Share01Icon,
+} from "@hugeicons/core-free-icons"
 
 export function BoardPage() {
 	const { projectId } = useParams<{ projectId: string }>()
+	const { user } = useAuth()
 	const { data: project, isLoading, error } = useProject(projectId)
+	const isOwner = project?.ownerId === user?.id
+	const { data: shareLink } = useShareLink(
+		projectId,
+		!!projectId && !!project && !isOwner,
+	)
 	const [membersOpen, setMembersOpen] = useState(false)
 	const [notificationsOpen, setNotificationsOpen] = useState(false)
+	const [shareOpen, setShareOpen] = useState(false)
+	const [copied, setCopied] = useState(false)
 	const { unreadCount } = useNotifications(projectId || "")
+
+	async function handleCopyLink() {
+		if (!shareLink?.url) return
+		await navigator.clipboard.writeText(shareLink.url)
+		setCopied(true)
+		setTimeout(() => setCopied(false), 2000)
+	}
 
 	if (isLoading) {
 		return (
@@ -67,6 +89,33 @@ export function BoardPage() {
 							</Badge>
 						)}
 					</Button>
+					{isOwner ? (
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setShareOpen(true)}
+						>
+							<HugeiconsIcon
+								icon={Share01Icon}
+								size={16}
+								strokeWidth={2}
+							/>
+							Share
+						</Button>
+					) : shareLink?.isActive && shareLink.url ? (
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={handleCopyLink}
+						>
+							<HugeiconsIcon
+								icon={Share01Icon}
+								size={16}
+								strokeWidth={2}
+							/>
+							{copied ? "Copied!" : "Copy link"}
+						</Button>
+					) : null}
 					<Button
 						variant="outline"
 						size="sm"
@@ -89,6 +138,13 @@ export function BoardPage() {
 				open={membersOpen}
 				onOpenChange={setMembersOpen}
 			/>
+			{isOwner && (
+				<ShareLinkDialog
+					projectId={project.id}
+					open={shareOpen}
+					onOpenChange={setShareOpen}
+				/>
+			)}
 		</div>
 	)
 }
