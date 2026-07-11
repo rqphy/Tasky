@@ -101,3 +101,16 @@ export const updateShareLinkSchema = z.object({
 })
 
 export type UpdateShareLinkInput = z.infer<typeof updateShareLinkSchema>
+
+export const createInviteSchema = z.object({
+	email: z.string().email(),
+	role: z.enum(["MEMBER", "VIEWER"]).default("MEMBER"),
+})
+
+export type CreateInviteInput = z.infer<typeof createInviteSchema>
+
+export const acceptInviteSchema = z.object({
+	token: z.string().min(1),
+})
+
+export type AcceptInviteInput = z.infer<typeof acceptInviteSchema>

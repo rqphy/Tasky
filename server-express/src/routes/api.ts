@@ -2,6 +2,7 @@ import express from "express"
 import authRoutes from "./auth.js"
 import projectRoutes from "./projects.js"
 import shareRoutes from "./share.js"
+import inviteRoutes from "./invites.js"
 
 const router = express.Router()
 
@@ -13,6 +14,7 @@ router.get("/health", (req, res) => {
 // Mount route modules
 router.use("/auth", authRoutes)
 router.use("/share", shareRoutes)
+router.use("/invites", inviteRoutes)
 router.use("/projects", projectRoutes)
 
 // TODO: Add other route modules as you build them
