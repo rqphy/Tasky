@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/AuthContext"
@@ -12,10 +12,51 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Loading01Icon } from "@hugeicons/core-free-icons"
 import { isAxiosError } from "axios"
 
+function normalizeEmail(email?: string): string {
+	return email?.trim().toLowerCase() ?? ""
+}
+
+function emailsMatch(a?: string, b?: string): boolean {
+	const normalizedA = normalizeEmail(a)
+	const normalizedB = normalizeEmail(b)
+
+	if (!normalizedA || !normalizedB) {
+		return false
+	}
+
+	return normalizedA === normalizedB
+}
+
+function InviteErrorCard({
+	title,
+	children,
+	actions,
+}: {
+	title: string
+	children: ReactNode
+	actions?: ReactNode
+}) {
+	return (
+		<div className="flex min-h-svh items-center justify-center bg-background px-4">
+			<div className="w-full max-w-md space-y-6 rounded-xl border bg-card p-8 shadow-sm">
+				<div className="space-y-2 text-center">
+					<h1 className="text-xl font-semibold">{title}</h1>
+					<div className="text-muted-foreground text-sm">{children}</div>
+				</div>
+				{actions ?? (
+					<Button asChild variant="outline" className="w-full" size="lg">
+						<Link to="/">Go to home</Link>
+					</Button>
+				)}
+			</div>
+		</div>
+	)
+}
+
 export function InviteAcceptPage() {
 	const { token } = useParams<{ token: string }>()
 	const navigate = useNavigate()
-	const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+	const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth()
 	const { data: projects } = useProjects(isAuthenticated)
 	const {
 		data: validation,
@@ -24,6 +65,7 @@ export function InviteAcceptPage() {
 	} = useValidateInvite(token, isAuthenticated)
 	const acceptInvite = useAcceptInvite()
 	const hasAttemptedAccept = useRef(false)
+	const [isSigningOut, setIsSigningOut] = useState(false)
 
 	useEffect(() => {
 		if (token) {
@@ -55,11 +97,7 @@ export function InviteAcceptPage() {
 			return
 		}
 
-		if (
-			user &&
-			validation.email &&
-			user.email?.toLowerCase() !== validation.email.toLowerCase()
-		) {
+		if (validation.email && !emailsMatch(user?.email, validation.email)) {
 			return
 		}
 
@@ -96,6 +134,19 @@ export function InviteAcceptPage() {
 		validation,
 	])
 
+	async function handleSignOutAndSwitch() {
+		if (!token) return
+
+		setIsSigningOut(true)
+
+		try {
+			await logout()
+			navigate(`/auth?inviteToken=${token}`)
+		} finally {
+			setIsSigningOut(false)
+		}
+	}
+
 	if (authLoading) {
 		return (
 			<div className="flex min-h-svh items-center justify-center">
@@ -111,11 +162,9 @@ export function InviteAcceptPage() {
 
 	if (!token) {
 		return (
-			<div className="flex min-h-svh items-center justify-center px-6">
-				<p className="text-muted-foreground text-center">
-					This invitation link is invalid.
-				</p>
-			</div>
+			<InviteErrorCard title="Invalid invitation">
+				<p>This invitation link is invalid.</p>
+			</InviteErrorCard>
 		)
 	}
 
@@ -164,21 +213,17 @@ export function InviteAcceptPage() {
 
 	if (validationError || !validation) {
 		return (
-			<div className="flex min-h-svh items-center justify-center px-6">
-				<p className="text-muted-foreground text-center">
-					This invitation is no longer valid.
-				</p>
-			</div>
+			<InviteErrorCard title="Invitation unavailable">
+				<p>This invitation is no longer valid.</p>
+			</InviteErrorCard>
 		)
 	}
 
 	if (!validation.valid || !validation.project) {
 		return (
-			<div className="flex min-h-svh items-center justify-center px-6">
-				<p className="text-muted-foreground text-center">
-					{validation.reason || "This invitation is no longer valid."}
-				</p>
-			</div>
+			<InviteErrorCard title="Invitation unavailable">
+				<p>{validation.reason || "This invitation is no longer valid."}</p>
+			</InviteErrorCard>
 		)
 	}
 
@@ -190,24 +235,49 @@ export function InviteAcceptPage() {
 		return <Navigate to={`/board/${validation.project.id}`} replace />
 	}
 
-	if (
-		user &&
-		validation.email &&
-		user.email?.toLowerCase() !== validation.email.toLowerCase()
-	) {
+	if (validation.email && !emailsMatch(user?.email, validation.email)) {
 		return (
-			<div className="flex min-h-svh items-center justify-center px-6">
-				<div className="w-full max-w-md space-y-3 text-center">
-					<h1 className="text-xl font-semibold">Wrong account</h1>
-					<p className="text-muted-foreground text-sm">
-						This invitation was sent to{" "}
+			<InviteErrorCard
+				title="Wrong account"
+				actions={
+					<div className="flex flex-col gap-3">
+						<Button
+							size="lg"
+							className="w-full"
+							onClick={handleSignOutAndSwitch}
+							disabled={isSigningOut}
+						>
+							{isSigningOut
+								? "Signing out..."
+								: "Sign out and switch account"}
+						</Button>
+						<Button asChild variant="outline" size="lg" className="w-full">
+							<Link to="/">Go to home</Link>
+						</Button>
+					</div>
+				}
+			>
+				<p>
+					This invitation was sent to{" "}
+					<span className="font-medium text-foreground">
+						{validation.email}
+					</span>
+					.
+				</p>
+				{user?.email ? (
+					<p className="pt-2">
+						You're signed in as{" "}
 						<span className="font-medium text-foreground">
-							{validation.email}
+							{user.email}
 						</span>
-						. Sign in with that email address to accept it.
+						. Sign in with the invited email address to accept it.
 					</p>
-				</div>
-			</div>
+				) : (
+					<p className="pt-2">
+						Sign in with the invited email address to accept it.
+					</p>
+				)}
+			</InviteErrorCard>
 		)
 	}
 
@@ -221,10 +291,35 @@ export function InviteAcceptPage() {
 				? acceptInvite.error.response.data.error
 				: "Failed to accept invitation."
 
+		const isEmailMismatch =
+			isAxiosError(acceptInvite.error) &&
+			acceptInvite.error.response?.status === 403
+
 		return (
-			<div className="flex min-h-svh items-center justify-center px-6">
-				<p className="text-destructive text-center">{message}</p>
-			</div>
+			<InviteErrorCard
+				title="Could not accept invitation"
+				actions={
+					<div className="flex flex-col gap-3">
+						{isEmailMismatch && (
+							<Button
+								size="lg"
+								className="w-full"
+								onClick={handleSignOutAndSwitch}
+								disabled={isSigningOut}
+							>
+								{isSigningOut
+									? "Signing out..."
+									: "Sign out and switch account"}
+							</Button>
+						)}
+						<Button asChild variant="outline" size="lg" className="w-full">
+							<Link to="/">Go to home</Link>
+						</Button>
+					</div>
+				}
+			>
+				<p className="text-destructive">{message}</p>
+			</InviteErrorCard>
 		)
 	}
 
