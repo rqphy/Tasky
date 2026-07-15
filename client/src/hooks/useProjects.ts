@@ -14,10 +14,11 @@ import {
 	type Comment,
 } from "@/lib/projects"
 
-export function useProjects() {
+export function useProjects(enabled = true) {
 	return useQuery({
 		queryKey: ["projects"],
 		queryFn: () => projectsApi.list().then((r) => r.data),
+		enabled,
 	})
 }
 

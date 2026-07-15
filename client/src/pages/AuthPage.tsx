@@ -1,12 +1,19 @@
-import { useState, type FormEvent } from "react"
-import { Navigate } from "react-router-dom"
+import { useState, useEffect, type FormEvent } from "react"
+import { Navigate, useSearchParams } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/AuthContext"
+import {
+	getPendingInviteToken,
+	setPendingInviteToken,
+} from "@/lib/inviteToken"
 
 export function AuthPage() {
 	const { login, register, isAuthenticated, isLoading } = useAuth()
+	const [searchParams] = useSearchParams()
+	const inviteToken =
+		searchParams.get("inviteToken") ?? getPendingInviteToken()
 
 	const [loginEmail, setLoginEmail] = useState("")
 	const [loginPassword, setLoginPassword] = useState("")
@@ -18,6 +25,13 @@ export function AuthPage() {
 	const [registerError, setRegisterError] = useState("")
 	const [isSubmitting, setIsSubmitting] = useState(false)
 
+	useEffect(() => {
+		const tokenFromUrl = searchParams.get("inviteToken")
+		if (tokenFromUrl) {
+			setPendingInviteToken(tokenFromUrl)
+		}
+	}, [searchParams])
+
 	if (isLoading) {
 		return (
 			<div className="flex min-h-screen items-center justify-center">
@@ -27,7 +41,12 @@ export function AuthPage() {
 	}
 
 	if (isAuthenticated) {
-		return <Navigate to="/" replace />
+		return (
+			<Navigate
+				to={inviteToken ? `/invite/${inviteToken}` : "/"}
+				replace
+			/>
+		)
 	}
 
 	const handleLogin = async (e: FormEvent) => {
@@ -79,7 +98,9 @@ export function AuthPage() {
 				<div className="text-center space-y-2">
 					<h1 className="text-3xl font-bold tracking-tight">Tasky</h1>
 					<p className="text-muted-foreground text-sm">
-						Manage your projects with ease.
+						{inviteToken
+							? "Sign in or create an account to accept your project invitation."
+							: "Manage your projects with ease."}
 					</p>
 				</div>
 
