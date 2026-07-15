@@ -17,6 +17,8 @@ import {
 import { authMiddleware } from "../middleware/auth.js"
 import { projectWithMembersInclude } from "../lib/projectIncludes.js"
 import { buildShareUrl } from "../lib/share.js"
+import { buildInviteUrl } from "../lib/invite.js"
+import { sendInviteEmail } from "../lib/email/index.js"
 
 const router = express.Router()
 
@@ -256,7 +258,21 @@ router.post("/:id/invites", async (req, res) => {
 			},
 		})
 
-		res.status(201).json(invite)
+		const inviter = await prisma.user.findUnique({
+			where: { id: userId },
+			select: { name: true },
+		})
+
+		const emailResult = await sendInviteEmail({
+			to: email,
+			projectName: ownerCheck.project.name,
+			projectEmoji: ownerCheck.project.emoji,
+			inviterName: inviter?.name ?? "Someone",
+			role: validatedData.role,
+			acceptUrl: buildInviteUrl(token),
+		})
+
+		res.status(201).json({ ...invite, emailSent: emailResult.sent })
 	} catch (error) {
 		if (error instanceof Error && error.name === "ZodError") {
 			return res
