@@ -114,3 +114,9 @@ export const acceptInviteSchema = z.object({
 })
 
 export type AcceptInviteInput = z.infer<typeof acceptInviteSchema>
+
+export const transferOwnershipSchema = z.object({
+	userId: z.string().min(1, "User ID is required"),
+})
+
+export type TransferOwnershipInput = z.infer<typeof transferOwnershipSchema>
