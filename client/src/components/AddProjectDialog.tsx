@@ -60,7 +60,7 @@ export function AddProjectDialog({
 					<DialogTitle>New project</DialogTitle>
 				</DialogHeader>
 				<div className="flex gap-2">
-					<Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+					<Popover open={emojiOpen} onOpenChange={setEmojiOpen} modal>
 						<PopoverTrigger asChild>
 							<Button
 								type="button"
