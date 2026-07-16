@@ -180,6 +180,15 @@ export const projectsApi = {
 
 	delete: (id: string) => api.delete(`/projects/${id}`),
 
+	removeMember: (projectId: string, userId: string) =>
+		api.delete(`/projects/${projectId}/members/${userId}`),
+
+	transferOwnership: (projectId: string, userId: string) =>
+		api.post<{ id: string; name: string; emoji: string; ownerId: string }>(
+			`/projects/${projectId}/transfer-ownership`,
+			{ userId },
+		),
+
 	createColumn: (projectId: string, data: CreateColumnInput) =>
 		api.post<Column>(`/projects/${projectId}/columns`, data),
 

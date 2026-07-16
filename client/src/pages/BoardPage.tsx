@@ -136,6 +136,7 @@ export function BoardPage() {
 			<ProjectMembersPanel
 				project={project}
 				isOwner={isOwner}
+				currentUserId={user?.id}
 				open={membersOpen}
 				onOpenChange={setMembersOpen}
 			/>

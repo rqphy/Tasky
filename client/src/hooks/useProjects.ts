@@ -77,6 +77,48 @@ export function useDeleteProject() {
 	})
 }
 
+export function useRemoveMember() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({
+			projectId,
+			userId,
+		}: {
+			projectId: string
+			userId: string
+		}) => projectsApi.removeMember(projectId, userId),
+		onSuccess: (_, { projectId }) => {
+			queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+			queryClient.invalidateQueries({ queryKey: ["projects"] })
+			queryClient.invalidateQueries({
+				queryKey: ["project", projectId, "members"],
+			})
+		},
+	})
+}
+
+export function useTransferOwnership(projectId: string) {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: (userId: string) =>
+			projectsApi.transferOwnership(projectId, userId).then((r) => r.data),
+		onSuccess: (updated) => {
+			queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+			queryClient.invalidateQueries({ queryKey: ["projects"] })
+			queryClient.invalidateQueries({
+				queryKey: ["project", projectId, "members"],
+			})
+			queryClient.setQueryData(
+				["project", projectId],
+				(old: Project | undefined) =>
+					old ? { ...old, ownerId: updated.ownerId } : old,
+			)
+		},
+	})
+}
+
 export function useCreateColumn(projectId: string) {
 	const queryClient = useQueryClient()
 
