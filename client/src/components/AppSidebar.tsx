@@ -59,7 +59,6 @@ function getErrorMessage(error: unknown, fallback: string): string {
 export function AppSidebar() {
 	const { projectId } = useParams<{ projectId: string }>()
 	const [dialogOpen, setDialogOpen] = useState(false)
-	const [projectName, setProjectName] = useState("")
 	const [pendingAction, setPendingAction] = useState<PendingProjectAction>(null)
 	const [actionError, setActionError] = useState("")
 	const { user, logout } = useAuth()
@@ -70,18 +69,13 @@ export function AppSidebar() {
 	const deleteProject = useDeleteProject()
 	const removeMember = useRemoveMember()
 
-	function handleCreate() {
-		if (!projectName.trim()) return
-		createProject.mutate(
-			{ name: projectName.trim() },
-			{
-				onSuccess: (newProject) => {
-					setProjectName("")
-					setDialogOpen(false)
-					navigate(`/board/${newProject.id}`)
-				},
+	function handleCreate(data: { name: string; emoji: string }) {
+		createProject.mutate(data, {
+			onSuccess: (newProject) => {
+				setDialogOpen(false)
+				navigate(`/board/${newProject.id}`)
 			},
-		)
+		})
 	}
 
 	async function handleLogout() {
@@ -332,11 +326,10 @@ export function AppSidebar() {
 				<SidebarRail />
 			</Sidebar>
 			<AddProjectDialog
-				dialogOpen={dialogOpen}
-				setDialogOpen={setDialogOpen}
-				projectName={projectName}
-				setProjectName={setProjectName}
-				handleCreate={handleCreate}
+				open={dialogOpen}
+				onOpenChange={setDialogOpen}
+				onCreate={handleCreate}
+				isPending={createProject.isPending}
 			/>
 
 			<ConfirmMemberActionDialog

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import {
 	Dialog,
 	DialogContent,
@@ -7,47 +8,108 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+	EmojiPicker,
+	EmojiPickerSearch,
+	EmojiPickerContent,
+	EmojiPickerFooter,
+} from "@/components/ui/emoji-picker"
+
+const DEFAULT_EMOJI = "📋"
 
 interface AddProjectDialogProps {
-	dialogOpen: boolean
-	setDialogOpen: (open: boolean) => void
-	projectName: string
-	setProjectName: (name: string) => void
-	handleCreate: () => void
+	open: boolean
+	onOpenChange: (open: boolean) => void
+	onCreate: (data: { name: string; emoji: string }) => void
+	isPending?: boolean
 }
 
 export function AddProjectDialog({
-	dialogOpen,
-	setDialogOpen,
-	projectName,
-	setProjectName,
-	handleCreate,
+	open,
+	onOpenChange,
+	onCreate,
+	isPending = false,
 }: AddProjectDialogProps) {
+	const [name, setName] = useState("")
+	const [emoji, setEmoji] = useState(DEFAULT_EMOJI)
+	const [emojiOpen, setEmojiOpen] = useState(false)
+
+	useEffect(() => {
+		if (!open) {
+			setName("")
+			setEmoji(DEFAULT_EMOJI)
+			setEmojiOpen(false)
+		}
+	}, [open])
+
+	function handleCreate() {
+		const trimmed = name.trim()
+		if (!trimmed || isPending) return
+		onCreate({ name: trimmed, emoji })
+	}
+
 	return (
-		<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>New project</DialogTitle>
 				</DialogHeader>
-				<Input
-					placeholder="Project name"
-					value={projectName}
-					onChange={(e) => setProjectName(e.target.value)}
-					onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-					autoFocus
-				/>
+				<div className="flex gap-2">
+					<Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+						<PopoverTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon"
+								className="size-9 shrink-0 text-xl"
+								aria-label="Choose project emoji"
+							>
+								{emoji}
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent
+							className="w-fit p-0"
+							align="start"
+							side="bottom"
+						>
+							<EmojiPicker
+								className="h-[342px]"
+								onEmojiSelect={({ emoji: selected }) => {
+									setEmoji(selected)
+									setEmojiOpen(false)
+								}}
+							>
+								<EmojiPickerSearch />
+								<EmojiPickerContent />
+								<EmojiPickerFooter />
+							</EmojiPicker>
+						</PopoverContent>
+					</Popover>
+					<Input
+						placeholder="Project name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+						autoFocus
+					/>
+				</div>
 				<DialogFooter>
 					<Button
 						variant="outline"
-						onClick={() => setDialogOpen(false)}
+						onClick={() => onOpenChange(false)}
 					>
 						Cancel
 					</Button>
 					<Button
 						onClick={handleCreate}
-						disabled={!projectName.trim()}
+						disabled={!name.trim() || isPending}
 					>
-						Create project
+						{isPending ? "Creating..." : "Create project"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
