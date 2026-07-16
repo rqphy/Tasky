@@ -53,15 +53,14 @@ router.post("/", async (req, res) => {
 				name: validatedData.name,
 				emoji: validatedData.emoji ?? "📋",
 				ownerId: userId,
+				members: {
+					create: {
+						userId,
+						role: "OWNER",
+					},
+				},
 			},
-		})
-
-		await prisma.projectMember.create({
-			data: {
-				userId: userId,
-				projectId: project.id,
-				role: "OWNER",
-			},
+			include: projectWithMembersInclude,
 		})
 
 		res.status(201).json(project)

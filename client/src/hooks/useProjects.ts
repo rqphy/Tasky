@@ -48,6 +48,10 @@ export function useCreateProject() {
 		onSuccess: (newProject) => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] })
 			queryClient.setQueryData(["project", newProject.id], newProject)
+			queryClient.setQueryData(
+				["project", newProject.id, "members"],
+				newProject.members ?? [],
+			)
 		},
 	})
 }
