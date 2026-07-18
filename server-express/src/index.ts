@@ -1,11 +1,25 @@
 import "dotenv/config"
+import { createServer } from "node:http"
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import { Server } from "socket.io"
 import apiRoutes from "./routes/api.js"
 
 const app = express()
+const httpServer = createServer(app)
 const PORT = process.env.PORT || 3001
+
+const io = new Server(httpServer, {
+	cors: {
+		origin: process.env.CLIENT_URL || "http://localhost:5173",
+		credentials: true,
+	},
+})
+
+io.on("connection", (socket) => {
+	console.log("Socket connected:", socket.id)
+})
 
 // Middleware
 app.use(
@@ -19,6 +33,6 @@ app.use(cookieParser())
 
 app.use("/api", apiRoutes)
 
-app.listen(PORT, async () => {
+httpServer.listen(PORT, () => {
 	console.log(`🚀 Server running on http://localhost:${PORT}`)
 })
