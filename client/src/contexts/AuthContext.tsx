@@ -16,6 +16,7 @@ import {
 	isAuthenticated as checkIsAuthenticated,
 	clearTokens,
 } from "@/lib/auth"
+import { connectSocket, disconnectSocket } from "@/lib/socket"
 
 interface AuthContextType {
 	user: User | null
@@ -35,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	const checkAuth = useCallback(async () => {
 		if (!checkIsAuthenticated()) {
+			disconnectSocket()
 			setIsLoading(false)
 			return
 		}
@@ -42,9 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			const currentUser = await getCurrentUser()
 			setUser(currentUser)
+			connectSocket()
 		} catch {
 			clearTokens()
 			setUser(null)
+			disconnectSocket()
 		} finally {
 			setIsLoading(false)
 		}
@@ -57,16 +61,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const login = async (email: string, password: string) => {
 		const response = await apiLogin(email, password)
 		setUser(response.user)
+		connectSocket()
 	}
 
 	const register = async (name: string, email: string, password: string) => {
 		const response = await apiRegister(name, email, password)
 		setUser(response.user)
+		connectSocket()
 	}
 
 	const logout = async () => {
 		await apiLogout()
 		setUser(null)
+		disconnectSocket()
 		queryClient.clear()
 	}
 

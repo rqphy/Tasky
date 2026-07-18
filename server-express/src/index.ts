@@ -5,6 +5,7 @@ import cors from "cors"
 import cookieParser from "cookie-parser"
 import { Server } from "socket.io"
 import apiRoutes from "./routes/api.js"
+import { socketAuthMiddleware } from "./middleware/socketAuth.js"
 
 const app = express()
 const httpServer = createServer(app)
@@ -17,8 +18,10 @@ const io = new Server(httpServer, {
 	},
 })
 
+io.use(socketAuthMiddleware)
+
 io.on("connection", (socket) => {
-	console.log("Socket connected:", socket.id)
+	console.log("Socket connected:", socket.id, "user:", socket.data.userId)
 })
 
 // Middleware
