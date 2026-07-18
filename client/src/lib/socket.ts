@@ -4,6 +4,10 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001"
 
 let socket: Socket | null = null
 
+export function getSocket() {
+	return socket
+}
+
 export function connectSocket() {
 	const token = localStorage.getItem("accessToken")
 	if (!token) return null
@@ -22,4 +26,18 @@ export function connectSocket() {
 export function disconnectSocket() {
 	socket?.disconnect()
 	socket = null
+}
+
+export function joinProjectRoom(projectId: string) {
+	getSocket()?.emit(
+		"joinProject",
+		projectId,
+		(res: { ok: boolean; error?: string }) => {
+			console.log("Joined project room:", projectId, res)
+		},
+	)
+}
+
+export function leaveProjectRoom(projectId: string) {
+	getSocket()?.emit("leaveProject", projectId)
 }

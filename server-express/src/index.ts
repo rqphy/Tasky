@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser"
 import { Server } from "socket.io"
 import apiRoutes from "./routes/api.js"
 import { socketAuthMiddleware } from "./middleware/socketAuth.js"
+import { registerProjectRoomHandlers } from "./sockets/projectRooms.js"
 
 const app = express()
 const httpServer = createServer(app)
@@ -23,6 +24,8 @@ io.use(socketAuthMiddleware)
 io.on("connection", (socket) => {
 	console.log("Socket connected:", socket.id, "user:", socket.data.userId)
 })
+
+registerProjectRoomHandlers(io)
 
 // Middleware
 app.use(

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { KanbanBoard } from "@/components/KanbanBoard"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { useNotifications } from "@/hooks/useNotifications"
 import { useProject } from "@/hooks/useProjects"
 import { useShareLink } from "@/hooks/useShare"
 import { useAuth } from "@/contexts/AuthContext"
+import { joinProjectRoom, leaveProjectRoom } from "@/lib/socket"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
 	Notification02Icon,
@@ -31,6 +32,12 @@ export function BoardPage() {
 	const [shareOpen, setShareOpen] = useState(false)
 	const [copied, setCopied] = useState(false)
 	const { unreadCount } = useNotifications(projectId || "")
+
+	useEffect(() => {
+		if (!projectId) return
+		joinProjectRoom(projectId)
+		return () => leaveProjectRoom(projectId)
+	}, [projectId])
 
 	async function handleCopyLink() {
 		if (!shareLink?.url) return
