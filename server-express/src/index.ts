@@ -7,6 +7,11 @@ import { Server } from "socket.io"
 import apiRoutes from "./routes/api.js"
 import { socketAuthMiddleware } from "./middleware/socketAuth.js"
 import { registerProjectRoomHandlers } from "./sockets/projectRooms.js"
+import {
+	setSocketServer,
+	registerUserSocket,
+	unregisterUserSocket,
+} from "./lib/socket.js"
 
 const app = express()
 const httpServer = createServer(app)
@@ -19,10 +24,17 @@ const io = new Server(httpServer, {
 	},
 })
 
+setSocketServer(io)
 io.use(socketAuthMiddleware)
 
 io.on("connection", (socket) => {
-	console.log("Socket connected:", socket.id, "user:", socket.data.userId)
+	const userId = socket.data.userId
+	registerUserSocket(userId, socket.id)
+	console.log("Socket connected:", socket.id, "user:", userId)
+
+	socket.on("disconnect", () => {
+		unregisterUserSocket(userId, socket.id)
+	})
 })
 
 registerProjectRoomHandlers(io)

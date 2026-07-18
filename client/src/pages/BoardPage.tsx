@@ -8,6 +8,7 @@ import { NotificationPanel } from "@/components/NotificationPanel"
 import { ShareLinkDialog } from "@/components/ShareLinkDialog"
 import { useNotifications } from "@/hooks/useNotifications"
 import { useProject } from "@/hooks/useProjects"
+import { useProjectSocketEvents } from "@/hooks/useProjectSocketEvents"
 import { useShareLink } from "@/hooks/useShare"
 import { useAuth } from "@/contexts/AuthContext"
 import { joinProjectRoom, leaveProjectRoom } from "@/lib/socket"
@@ -38,6 +39,8 @@ export function BoardPage() {
 		joinProjectRoom(projectId)
 		return () => leaveProjectRoom(projectId)
 	}, [projectId])
+
+	useProjectSocketEvents(projectId)
 
 	async function handleCopyLink() {
 		if (!shareLink?.url) return

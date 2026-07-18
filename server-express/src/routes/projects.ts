@@ -18,6 +18,7 @@ import {
 import { authMiddleware } from "../middleware/auth.js"
 import { projectWithMembersInclude } from "../lib/projectIncludes.js"
 import { verifyProjectMember } from "../lib/projectAccess.js"
+import { emitToProjectExceptUser } from "../lib/socket.js"
 import { buildShareUrl } from "../lib/share.js"
 import { buildInviteUrl } from "../lib/invite.js"
 import { sendInviteEmail } from "../lib/email/index.js"
@@ -1080,6 +1081,13 @@ router.post("/:projectId/tasks/:taskId/move", async (req, res) => {
 				columnId: validatedData.columnId,
 				position: validatedData.position,
 			},
+		})
+
+		emitToProjectExceptUser(projectId, userId, "task:moved", {
+			projectId,
+			taskId: updatedTask.id,
+			columnId: updatedTask.columnId,
+			position: updatedTask.position,
 		})
 
 		res.status(200).json(updatedTask)
