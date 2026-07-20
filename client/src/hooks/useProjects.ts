@@ -64,7 +64,9 @@ export function useUpdateProject() {
 			projectsApi.update(id, data).then((r) => r.data),
 		onSuccess: (updatedProject) => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] })
-			queryClient.setQueryData(["project", updatedProject.id], updatedProject)
+			queryClient.invalidateQueries({
+				queryKey: ["project", updatedProject.id],
+			})
 		},
 	})
 }

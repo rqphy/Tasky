@@ -294,27 +294,8 @@ export function patchProjectUpdated(
 	queryClient: QueryClient,
 	payload: ProjectUpdatedPayload,
 ): void {
-	queryClient.setQueryData(
-		["projects"],
-		(old: Project[] | undefined) =>
-			old?.map((project) =>
-				project.id === payload.projectId
-					? {
-							...project,
-							name: payload.name,
-							emoji: payload.emoji,
-							updatedAt: payload.updatedAt,
-						}
-					: project,
-			),
-	)
-
-	updateProjectCache(queryClient, payload.projectId, (project) => ({
-		...project,
-		name: payload.name,
-		emoji: payload.emoji,
-		updatedAt: payload.updatedAt,
-	}))
+	queryClient.invalidateQueries({ queryKey: ["projects"] })
+	queryClient.invalidateQueries({ queryKey: ["project", payload.projectId] })
 }
 
 export function patchProjectDeleted(
