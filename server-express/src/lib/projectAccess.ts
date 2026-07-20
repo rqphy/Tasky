@@ -1,5 +1,22 @@
 import { prisma } from "./db.js"
 
+export async function getProjectMemberUserIds(
+	projectId: string,
+): Promise<string[]> {
+	const project = await prisma.project.findUnique({
+		where: { id: projectId },
+		select: {
+			ownerId: true,
+			members: { select: { userId: true } },
+		},
+	})
+	if (!project) return []
+
+	const userIds = new Set(project.members.map((m) => m.userId))
+	userIds.add(project.ownerId)
+	return [...userIds]
+}
+
 export async function verifyProjectMember(
 	projectId: string,
 	userId: string,

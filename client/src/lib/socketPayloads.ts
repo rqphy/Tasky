@@ -87,7 +87,20 @@ export type MemberRemovedPayload = {
 	userId: string
 }
 
+export type ProjectUpdatedPayload = {
+	projectId: string
+	name: string
+	emoji: string
+	updatedAt: string
+}
+
+export type ProjectDeletedPayload = {
+	projectId: string
+}
+
 export type SocketEventPayloadMap = {
+	[SOCKET_EVENTS.PROJECT_UPDATED]: ProjectUpdatedPayload
+	[SOCKET_EVENTS.PROJECT_DELETED]: ProjectDeletedPayload
 	[SOCKET_EVENTS.TASK_CREATED]: TaskCreatedPayload
 	[SOCKET_EVENTS.TASK_UPDATED]: TaskUpdatedPayload
 	[SOCKET_EVENTS.TASK_DELETED]: TaskDeletedPayload

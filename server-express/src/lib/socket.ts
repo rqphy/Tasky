@@ -36,3 +36,19 @@ export function emitToProjectExceptUser<E extends ServerBroadcastEvent>(
 	const excludeSocketIds = [...(socketsByUserId.get(excludeUserId) ?? [])]
 	io?.to(projectRoom(projectId)).except(excludeSocketIds).emit(event, payload)
 }
+
+export function emitToUsersExceptUser<E extends ServerBroadcastEvent>(
+	userIds: string[],
+	excludeUserId: string,
+	event: E,
+	payload: SocketEventPayloadMap[E],
+): void {
+	const socketIds: string[] = []
+	for (const userId of userIds) {
+		if (userId === excludeUserId) continue
+		const ids = socketsByUserId.get(userId)
+		if (ids) socketIds.push(...ids)
+	}
+	if (socketIds.length === 0) return
+	io?.to(socketIds).emit(event, payload)
+}

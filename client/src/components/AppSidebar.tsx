@@ -24,12 +24,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { AddProjectDialog } from "./AddProjectDialog"
+import { EditProjectDialog } from "./EditProjectDialog"
 import { ConfirmMemberActionDialog } from "@/components/ConfirmMemberActionDialog"
 import { getUnreadCountForProject } from "@/lib/notifications"
 import { useAuth } from "@/contexts/AuthContext"
 import {
 	useProjects,
 	useCreateProject,
+	useUpdateProject,
 	useDeleteProject,
 	useRemoveMember,
 } from "@/hooks/useProjects"
@@ -59,6 +61,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
 export function AppSidebar() {
 	const { projectId } = useParams<{ projectId: string }>()
 	const [dialogOpen, setDialogOpen] = useState(false)
+	const [editingProject, setEditingProject] = useState<Project | null>(null)
 	const [pendingAction, setPendingAction] = useState<PendingProjectAction>(null)
 	const [actionError, setActionError] = useState("")
 	const { user, logout } = useAuth()
@@ -66,6 +69,7 @@ export function AppSidebar() {
 
 	const { data: projects, isLoading } = useProjects()
 	const createProject = useCreateProject()
+	const updateProject = useUpdateProject()
 	const deleteProject = useDeleteProject()
 	const removeMember = useRemoveMember()
 
@@ -76,6 +80,18 @@ export function AppSidebar() {
 				navigate(`/board/${newProject.id}`)
 			},
 		})
+	}
+
+	function handleSave(data: { name: string; emoji: string }) {
+		if (!editingProject) return
+		updateProject.mutate(
+			{ id: editingProject.id, data },
+			{
+				onSuccess: () => {
+					setEditingProject(null)
+				},
+			},
+		)
 	}
 
 	async function handleLogout() {
@@ -220,22 +236,35 @@ export function AppSidebar() {
 														align="start"
 													>
 														{isOwner ? (
-															<DropdownMenuItem
-																variant="destructive"
-																onClick={() => {
-																	setActionError(
-																		"",
-																	)
-																	setPendingAction(
-																		{
-																			type: "delete",
+															<>
+																<DropdownMenuItem
+																	onClick={() =>
+																		setEditingProject(
 																			project,
-																		},
-																	)
-																}}
-															>
-																Delete project
-															</DropdownMenuItem>
+																		)
+																	}
+																>
+																	Edit
+																	project
+																</DropdownMenuItem>
+																<DropdownMenuItem
+																	variant="destructive"
+																	onClick={() => {
+																		setActionError(
+																			"",
+																		)
+																		setPendingAction(
+																			{
+																				type: "delete",
+																				project,
+																			},
+																		)
+																	}}
+																>
+																	Delete
+																	project
+																</DropdownMenuItem>
+															</>
 														) : (
 															<DropdownMenuItem
 																variant="destructive"
@@ -330,6 +359,16 @@ export function AppSidebar() {
 				onOpenChange={setDialogOpen}
 				onCreate={handleCreate}
 				isPending={createProject.isPending}
+			/>
+
+			<EditProjectDialog
+				open={!!editingProject}
+				onOpenChange={(next) => {
+					if (!next) setEditingProject(null)
+				}}
+				project={editingProject}
+				onSave={handleSave}
+				isPending={updateProject.isPending}
 			/>
 
 			<ConfirmMemberActionDialog

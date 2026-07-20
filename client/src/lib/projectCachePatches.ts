@@ -1,5 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query"
 import type { Column, Project, ProjectMember, Task } from "@/lib/projects"
+import { leaveProjectRoom } from "@/lib/socket"
 import type {
 	BoardTaskPayload,
 	ColumnCreatedPayload,
@@ -8,6 +9,8 @@ import type {
 	ColumnUpdatedPayload,
 	MemberJoinedPayload,
 	MemberRemovedPayload,
+	ProjectDeletedPayload,
+	ProjectUpdatedPayload,
 	TaskCreatedPayload,
 	TaskDeletedPayload,
 	TaskMovedPayload,
@@ -285,4 +288,45 @@ export function patchMemberRemoved(
 	)
 
 	queryClient.invalidateQueries({ queryKey: ["projects"] })
+}
+
+export function patchProjectUpdated(
+	queryClient: QueryClient,
+	payload: ProjectUpdatedPayload,
+): void {
+	queryClient.setQueryData(
+		["projects"],
+		(old: Project[] | undefined) =>
+			old?.map((project) =>
+				project.id === payload.projectId
+					? {
+							...project,
+							name: payload.name,
+							emoji: payload.emoji,
+							updatedAt: payload.updatedAt,
+						}
+					: project,
+			),
+	)
+
+	updateProjectCache(queryClient, payload.projectId, (project) => ({
+		...project,
+		name: payload.name,
+		emoji: payload.emoji,
+		updatedAt: payload.updatedAt,
+	}))
+}
+
+export function patchProjectDeleted(
+	queryClient: QueryClient,
+	payload: ProjectDeletedPayload,
+): void {
+	queryClient.setQueryData(
+		["projects"],
+		(old: Project[] | undefined) =>
+			old?.filter((project) => project.id !== payload.projectId),
+	)
+
+	queryClient.removeQueries({ queryKey: ["project", payload.projectId] })
+	leaveProjectRoom(payload.projectId)
 }

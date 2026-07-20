@@ -17,8 +17,14 @@ import {
 } from "../lib/validation.js"
 import { authMiddleware } from "../middleware/auth.js"
 import { projectWithMembersInclude } from "../lib/projectIncludes.js"
-import { verifyProjectMember } from "../lib/projectAccess.js"
-import { emitToProjectExceptUser } from "../lib/socket.js"
+import {
+	getProjectMemberUserIds,
+	verifyProjectMember,
+} from "../lib/projectAccess.js"
+import {
+	emitToProjectExceptUser,
+	emitToUsersExceptUser,
+} from "../lib/socket.js"
 import { SOCKET_EVENTS } from "../lib/socketEvents.js"
 import { boardTaskInclude } from "../lib/socketPayloads.js"
 import { buildShareUrl } from "../lib/share.js"
@@ -133,6 +139,19 @@ router.patch("/:id", async (req, res) => {
 			data: validatedData,
 		})
 
+		const memberUserIds = await getProjectMemberUserIds(id)
+		emitToUsersExceptUser(
+			memberUserIds,
+			userId,
+			SOCKET_EVENTS.PROJECT_UPDATED,
+			{
+				projectId: id,
+				name: updatedProject.name,
+				emoji: updatedProject.emoji,
+				updatedAt: updatedProject.updatedAt,
+			},
+		)
+
 		res.status(200).json(updatedProject)
 	} catch (error) {
 		if (error instanceof Error && error.name === "ZodError") {
@@ -165,9 +184,18 @@ router.delete("/:id", async (req, res) => {
 				.json({ error: "Only the owner can delete this project" })
 		}
 
+		const memberUserIds = await getProjectMemberUserIds(id)
+
 		await prisma.project.delete({
 			where: { id },
 		})
+
+		emitToUsersExceptUser(
+			memberUserIds,
+			userId,
+			SOCKET_EVENTS.PROJECT_DELETED,
+			{ projectId: id },
+		)
 
 		res.status(204).send()
 	} catch (error) {

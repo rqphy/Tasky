@@ -4,6 +4,8 @@ export const SOCKET_EVENTS = {
 	PROJECT_LEAVE: "leaveProject",
 
 	// Server → Client (broadcasts)
+	PROJECT_UPDATED: "project:updated",
+	PROJECT_DELETED: "project:deleted",
 	TASK_CREATED: "task:created",
 	TASK_UPDATED: "task:updated",
 	TASK_DELETED: "task:deleted",
@@ -20,6 +22,8 @@ export type SocketEvent = (typeof SOCKET_EVENTS)[keyof typeof SOCKET_EVENTS]
 
 /** All server-initiated broadcast events */
 export const BROADCAST_EVENTS = [
+	SOCKET_EVENTS.PROJECT_UPDATED,
+	SOCKET_EVENTS.PROJECT_DELETED,
 	SOCKET_EVENTS.TASK_CREATED,
 	SOCKET_EVENTS.TASK_UPDATED,
 	SOCKET_EVENTS.TASK_DELETED,
@@ -30,6 +34,11 @@ export const BROADCAST_EVENTS = [
 	SOCKET_EVENTS.COLUMN_REORDERED,
 	SOCKET_EVENTS.MEMBER_JOINED,
 	SOCKET_EVENTS.MEMBER_REMOVED,
+] as const
+
+export const PROJECT_BROADCAST_EVENTS = [
+	SOCKET_EVENTS.PROJECT_UPDATED,
+	SOCKET_EVENTS.PROJECT_DELETED,
 ] as const
 
 export const MEMBER_BROADCAST_EVENTS = [
