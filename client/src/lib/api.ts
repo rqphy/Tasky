@@ -1,4 +1,5 @@
 import axios from "axios"
+import { disconnectSocket } from "@/lib/socket"
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api"
 
@@ -24,6 +25,13 @@ const processQueue = (error: unknown, token: string | null = null) => {
 		}
 	})
 	failedQueue = []
+}
+
+function forceSessionExpiry() {
+	disconnectSocket()
+	localStorage.removeItem("accessToken")
+	localStorage.removeItem("refreshToken")
+	window.location.href = "/auth"
 }
 
 api.interceptors.request.use(
@@ -61,9 +69,7 @@ api.interceptors.response.use(
 
 			if (!refreshToken) {
 				isRefreshing = false
-				localStorage.removeItem("accessToken")
-				localStorage.removeItem("refreshToken")
-				window.location.href = "/auth"
+				forceSessionExpiry()
 				return Promise.reject(error)
 			}
 
@@ -85,9 +91,7 @@ api.interceptors.response.use(
 				return api(originalRequest)
 			} catch (refreshError) {
 				processQueue(refreshError, null)
-				localStorage.removeItem("accessToken")
-				localStorage.removeItem("refreshToken")
-				window.location.href = "/auth"
+				forceSessionExpiry()
 				return Promise.reject(refreshError)
 			} finally {
 				isRefreshing = false
