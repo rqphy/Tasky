@@ -1,5 +1,5 @@
 import axios from "axios"
-import { disconnectSocket } from "@/lib/socket"
+import { disconnectSocket, refreshSocketAuth } from "@/lib/socket"
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api"
 
@@ -86,6 +86,7 @@ api.interceptors.response.use(
 				api.defaults.headers.common.Authorization = `Bearer ${accessToken}`
 				originalRequest.headers.Authorization = `Bearer ${accessToken}`
 
+				refreshSocketAuth(accessToken)
 				processQueue(null, accessToken)
 
 				return api(originalRequest)
