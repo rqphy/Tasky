@@ -20,6 +20,7 @@ import { projectWithMembersInclude } from "../lib/projectIncludes.js"
 import { verifyProjectMember } from "../lib/projectAccess.js"
 import { emitToProjectExceptUser } from "../lib/socket.js"
 import { SOCKET_EVENTS } from "../lib/socketEvents.js"
+import { boardTaskInclude } from "../lib/socketPayloads.js"
 import { buildShareUrl } from "../lib/share.js"
 import { buildInviteUrl } from "../lib/invite.js"
 import { sendInviteEmail } from "../lib/email/index.js"
@@ -696,7 +697,7 @@ router.post("/:id/columns", async (req, res) => {
 
 		emitToProjectExceptUser(id, userId, SOCKET_EVENTS.COLUMN_CREATED, {
 			projectId: id,
-			columnId: column.id,
+			column,
 		})
 
 		res.status(201).json(column)
@@ -740,7 +741,7 @@ router.patch("/:id/columns/:columnId", async (req, res) => {
 
 		emitToProjectExceptUser(id, userId, SOCKET_EVENTS.COLUMN_UPDATED, {
 			projectId: id,
-			columnId: updatedColumn.id,
+			column: updatedColumn,
 		})
 
 		res.status(200).json(updatedColumn)
@@ -830,9 +831,16 @@ router.post("/:id/columns/reorder", async (req, res) => {
 			),
 		)
 
+		const reorderedColumns = validatedData.columnIds.map(
+			(columnId, index) => ({
+				id: columnId,
+				position: index + 1,
+			}),
+		)
+
 		emitToProjectExceptUser(id, userId, SOCKET_EVENTS.COLUMN_REORDERED, {
 			projectId: id,
-			columnIds: validatedData.columnIds,
+			columns: reorderedColumns,
 		})
 
 		res.status(200).json({ message: "Columns reordered" })
@@ -887,12 +895,12 @@ router.post("/:projectId/tasks", async (req, res) => {
 				priority: validatedData.priority ?? "MEDIUM",
 				position,
 			},
+			include: boardTaskInclude,
 		})
 
 		emitToProjectExceptUser(projectId, userId, SOCKET_EVENTS.TASK_CREATED, {
 			projectId,
-			taskId: task.id,
-			columnId: task.columnId,
+			task,
 		})
 
 		res.status(201).json(task)
@@ -1023,11 +1031,12 @@ router.patch("/:projectId/tasks/:taskId", async (req, res) => {
 		const updatedTask = await prisma.task.update({
 			where: { id: taskId },
 			data: updateData,
+			include: boardTaskInclude,
 		})
 
 		emitToProjectExceptUser(projectId, userId, SOCKET_EVENTS.TASK_UPDATED, {
 			projectId,
-			taskId: updatedTask.id,
+			task: updatedTask,
 		})
 
 		res.status(200).json(updatedTask)

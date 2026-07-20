@@ -139,8 +139,7 @@ router.post("/accept", async (req, res) => {
 			SOCKET_EVENTS.MEMBER_JOINED,
 			{
 				projectId: invite.projectId,
-				userId: member.userId,
-				role: member.role,
+				member,
 			},
 		)
 

@@ -1,4 +1,8 @@
 import type { Server } from "socket.io"
+import type {
+	ServerBroadcastEvent,
+	SocketEventPayloadMap,
+} from "./socketPayloads.js"
 
 let io: Server | null = null
 const socketsByUserId = new Map<string, Set<string>>()
@@ -23,12 +27,12 @@ export function projectRoom(projectId: string) {
 	return `project:${projectId}`
 }
 
-export function emitToProjectExceptUser(
+export function emitToProjectExceptUser<E extends ServerBroadcastEvent>(
 	projectId: string,
 	excludeUserId: string,
-	event: string,
-	payload: unknown,
-) {
+	event: E,
+	payload: SocketEventPayloadMap[E],
+): void {
 	const excludeSocketIds = [...(socketsByUserId.get(excludeUserId) ?? [])]
 	io?.to(projectRoom(projectId)).except(excludeSocketIds).emit(event, payload)
 }
