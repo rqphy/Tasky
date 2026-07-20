@@ -2,6 +2,30 @@ import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { getSocket } from "@/lib/socket"
 import { SOCKET_EVENTS } from "@/lib/socketEvents"
+import {
+	patchColumnCreated,
+	patchColumnDeleted,
+	patchColumnReordered,
+	patchColumnUpdated,
+	patchMemberJoined,
+	patchMemberRemoved,
+	patchTaskCreated,
+	patchTaskDeleted,
+	patchTaskMoved,
+	patchTaskUpdated,
+} from "@/lib/projectCachePatches"
+import type {
+	ColumnCreatedPayload,
+	ColumnDeletedPayload,
+	ColumnReorderedPayload,
+	ColumnUpdatedPayload,
+	MemberJoinedPayload,
+	MemberRemovedPayload,
+	TaskCreatedPayload,
+	TaskDeletedPayload,
+	TaskMovedPayload,
+	TaskUpdatedPayload,
+} from "@/lib/socketPayloads"
 
 export function useProjectSocketEvents(projectId: string | undefined) {
 	const queryClient = useQueryClient()
@@ -11,29 +35,36 @@ export function useProjectSocketEvents(projectId: string | undefined) {
 		const socket = getSocket()
 		if (!socket) return
 
-		const invalidateProject = () => {
-			queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+		const onTaskCreated = (payload: TaskCreatedPayload) => {
+			patchTaskCreated(queryClient, payload)
 		}
-
-		const invalidateMembers = () => {
-			invalidateProject()
-			queryClient.invalidateQueries({
-				queryKey: ["project", projectId, "members"],
-			})
-			queryClient.invalidateQueries({ queryKey: ["projects"] })
+		const onTaskUpdated = (payload: TaskUpdatedPayload) => {
+			patchTaskUpdated(queryClient, payload)
 		}
-
-		const onTaskCreated = () => invalidateProject()
-		const onTaskUpdated = () => invalidateProject()
-		const onTaskDeleted = () => invalidateProject()
-		const onTaskMoved = () => invalidateProject()
-		const onColumnCreated = () => invalidateProject()
-		const onColumnUpdated = () => invalidateProject()
-		const onColumnDeleted = () => invalidateProject()
-		const onColumnReordered = () => invalidateProject()
-
-		const onMemberJoined = () => invalidateMembers()
-		const onMemberRemoved = () => invalidateMembers()
+		const onTaskDeleted = (payload: TaskDeletedPayload) => {
+			patchTaskDeleted(queryClient, payload)
+		}
+		const onTaskMoved = (payload: TaskMovedPayload) => {
+			patchTaskMoved(queryClient, payload)
+		}
+		const onColumnCreated = (payload: ColumnCreatedPayload) => {
+			patchColumnCreated(queryClient, payload)
+		}
+		const onColumnUpdated = (payload: ColumnUpdatedPayload) => {
+			patchColumnUpdated(queryClient, payload)
+		}
+		const onColumnDeleted = (payload: ColumnDeletedPayload) => {
+			patchColumnDeleted(queryClient, payload)
+		}
+		const onColumnReordered = (payload: ColumnReorderedPayload) => {
+			patchColumnReordered(queryClient, payload)
+		}
+		const onMemberJoined = (payload: MemberJoinedPayload) => {
+			patchMemberJoined(queryClient, payload)
+		}
+		const onMemberRemoved = (payload: MemberRemovedPayload) => {
+			patchMemberRemoved(queryClient, payload)
+		}
 
 		socket.on(SOCKET_EVENTS.TASK_CREATED, onTaskCreated)
 		socket.on(SOCKET_EVENTS.TASK_UPDATED, onTaskUpdated)
@@ -43,7 +74,6 @@ export function useProjectSocketEvents(projectId: string | undefined) {
 		socket.on(SOCKET_EVENTS.COLUMN_UPDATED, onColumnUpdated)
 		socket.on(SOCKET_EVENTS.COLUMN_DELETED, onColumnDeleted)
 		socket.on(SOCKET_EVENTS.COLUMN_REORDERED, onColumnReordered)
-
 		socket.on(SOCKET_EVENTS.MEMBER_JOINED, onMemberJoined)
 		socket.on(SOCKET_EVENTS.MEMBER_REMOVED, onMemberRemoved)
 
@@ -56,7 +86,6 @@ export function useProjectSocketEvents(projectId: string | undefined) {
 			socket.off(SOCKET_EVENTS.COLUMN_UPDATED, onColumnUpdated)
 			socket.off(SOCKET_EVENTS.COLUMN_DELETED, onColumnDeleted)
 			socket.off(SOCKET_EVENTS.COLUMN_REORDERED, onColumnReordered)
-
 			socket.off(SOCKET_EVENTS.MEMBER_JOINED, onMemberJoined)
 			socket.off(SOCKET_EVENTS.MEMBER_REMOVED, onMemberRemoved)
 		}
