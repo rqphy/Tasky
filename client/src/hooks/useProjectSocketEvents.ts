@@ -1,9 +1,7 @@
 import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { getSocket } from "@/lib/socket"
-import { BROADCAST_EVENTS, MEMBER_BROADCAST_EVENTS } from "@/lib/socketEvents"
-
-const MEMBER_EVENTS = new Set<string>(MEMBER_BROADCAST_EVENTS)
+import { SOCKET_EVENTS } from "@/lib/socketEvents"
 
 export function useProjectSocketEvents(projectId: string | undefined) {
 	const queryClient = useQueryClient()
@@ -25,22 +23,42 @@ export function useProjectSocketEvents(projectId: string | undefined) {
 			queryClient.invalidateQueries({ queryKey: ["projects"] })
 		}
 
-		const handlers = BROADCAST_EVENTS.map((event) => {
-			const handler = () => {
-				if (MEMBER_EVENTS.has(event)) {
-					invalidateMembers()
-				} else {
-					invalidateProject()
-				}
-			}
-			socket.on(event, handler)
-			return { event, handler }
-		})
+		const onTaskCreated = () => invalidateProject()
+		const onTaskUpdated = () => invalidateProject()
+		const onTaskDeleted = () => invalidateProject()
+		const onTaskMoved = () => invalidateProject()
+		const onColumnCreated = () => invalidateProject()
+		const onColumnUpdated = () => invalidateProject()
+		const onColumnDeleted = () => invalidateProject()
+		const onColumnReordered = () => invalidateProject()
+
+		const onMemberJoined = () => invalidateMembers()
+		const onMemberRemoved = () => invalidateMembers()
+
+		socket.on(SOCKET_EVENTS.TASK_CREATED, onTaskCreated)
+		socket.on(SOCKET_EVENTS.TASK_UPDATED, onTaskUpdated)
+		socket.on(SOCKET_EVENTS.TASK_DELETED, onTaskDeleted)
+		socket.on(SOCKET_EVENTS.TASK_MOVED, onTaskMoved)
+		socket.on(SOCKET_EVENTS.COLUMN_CREATED, onColumnCreated)
+		socket.on(SOCKET_EVENTS.COLUMN_UPDATED, onColumnUpdated)
+		socket.on(SOCKET_EVENTS.COLUMN_DELETED, onColumnDeleted)
+		socket.on(SOCKET_EVENTS.COLUMN_REORDERED, onColumnReordered)
+
+		socket.on(SOCKET_EVENTS.MEMBER_JOINED, onMemberJoined)
+		socket.on(SOCKET_EVENTS.MEMBER_REMOVED, onMemberRemoved)
 
 		return () => {
-			for (const { event, handler } of handlers) {
-				socket.off(event, handler)
-			}
+			socket.off(SOCKET_EVENTS.TASK_CREATED, onTaskCreated)
+			socket.off(SOCKET_EVENTS.TASK_UPDATED, onTaskUpdated)
+			socket.off(SOCKET_EVENTS.TASK_DELETED, onTaskDeleted)
+			socket.off(SOCKET_EVENTS.TASK_MOVED, onTaskMoved)
+			socket.off(SOCKET_EVENTS.COLUMN_CREATED, onColumnCreated)
+			socket.off(SOCKET_EVENTS.COLUMN_UPDATED, onColumnUpdated)
+			socket.off(SOCKET_EVENTS.COLUMN_DELETED, onColumnDeleted)
+			socket.off(SOCKET_EVENTS.COLUMN_REORDERED, onColumnReordered)
+
+			socket.off(SOCKET_EVENTS.MEMBER_JOINED, onMemberJoined)
+			socket.off(SOCKET_EVENTS.MEMBER_REMOVED, onMemberRemoved)
 		}
 	}, [projectId, queryClient])
 }
