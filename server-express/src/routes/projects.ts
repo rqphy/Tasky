@@ -19,6 +19,7 @@ import { authMiddleware } from "../middleware/auth.js"
 import { projectWithMembersInclude } from "../lib/projectIncludes.js"
 import { verifyProjectMember } from "../lib/projectAccess.js"
 import { emitToProjectExceptUser } from "../lib/socket.js"
+import { SOCKET_EVENTS } from "../lib/socketEvents.js"
 import { buildShareUrl } from "../lib/share.js"
 import { buildInviteUrl } from "../lib/invite.js"
 import { sendInviteEmail } from "../lib/email/index.js"
@@ -258,6 +259,13 @@ router.delete("/:id/members/:userId", async (req, res) => {
 				},
 			}),
 		])
+
+		emitToProjectExceptUser(
+			projectId,
+			requesterId,
+			SOCKET_EVENTS.MEMBER_REMOVED,
+			{ projectId, userId: targetUserId },
+		)
 
 		res.status(204).send()
 	} catch (error) {
@@ -686,6 +694,11 @@ router.post("/:id/columns", async (req, res) => {
 			},
 		})
 
+		emitToProjectExceptUser(id, userId, SOCKET_EVENTS.COLUMN_CREATED, {
+			projectId: id,
+			columnId: column.id,
+		})
+
 		res.status(201).json(column)
 	} catch (error) {
 		if (error instanceof Error && error.name === "ZodError") {
@@ -725,6 +738,11 @@ router.patch("/:id/columns/:columnId", async (req, res) => {
 			data: validatedData,
 		})
 
+		emitToProjectExceptUser(id, userId, SOCKET_EVENTS.COLUMN_UPDATED, {
+			projectId: id,
+			columnId: updatedColumn.id,
+		})
+
 		res.status(200).json(updatedColumn)
 	} catch (error) {
 		if (error instanceof Error && error.name === "ZodError") {
@@ -760,6 +778,11 @@ router.delete("/:id/columns/:columnId", async (req, res) => {
 
 		await prisma.column.delete({
 			where: { id: columnId },
+		})
+
+		emitToProjectExceptUser(id, userId, SOCKET_EVENTS.COLUMN_DELETED, {
+			projectId: id,
+			columnId,
 		})
 
 		res.status(204).send()
@@ -806,6 +829,11 @@ router.post("/:id/columns/reorder", async (req, res) => {
 				}),
 			),
 		)
+
+		emitToProjectExceptUser(id, userId, SOCKET_EVENTS.COLUMN_REORDERED, {
+			projectId: id,
+			columnIds: validatedData.columnIds,
+		})
 
 		res.status(200).json({ message: "Columns reordered" })
 	} catch (error) {
@@ -859,6 +887,12 @@ router.post("/:projectId/tasks", async (req, res) => {
 				priority: validatedData.priority ?? "MEDIUM",
 				position,
 			},
+		})
+
+		emitToProjectExceptUser(projectId, userId, SOCKET_EVENTS.TASK_CREATED, {
+			projectId,
+			taskId: task.id,
+			columnId: task.columnId,
 		})
 
 		res.status(201).json(task)
@@ -991,6 +1025,11 @@ router.patch("/:projectId/tasks/:taskId", async (req, res) => {
 			data: updateData,
 		})
 
+		emitToProjectExceptUser(projectId, userId, SOCKET_EVENTS.TASK_UPDATED, {
+			projectId,
+			taskId: updatedTask.id,
+		})
+
 		res.status(200).json(updatedTask)
 	} catch (error) {
 		if (error instanceof Error && error.name === "ZodError") {
@@ -1032,6 +1071,11 @@ router.delete("/:projectId/tasks/:taskId", async (req, res) => {
 
 		await prisma.task.delete({
 			where: { id: taskId },
+		})
+
+		emitToProjectExceptUser(projectId, userId, SOCKET_EVENTS.TASK_DELETED, {
+			projectId,
+			taskId,
 		})
 
 		res.status(204).send()
@@ -1083,7 +1127,7 @@ router.post("/:projectId/tasks/:taskId/move", async (req, res) => {
 			},
 		})
 
-		emitToProjectExceptUser(projectId, userId, "task:moved", {
+		emitToProjectExceptUser(projectId, userId, SOCKET_EVENTS.TASK_MOVED, {
 			projectId,
 			taskId: updatedTask.id,
 			columnId: updatedTask.columnId,

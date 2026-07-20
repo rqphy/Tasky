@@ -1,4 +1,5 @@
 import { io, type Socket } from "socket.io-client"
+import { SOCKET_EVENTS } from "@/lib/socketEvents"
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001"
 
@@ -30,7 +31,7 @@ export function disconnectSocket() {
 
 export function joinProjectRoom(projectId: string) {
 	getSocket()?.emit(
-		"joinProject",
+		SOCKET_EVENTS.PROJECT_JOIN,
 		projectId,
 		(res: { ok: boolean; error?: string }) => {
 			console.log("Joined project room:", projectId, res)
@@ -39,5 +40,5 @@ export function joinProjectRoom(projectId: string) {
 }
 
 export function leaveProjectRoom(projectId: string) {
-	getSocket()?.emit("leaveProject", projectId)
+	getSocket()?.emit(SOCKET_EVENTS.PROJECT_LEAVE, projectId)
 }

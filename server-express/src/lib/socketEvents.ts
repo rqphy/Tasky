@@ -1,0 +1,38 @@
+export const SOCKET_EVENTS = {
+	// Client → Server
+	PROJECT_JOIN: "joinProject",
+	PROJECT_LEAVE: "leaveProject",
+
+	// Server → Client (broadcasts)
+	TASK_CREATED: "task:created",
+	TASK_UPDATED: "task:updated",
+	TASK_DELETED: "task:deleted",
+	TASK_MOVED: "task:moved",
+	COLUMN_CREATED: "column:created",
+	COLUMN_UPDATED: "column:updated",
+	COLUMN_DELETED: "column:deleted",
+	COLUMN_REORDERED: "column:reordered",
+	MEMBER_JOINED: "member:joined",
+	MEMBER_REMOVED: "member:removed",
+} as const
+
+export type SocketEvent = (typeof SOCKET_EVENTS)[keyof typeof SOCKET_EVENTS]
+
+/** All server-initiated broadcast events */
+export const BROADCAST_EVENTS = [
+	SOCKET_EVENTS.TASK_CREATED,
+	SOCKET_EVENTS.TASK_UPDATED,
+	SOCKET_EVENTS.TASK_DELETED,
+	SOCKET_EVENTS.TASK_MOVED,
+	SOCKET_EVENTS.COLUMN_CREATED,
+	SOCKET_EVENTS.COLUMN_UPDATED,
+	SOCKET_EVENTS.COLUMN_DELETED,
+	SOCKET_EVENTS.COLUMN_REORDERED,
+	SOCKET_EVENTS.MEMBER_JOINED,
+	SOCKET_EVENTS.MEMBER_REMOVED,
+] as const
+
+export const MEMBER_BROADCAST_EVENTS = [
+	SOCKET_EVENTS.MEMBER_JOINED,
+	SOCKET_EVENTS.MEMBER_REMOVED,
+] as const

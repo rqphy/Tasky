@@ -1,11 +1,12 @@
 import type { Server, Socket } from "socket.io"
 import { verifyProjectMember } from "../lib/projectAccess.js"
 import { projectRoom } from "../lib/socket.js"
+import { SOCKET_EVENTS } from "../lib/socketEvents.js"
 
 type Ack = (response: { ok: boolean; error?: string }) => void
 
 function registerHandlers(socket: Socket) {
-	socket.on("joinProject", async (projectId: string, ack?: Ack) => {
+	socket.on(SOCKET_EVENTS.PROJECT_JOIN, async (projectId: string, ack?: Ack) => {
 		if (typeof projectId !== "string" || !projectId) {
 			ack?.({ ok: false, error: "Invalid projectId" })
 			return
@@ -22,7 +23,7 @@ function registerHandlers(socket: Socket) {
 		ack?.({ ok: true })
 	})
 
-	socket.on("leaveProject", async (projectId: string) => {
+	socket.on(SOCKET_EVENTS.PROJECT_LEAVE, async (projectId: string) => {
 		if (typeof projectId !== "string" || !projectId) return
 		await socket.leave(projectRoom(projectId))
 		console.log(`Socket ${socket.id} left ${projectRoom(projectId)}`)

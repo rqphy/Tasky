@@ -2,6 +2,8 @@ import express from "express"
 import { prisma } from "../lib/db.js"
 import { acceptInviteSchema } from "../lib/validation.js"
 import { authMiddleware } from "../middleware/auth.js"
+import { emitToProjectExceptUser } from "../lib/socket.js"
+import { SOCKET_EVENTS } from "../lib/socketEvents.js"
 
 const router = express.Router()
 
@@ -130,6 +132,17 @@ router.post("/accept", async (req, res) => {
 
 			return createdMember
 		})
+
+		emitToProjectExceptUser(
+			invite.projectId,
+			userId,
+			SOCKET_EVENTS.MEMBER_JOINED,
+			{
+				projectId: invite.projectId,
+				userId: member.userId,
+				role: member.role,
+			},
+		)
 
 		res.status(200).json({
 			member,

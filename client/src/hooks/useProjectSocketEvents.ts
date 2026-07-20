@@ -1,13 +1,9 @@
 import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { getSocket } from "@/lib/socket"
+import { BROADCAST_EVENTS, MEMBER_BROADCAST_EVENTS } from "@/lib/socketEvents"
 
-export interface TaskMovedEvent {
-	projectId: string
-	taskId: string
-	columnId: string
-	position: number
-}
+const MEMBER_EVENTS = new Set<string>(MEMBER_BROADCAST_EVENTS)
 
 export function useProjectSocketEvents(projectId: string | undefined) {
 	const queryClient = useQueryClient()
@@ -17,13 +13,34 @@ export function useProjectSocketEvents(projectId: string | undefined) {
 		const socket = getSocket()
 		if (!socket) return
 
-		const onTaskMoved = (_payload: TaskMovedEvent) => {
+		const invalidateProject = () => {
 			queryClient.invalidateQueries({ queryKey: ["project", projectId] })
 		}
 
-		socket.on("task:moved", onTaskMoved)
+		const invalidateMembers = () => {
+			invalidateProject()
+			queryClient.invalidateQueries({
+				queryKey: ["project", projectId, "members"],
+			})
+			queryClient.invalidateQueries({ queryKey: ["projects"] })
+		}
+
+		const handlers = BROADCAST_EVENTS.map((event) => {
+			const handler = () => {
+				if (MEMBER_EVENTS.has(event)) {
+					invalidateMembers()
+				} else {
+					invalidateProject()
+				}
+			}
+			socket.on(event, handler)
+			return { event, handler }
+		})
+
 		return () => {
-			socket.off("task:moved", onTaskMoved)
+			for (const { event, handler } of handlers) {
+				socket.off(event, handler)
+			}
 		}
 	}, [projectId, queryClient])
 }
