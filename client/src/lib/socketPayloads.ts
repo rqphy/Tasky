@@ -98,6 +98,23 @@ export type ProjectDeletedPayload = {
 	projectId: string
 }
 
+export type NotificationCreatedPayload = {
+	id: string
+	projectId: string
+	type: string
+	title: string
+	message: string
+	timestamp: string
+	isRead: boolean
+	actorId: string
+	metadata?: {
+		taskId: string
+		taskTitle: string
+		oldStatus?: string
+		newStatus?: string
+	}
+}
+
 export type SocketEventPayloadMap = {
 	[SOCKET_EVENTS.PROJECT_UPDATED]: ProjectUpdatedPayload
 	[SOCKET_EVENTS.PROJECT_DELETED]: ProjectDeletedPayload
@@ -111,6 +128,7 @@ export type SocketEventPayloadMap = {
 	[SOCKET_EVENTS.COLUMN_REORDERED]: ColumnReorderedPayload
 	[SOCKET_EVENTS.MEMBER_JOINED]: MemberJoinedPayload
 	[SOCKET_EVENTS.MEMBER_REMOVED]: MemberRemovedPayload
+	[SOCKET_EVENTS.NOTIFICATION_CREATED]: NotificationCreatedPayload
 }
 
 export type ServerBroadcastEvent = keyof SocketEventPayloadMap

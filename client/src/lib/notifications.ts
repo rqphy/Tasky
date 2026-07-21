@@ -1,78 +1,90 @@
-import { mockNotifications, type Notification } from "@/mocks/notifications"
+import type { QueryClient } from "@tanstack/react-query"
+import { api } from "./api"
+import type { NotificationCreatedPayload } from "./socketPayloads"
 
-/**
- * Get the count of unread notifications for a specific project
- */
-export function getUnreadCountForProject(projectId: string): number {
-	return mockNotifications.filter(
-		(n) => n.projectId === projectId && !n.isRead
+export type NotificationType =
+	| "task_assigned"
+	| "task_comment"
+	| "task_status_changed"
+	| "project_invite"
+	| "member_added"
+	| "member_removed"
+
+export interface Notification {
+	id: string
+	projectId: string
+	type: NotificationType
+	title: string
+	message: string
+	timestamp: Date
+	isRead: boolean
+	actorId?: string
+	metadata?: {
+		taskId?: string
+		taskTitle?: string
+		oldStatus?: string
+		newStatus?: string
+	}
+}
+
+export type NotificationDto = Omit<Notification, "timestamp"> & {
+	timestamp: string
+}
+
+const NOTIFICATION_TYPES = new Set<NotificationType>([
+	"task_assigned",
+	"task_comment",
+	"task_status_changed",
+	"project_invite",
+	"member_added",
+	"member_removed",
+])
+
+export function mapNotification(raw: NotificationDto | NotificationCreatedPayload): Notification {
+	return {
+		...raw,
+		type: NOTIFICATION_TYPES.has(raw.type as NotificationType)
+			? (raw.type as NotificationType)
+			: "task_assigned",
+		timestamp: new Date(raw.timestamp),
+	}
+}
+
+export function getUnreadCountForProject(
+	notifications: Notification[],
+	projectId: string,
+): number {
+	return notifications.filter(
+		(n) => n.projectId === projectId && !n.isRead,
 	).length
 }
 
-/**
- * Get all unread notifications for a specific project
- */
-export function getUnreadNotifications(projectId: string): Notification[] {
-	return mockNotifications
-		.filter((n) => n.projectId === projectId && !n.isRead)
-		.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+export const notificationsApi = {
+	list: (projectId?: string) =>
+		api.get<NotificationDto[]>("/notifications", {
+			params: projectId ? { projectId } : undefined,
+		}),
+
+	markRead: (notificationId: string) =>
+		api.patch<NotificationDto>(`/notifications/${notificationId}/read`),
+
+	markAllRead: (projectId?: string) =>
+		api.patch("/notifications/read-all", undefined, {
+			params: projectId ? { projectId } : undefined,
+		}),
 }
 
-/**
- * Get all read notifications for a specific project
- */
-export function getReadNotifications(projectId: string): Notification[] {
-	return mockNotifications
-		.filter((n) => n.projectId === projectId && n.isRead)
-		.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-}
-
-/**
- * Get all notifications for a specific project
- */
-export function getNotificationsForProject(projectId: string): Notification[] {
-	return mockNotifications
-		.filter((n) => n.projectId === projectId)
-		.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-}
-
-/**
- * Mark a notification as read
- * TODO: Replace with API call when backend is implemented
- */
-export function markNotificationAsRead(notificationId: string): void {
-	const notification = mockNotifications.find((n) => n.id === notificationId)
-	if (notification) {
-		notification.isRead = true
-	}
-}
-
-/**
- * Toggle notification read status
- * TODO: Replace with API call when backend is implemented
- */
-export function toggleNotificationRead(notificationId: string): void {
-	const notification = mockNotifications.find((n) => n.id === notificationId)
-	if (notification) {
-		notification.isRead = !notification.isRead
-	}
-}
-
-/**
- * Mark all notifications as read for a specific project
- * TODO: Replace with API call when backend is implemented
- */
-export function markAllAsReadForProject(projectId: string): void {
-	mockNotifications.forEach((notification) => {
-		if (notification.projectId === projectId) {
-			notification.isRead = true
-		}
+export function patchNotificationCreated(
+	queryClient: QueryClient,
+	notification: Notification,
+): void {
+	queryClient.setQueryData<Notification[]>(["notifications"], (prev) => {
+		if (!prev) return [notification]
+		if (prev.some((n) => n.id === notification.id)) return prev
+		return [notification, ...prev]
 	})
 }
 
-/**
- * Format timestamp as relative time
- */
 export function formatRelativeTime(date: Date): string {
 	const now = new Date()
 	const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
@@ -100,7 +112,6 @@ export function formatRelativeTime(date: Date): string {
 		return `${diffInDays} days ago`
 	}
 
-	// For older dates, show formatted date
 	const options: Intl.DateTimeFormatOptions = {
 		month: "short",
 		day: "numeric",

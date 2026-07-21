@@ -10,7 +10,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { NotificationItem } from "@/components/NotificationItem"
 import { useNotifications, useMarkAsRead } from "@/hooks/useNotifications"
-import { getUnreadNotifications, getReadNotifications } from "@/lib/notifications"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { CheckmarkBadge02Icon } from "@hugeicons/core-free-icons"
 
@@ -25,11 +24,9 @@ export function NotificationPanel({
 	open,
 	onOpenChange,
 }: NotificationPanelProps) {
-	const { unreadCount, refresh } = useNotifications(projectId)
+	const { unreadCount, unreadNotifications, readNotifications, refresh } =
+		useNotifications(projectId)
 	const { toggleRead, markAllAsRead } = useMarkAsRead()
-
-	const unreadNotifications = getUnreadNotifications(projectId)
-	const readNotifications = getReadNotifications(projectId)
 	const hasNotifications = unreadNotifications.length > 0 || readNotifications.length > 0
 
 	const handleToggleRead = (id: string) => {

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { type Notification } from "@/mocks/notifications"
+import { type Notification } from "@/lib/notifications"
 import { formatRelativeTime } from "@/lib/notifications"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Notification02Icon, Tick02Icon, Cancel01Icon } from "@hugeicons/core-free-icons"

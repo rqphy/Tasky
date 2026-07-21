@@ -1,80 +1,127 @@
-import { useState, useEffect } from "react"
-import { type Notification } from "@/mocks/notifications"
+import { useMemo } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
-	getNotificationsForProject,
-	getUnreadCountForProject,
-	markNotificationAsRead,
-	markAllAsReadForProject,
-	toggleNotificationRead,
+	notificationsApi,
+	mapNotification,
+	type Notification,
 } from "@/lib/notifications"
 
-/**
- * Hook to fetch notifications for a specific project
- * TODO: Replace with API call and WebSocket updates when backend is implemented
- * Future: GET /api/notifications?projectId={id}
- * Future: WebSocket /ws/notifications for real-time updates
- */
 export function useNotifications(projectId: string) {
-	const [notifications, setNotifications] = useState<Notification[]>([])
-	const [unreadCount, setUnreadCount] = useState(0)
+	const query = useQuery({
+		queryKey: ["notifications"],
+		queryFn: () =>
+			notificationsApi.list().then((r) => r.data.map(mapNotification)),
+	})
 
-	// Simulate fetching notifications
-	useEffect(() => {
-		const fetchNotifications = () => {
-			const projectNotifications = getNotificationsForProject(projectId)
-			const count = getUnreadCountForProject(projectId)
-			setNotifications(projectNotifications)
-			setUnreadCount(count)
-		}
+	const projectNotifications = useMemo(() => {
+		if (!query.data) return []
+		return query.data
+			.filter((n) => n.projectId === projectId)
+			.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+	}, [query.data, projectId])
 
-		fetchNotifications()
+	const unreadNotifications = useMemo(
+		() => projectNotifications.filter((n) => !n.isRead),
+		[projectNotifications],
+	)
 
-		// Refresh every 5 seconds to simulate real-time updates
-		// TODO: Replace with WebSocket subscription
-		const interval = setInterval(fetchNotifications, 5000)
+	const readNotifications = useMemo(
+		() => projectNotifications.filter((n) => n.isRead),
+		[projectNotifications],
+	)
 
-		return () => clearInterval(interval)
-	}, [projectId])
+	const unreadCount = unreadNotifications.length
 
 	const refresh = () => {
-		const projectNotifications = getNotificationsForProject(projectId)
-		const count = getUnreadCountForProject(projectId)
-		setNotifications(projectNotifications)
-		setUnreadCount(count)
+		void query.refetch()
 	}
 
 	return {
-		notifications,
+		notifications: projectNotifications,
+		unreadNotifications,
+		readNotifications,
 		unreadCount,
+		isLoading: query.isLoading,
 		refresh,
 	}
 }
 
-/**
- * Hook to handle notification read/unread actions
- * TODO: Replace with API calls when backend is implemented
- * Future: PATCH /api/notifications/{id}/read
- * Future: PATCH /api/notifications/mark-all-read?projectId={id}
- */
+export function useAllNotifications() {
+	const query = useQuery({
+		queryKey: ["notifications"],
+		queryFn: () =>
+			notificationsApi.list().then((r) => r.data.map(mapNotification)),
+	})
+
+	return {
+		notifications: query.data ?? [],
+		isLoading: query.isLoading,
+	}
+}
+
 export function useMarkAsRead() {
+	const queryClient = useQueryClient()
+
+	const markReadMutation = useMutation({
+		mutationFn: (notificationId: string) =>
+			notificationsApi.markRead(notificationId).then((r) => mapNotification(r.data)),
+		onMutate: async (notificationId) => {
+			await queryClient.cancelQueries({ queryKey: ["notifications"] })
+			const previous = queryClient.getQueryData<Notification[]>(["notifications"])
+			queryClient.setQueryData<Notification[]>(["notifications"], (prev) =>
+				prev?.map((n) =>
+					n.id === notificationId ? { ...n, isRead: true } : n,
+				),
+			)
+			return { previous }
+		},
+		onError: (_err, _id, context) => {
+			if (context?.previous) {
+				queryClient.setQueryData(["notifications"], context.previous)
+			}
+		},
+		onSuccess: (updated) => {
+			queryClient.setQueryData<Notification[]>(["notifications"], (prev) =>
+				prev?.map((n) => (n.id === updated.id ? updated : n)),
+			)
+		},
+	})
+
+	const markAllReadMutation = useMutation({
+		mutationFn: (projectId: string) => notificationsApi.markAllRead(projectId),
+		onMutate: async (projectId) => {
+			await queryClient.cancelQueries({ queryKey: ["notifications"] })
+			const previous = queryClient.getQueryData<Notification[]>(["notifications"])
+			queryClient.setQueryData<Notification[]>(["notifications"], (prev) =>
+				prev?.map((n) =>
+					n.projectId === projectId ? { ...n, isRead: true } : n,
+				),
+			)
+			return { previous }
+		},
+		onError: (_err, _projectId, context) => {
+			if (context?.previous) {
+				queryClient.setQueryData(["notifications"], context.previous)
+			}
+		},
+	})
+
 	const markAsRead = (notificationId: string, onSuccess?: () => void) => {
-		// TODO: Optimistic update + API call
-		// Future: await fetch(`/api/notifications/${notificationId}/read`, { method: 'PATCH' })
-		markNotificationAsRead(notificationId)
-		onSuccess?.()
+		markReadMutation.mutate(notificationId, { onSuccess: () => onSuccess?.() })
 	}
 
 	const toggleRead = (notificationId: string, onSuccess?: () => void) => {
-		// TODO: Optimistic update + API call
-		toggleNotificationRead(notificationId)
-		onSuccess?.()
+		const notification = queryClient
+			.getQueryData<Notification[]>(["notifications"])
+			?.find((n) => n.id === notificationId)
+
+		if (notification && !notification.isRead) {
+			markAsRead(notificationId, onSuccess)
+		}
 	}
 
 	const markAllAsRead = (projectId: string, onSuccess?: () => void) => {
-		// TODO: Optimistic update + API call
-		// Future: await fetch(`/api/notifications/mark-all-read?projectId=${projectId}`, { method: 'PATCH' })
-		markAllAsReadForProject(projectId)
-		onSuccess?.()
+		markAllReadMutation.mutate(projectId, { onSuccess: () => onSuccess?.() })
 	}
 
 	return {

@@ -3,9 +3,11 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { AppSidebar } from "@/components/AppSidebar"
 import { useGlobalProjectSocketEvents } from "@/hooks/useGlobalProjectSocketEvents"
+import { useGlobalNotificationSocketEvents } from "@/hooks/useGlobalNotificationSocketEvents"
 
 export function AppLayout() {
 	useGlobalProjectSocketEvents()
+	useGlobalNotificationSocketEvents()
 
 	return (
 		<TooltipProvider>

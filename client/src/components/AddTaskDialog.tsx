@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import type { TaskLabel, TaskPriority } from "@/types/task"
 import { TASK_LABELS } from "@/lib/labels"
 import { TASK_PRIORITIES } from "@/lib/priority"
-import { useCreateTask } from "@/hooks/useProjects"
+import { useCreateTask, useProjectMembers } from "@/hooks/useProjects"
 import type { CreateTaskInput } from "@/lib/projects"
 
 interface AddTaskDialogProps {
@@ -30,8 +30,10 @@ export function AddTaskDialog({
 	const [description, setDescription] = useState("")
 	const [label, setLabel] = useState<TaskLabel | "">("")
 	const [priority, setPriority] = useState<TaskPriority>("medium")
+	const [assigneeId, setAssigneeId] = useState("")
 
 	const createTask = useCreateTask(projectId)
+	const { data: members = [] } = useProjectMembers(projectId, open)
 
 	// Reset form whenever dialog opens
 	useEffect(() => {
@@ -40,6 +42,7 @@ export function AddTaskDialog({
 			setDescription("")
 			setLabel("")
 			setPriority("medium")
+			setAssigneeId("")
 		}
 	}, [open])
 
@@ -56,6 +59,7 @@ export function AddTaskDialog({
 					? (label.toUpperCase() as CreateTaskInput["label"])
 					: undefined,
 				priority: priority.toUpperCase() as CreateTaskInput["priority"],
+				assigneeId: assigneeId || undefined,
 			},
 			{
 				onSuccess: () => onOpenChange(false),
@@ -147,6 +151,27 @@ export function AddTaskDialog({
 								))}
 							</select>
 						</div>
+					</div>
+
+					<div className="space-y-1.5">
+						<label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+							Assignee
+						</label>
+						<select
+							value={assigneeId}
+							onChange={(e) => setAssigneeId(e.target.value)}
+							className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+						>
+							<option value="">Unassigned</option>
+							{members.map((member) => {
+								if (!member.user) return null
+								return (
+									<option key={member.userId} value={member.user.id}>
+										{member.user.name}
+									</option>
+								)
+							})}
+						</select>
 					</div>
 				</div>
 

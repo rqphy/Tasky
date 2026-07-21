@@ -27,6 +27,7 @@ import { AddProjectDialog } from "./AddProjectDialog"
 import { EditProjectDialog } from "./EditProjectDialog"
 import { ConfirmMemberActionDialog } from "@/components/ConfirmMemberActionDialog"
 import { getUnreadCountForProject } from "@/lib/notifications"
+import { useAllNotifications } from "@/hooks/useNotifications"
 import { useAuth } from "@/contexts/AuthContext"
 import {
 	useProjects,
@@ -68,6 +69,7 @@ export function AppSidebar() {
 	const navigate = useNavigate()
 
 	const { data: projects, isLoading } = useProjects()
+	const { notifications } = useAllNotifications()
 	const createProject = useCreateProject()
 	const updateProject = useUpdateProject()
 	const deleteProject = useDeleteProject()
@@ -183,8 +185,10 @@ export function AppSidebar() {
 									</SidebarMenuItem>
 								) : (
 									projects?.map((project) => {
-										const unreadCount =
-											getUnreadCountForProject(project.id)
+										const unreadCount = getUnreadCountForProject(
+											notifications,
+											project.id,
+										)
 										const isActive = project.id === projectId
 										const isOwner =
 											!!user && project.ownerId === user.id
