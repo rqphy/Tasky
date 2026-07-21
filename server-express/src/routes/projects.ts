@@ -30,6 +30,7 @@ import { boardTaskInclude } from "../lib/socketPayloads.js"
 import { buildShareUrl } from "../lib/share.js"
 import { buildInviteUrl } from "../lib/invite.js"
 import { sendInviteEmail } from "../lib/email/index.js"
+import { dispatchTaskNotifications } from "../lib/notifications.js"
 
 const router = express.Router()
 
@@ -931,6 +932,31 @@ router.post("/:projectId/tasks", async (req, res) => {
 			task,
 		})
 
+		if (validatedData.assigneeId) {
+			try {
+				const actor = await prisma.user.findUnique({
+					where: { id: userId },
+					select: { name: true },
+				})
+				await dispatchTaskNotifications(
+					{
+						type: "TASK_ASSIGNED",
+						taskId: task.id,
+						assigneeId: validatedData.assigneeId,
+						actorId: userId,
+					},
+					{
+						projectId,
+						actorName: actor?.name ?? "Someone",
+						taskId: task.id,
+						taskTitle: task.title,
+					},
+				)
+			} catch (err) {
+				console.error("Notification dispatch error:", err)
+			}
+		}
+
 		res.status(201).json(task)
 	} catch (error) {
 		if (error instanceof Error && error.name === "ZodError") {
@@ -1019,11 +1045,14 @@ router.patch("/:projectId/tasks/:taskId", async (req, res) => {
 
 		// If columnId is being changed, verify new column belongs to project
 		let updateData: any = { ...validatedData }
+		let newColumn: Awaited<
+			ReturnType<typeof prisma.column.findUnique>
+		> = null
 		if (
 			validatedData.columnId &&
 			validatedData.columnId !== task.columnId
 		) {
-			const newColumn = await prisma.column.findUnique({
+			newColumn = await prisma.column.findUnique({
 				where: { id: validatedData.columnId },
 			})
 
@@ -1066,6 +1095,59 @@ router.patch("/:projectId/tasks/:taskId", async (req, res) => {
 			projectId,
 			task: updatedTask,
 		})
+
+		const assigneeChanged =
+			validatedData.assigneeId !== undefined &&
+			validatedData.assigneeId !== task.assigneeId &&
+			validatedData.assigneeId
+		const columnChanged =
+			validatedData.columnId &&
+			validatedData.columnId !== task.columnId
+
+		if (assigneeChanged || columnChanged) {
+			try {
+				const actor = await prisma.user.findUnique({
+					where: { id: userId },
+					select: { name: true },
+				})
+				const actorName = actor?.name ?? "Someone"
+				const notifContext = {
+					projectId,
+					actorName,
+					taskId,
+					taskTitle: updatedTask.title,
+				}
+
+				if (assigneeChanged) {
+					await dispatchTaskNotifications(
+						{
+							type: "TASK_ASSIGNED",
+							taskId,
+							assigneeId: validatedData.assigneeId!,
+							actorId: userId,
+						},
+						notifContext,
+					)
+				}
+
+				if (columnChanged && newColumn) {
+					await dispatchTaskNotifications(
+						{
+							type: "TASK_STATUS_CHANGED",
+							taskId,
+							actorId: userId,
+						},
+						{
+							...notifContext,
+							oldColumnName: task.column.name,
+							newColumnName: newColumn.name,
+						},
+					)
+				}
+			} catch (err) {
+				console.error("Notification dispatch error:", err)
+			}
+		}
 
 		res.status(200).json(updatedTask)
 	} catch (error) {
@@ -1171,6 +1253,32 @@ router.post("/:projectId/tasks/:taskId/move", async (req, res) => {
 			position: updatedTask.position,
 		})
 
+		if (validatedData.columnId !== task.columnId) {
+			try {
+				const actor = await prisma.user.findUnique({
+					where: { id: userId },
+					select: { name: true },
+				})
+				await dispatchTaskNotifications(
+					{
+						type: "TASK_STATUS_CHANGED",
+						taskId,
+						actorId: userId,
+					},
+					{
+						projectId,
+						actorName: actor?.name ?? "Someone",
+						taskId,
+						taskTitle: task.title,
+						oldColumnName: task.column.name,
+						newColumnName: column.name,
+					},
+				)
+			} catch (err) {
+				console.error("Notification dispatch error:", err)
+			}
+		}
+
 		res.status(200).json(updatedTask)
 	} catch (error) {
 		if (error instanceof Error && error.name === "ZodError") {
@@ -1222,6 +1330,24 @@ router.post("/:projectId/tasks/:taskId/comments", async (req, res) => {
 				},
 			},
 		})
+
+		try {
+			await dispatchTaskNotifications(
+				{
+					type: "TASK_COMMENT",
+					taskId,
+					actorId: userId,
+				},
+				{
+					projectId,
+					actorName: comment.author.name,
+					taskId,
+					taskTitle: task.title,
+				},
+			)
+		} catch (err) {
+			console.error("Notification dispatch error:", err)
+		}
 
 		res.status(201).json(comment)
 	} catch (error) {

@@ -17,9 +17,11 @@ model User {
   ownedProjects  Project[]       @relation("ProjectOwner")
   projectMembers ProjectMember[]
   refreshTokens  RefreshToken[]
-  assignedTasks  Task[]
-  comments       Comment[]
-  sentInvites    ProjectInvite[] @relation("SentInvites")
+  assignedTasks      Task[]
+  comments           Comment[]
+  sentInvites        ProjectInvite[] @relation("SentInvites")
+  notifications      Notification[]
+  actedNotifications Notification[] @relation("NotificationActor")
 }
 
 model RefreshToken {
@@ -41,8 +43,9 @@ model Project {
   owner      User               @relation("ProjectOwner", fields: [ownerId], references: [id])
   members    ProjectMember[]
   columns    Column[]
-  shareToken ProjectShareToken?
-  invites    ProjectInvite[]
+  shareToken    ProjectShareToken?
+  invites       ProjectInvite[]
+  notifications Notification[]
 }
 
 model ProjectShareToken {
@@ -112,6 +115,12 @@ enum TaskPriority {
   NONE
 }
 
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_COMMENT
+  TASK_STATUS_CHANGED
+}
+
 model Column {
   id        String   @id @default(cuid())
   projectId String
@@ -136,8 +145,9 @@ model Task {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   column      Column        @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  assignee    User?         @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
-  comments    Comment[]
+  assignee      User?          @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  comments      Comment[]
+  notifications Notification[]
 }
 
 model Comment {
@@ -148,4 +158,26 @@ model Comment {
   createdAt DateTime @default(now())
   task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   author    User     @relation(fields: [authorId], references: [id])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  projectId String
+  type      NotificationType
+  title     String
+  message   String
+  actorId   String
+  taskId    String?
+  metadata  Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  actor   User    @relation("NotificationActor", fields: [actorId], references: [id])
+  task    Task?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([userId, isRead])
 }
