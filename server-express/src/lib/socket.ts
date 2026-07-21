@@ -27,6 +27,16 @@ export function projectRoom(projectId: string) {
 	return `project:${projectId}`
 }
 
+export function emitToUser<E extends ServerBroadcastEvent>(
+	userId: string,
+	event: E,
+	payload: SocketEventPayloadMap[E],
+): void {
+	const ids = socketsByUserId.get(userId)
+	if (!ids || ids.size === 0) return
+	io?.to([...ids]).emit(event, payload)
+}
+
 export function emitToProjectExceptUser<E extends ServerBroadcastEvent>(
 	projectId: string,
 	excludeUserId: string,

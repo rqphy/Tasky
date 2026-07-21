@@ -1,5 +1,7 @@
 import { prisma } from "./db.js"
 import type { Notification, NotificationType } from "../generated/client.js"
+import { SOCKET_EVENTS } from "./socketEvents.js"
+import { emitToUser } from "./socket.js"
 
 export type NotificationEvent =
 	| {
@@ -106,7 +108,7 @@ export async function createNotification(
 	if (input.oldColumnName) metadata.oldColumnName = input.oldColumnName
 	if (input.newColumnName) metadata.newColumnName = input.newColumnName
 
-	return prisma.notification.create({
+	const notification = await prisma.notification.create({
 		data: {
 			userId: input.recipientId,
 			projectId: input.projectId,
@@ -118,6 +120,14 @@ export async function createNotification(
 			metadata,
 		},
 	})
+
+	emitToUser(
+		input.recipientId,
+		SOCKET_EVENTS.NOTIFICATION_CREATED,
+		toNotificationResponse(notification),
+	)
+
+	return notification
 }
 
 export async function dispatchTaskNotifications(
@@ -170,3 +180,5 @@ export function toNotificationResponse(notification: Notification) {
 			: undefined,
 	}
 }
+
+export type NotificationResponse = ReturnType<typeof toNotificationResponse>
