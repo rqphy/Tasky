@@ -120,3 +120,17 @@ export const transferOwnershipSchema = z.object({
 })
 
 export type TransferOwnershipInput = z.infer<typeof transferOwnershipSchema>
+
+export const notificationListQuerySchema = z.object({
+	projectId: z.string().optional(),
+})
+
+export type NotificationListQuery = z.infer<typeof notificationListQuerySchema>
+
+export const notificationReadAllQuerySchema = z.object({
+	projectId: z.string().optional(),
+})
+
+export type NotificationReadAllQuery = z.infer<
+	typeof notificationReadAllQuerySchema
+>

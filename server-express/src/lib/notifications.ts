@@ -148,3 +148,25 @@ export async function dispatchTaskNotifications(
 		),
 	)
 }
+
+export function toNotificationResponse(notification: Notification) {
+	const metadata = notification.metadata as NotificationMetadata | null
+	return {
+		id: notification.id,
+		projectId: notification.projectId,
+		type: notification.type.toLowerCase(),
+		title: notification.title,
+		message: notification.message,
+		timestamp: notification.createdAt,
+		isRead: notification.isRead,
+		actorId: notification.actorId,
+		metadata: metadata
+			? {
+					taskId: metadata.taskId,
+					taskTitle: metadata.taskTitle,
+					oldStatus: metadata.oldColumnName,
+					newStatus: metadata.newColumnName,
+				}
+			: undefined,
+	}
+}
