@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -15,7 +14,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { TaskDetailDialog } from "@/components/TaskDetailDialog"
 import type { TaskLabel, TaskPriority } from "@/types/task"
 import { labelConfig } from "@/lib/labels"
 import { priorityConfig } from "@/lib/priority"
@@ -37,6 +35,7 @@ interface TaskCardProps {
 	priority?: TaskPriority
 	commentCount?: number
 	readOnly?: boolean
+	onOpen?: () => void
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
 	onAttribute?: (id: string) => void
@@ -60,23 +59,22 @@ export function TaskCard({
 	priority,
 	commentCount = 0,
 	readOnly = false,
+	onOpen,
 	onEdit,
 	onDelete,
 	onAttribute,
 }: TaskCardProps) {
-	const [dialogOpen, setDialogOpen] = useState(false)
 	const labelMeta = label ? labelConfig[label] : null
 
 	return (
-		<>
-			<Card
-				className={
-					readOnly
-						? "w-full max-w-sm"
-						: "w-full max-w-sm cursor-pointer transition-shadow hover:shadow-md"
-				}
-				onClick={readOnly ? undefined : () => setDialogOpen(true)}
-			>
+		<Card
+			className={
+				readOnly
+					? "w-full max-w-sm"
+					: "w-full max-w-sm cursor-pointer transition-shadow hover:shadow-md"
+			}
+			onClick={readOnly ? undefined : () => onOpen?.()}
+		>
 				<CardHeader className="pb-2">
 					<div className="flex items-start justify-between gap-2">
 						<div className="flex items-center gap-1.5">
@@ -198,20 +196,6 @@ export function TaskCard({
 						)}
 					</div>
 				</CardFooter>
-			</Card>
-
-			{!readOnly && (
-				<TaskDetailDialog
-					open={dialogOpen}
-					onOpenChange={setDialogOpen}
-					id={id}
-					title={title}
-					description={description}
-					assignee={assignee}
-					label={label}
-					priority={priority}
-				/>
-			)}
-		</>
+		</Card>
 	)
 }

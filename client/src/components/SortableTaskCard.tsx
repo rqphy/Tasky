@@ -5,6 +5,7 @@ import type { Task } from "@/types/task"
 
 interface SortableTaskCardProps {
 	task: Task
+	onOpen?: (task: Task) => void
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
 	onAttribute?: (id: string) => void
@@ -12,6 +13,7 @@ interface SortableTaskCardProps {
 
 export function SortableTaskCard({
 	task,
+	onOpen,
 	onEdit,
 	onDelete,
 	onAttribute,
@@ -36,6 +38,7 @@ export function SortableTaskCard({
 		<div ref={setNodeRef} style={style} {...attributes} {...listeners}>
 			<TaskCard
 				{...task}
+				onOpen={() => onOpen?.(task)}
 				onEdit={onEdit}
 				onDelete={onDelete}
 				onAttribute={onAttribute}

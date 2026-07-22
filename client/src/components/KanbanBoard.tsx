@@ -43,6 +43,7 @@ interface KanbanBoardProps {
 	projectId: string
 	columns: BackendColumn[]
 	readOnly?: boolean
+	onOpenTask?: (task: Task) => void
 }
 
 function computeInsertPosition(
@@ -75,6 +76,7 @@ export function KanbanBoard({
 	projectId,
 	columns: backendColumns,
 	readOnly = false,
+	onOpenTask,
 }: KanbanBoardProps) {
 	const backendTasks = useMemo(
 		() =>
@@ -426,6 +428,7 @@ export function KanbanBoard({
 								key={column.id}
 								column={column}
 								tasks={getTasksByColumnId(column.id)}
+								onOpenTask={onOpenTask}
 								onEdit={handleOpenEditTask}
 								onDelete={handleDeleteTask}
 								onAttribute={handleOpenAssignTask}

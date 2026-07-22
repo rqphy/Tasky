@@ -13,6 +13,7 @@ import { useProjectSocketEvents } from "@/hooks/useProjectSocketEvents"
 import { useShareLink } from "@/hooks/useShare"
 import { useAuth } from "@/contexts/AuthContext"
 import { joinProjectRoom, leaveProjectRoom } from "@/lib/socket"
+import type { TaskLabel, TaskPriority } from "@/types/task"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
 	Notification02Icon,
@@ -36,6 +37,10 @@ export function BoardPage() {
 	const [selectedTask, setSelectedTask] = useState<{
 		id: string
 		title: string
+		description?: string
+		assignee?: { name: string; avatarUrl?: string }
+		label?: TaskLabel
+		priority?: TaskPriority
 	} | null>(null)
 	const { unreadCount } = useNotifications(projectId || "")
 
@@ -141,7 +146,20 @@ export function BoardPage() {
 				</div>
 			</div>
 			<div className="flex-1 px-8 py-6 overflow-x-auto min-h-0 min-w-0">
-				<KanbanBoard projectId={project.id} columns={project.columns ?? []} />
+				<KanbanBoard
+					projectId={project.id}
+					columns={project.columns ?? []}
+					onOpenTask={(task) =>
+						setSelectedTask({
+							id: task.id,
+							title: task.title,
+							description: task.description,
+							assignee: task.assignee,
+							label: task.label,
+							priority: task.priority,
+						})
+					}
+				/>
 			</div>
 			<NotificationPanel
 				projectId={project.id}
@@ -160,6 +178,10 @@ export function BoardPage() {
 					onOpenChange={(open) => !open && setSelectedTask(null)}
 					id={selectedTask.id}
 					title={selectedTask.title}
+					description={selectedTask.description}
+					assignee={selectedTask.assignee}
+					label={selectedTask.label}
+					priority={selectedTask.priority}
 				/>
 			)}
 			<ProjectMembersPanel

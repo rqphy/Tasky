@@ -23,6 +23,7 @@ interface KanbanColumnProps {
 	column: Column
 	tasks: Task[]
 	readOnly?: boolean
+	onOpenTask?: (task: Task) => void
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
 	onAttribute?: (id: string) => void
@@ -36,6 +37,7 @@ export function KanbanColumn({
 	column,
 	tasks,
 	readOnly = false,
+	onOpenTask,
 	onEdit,
 	onDelete,
 	onAttribute,
@@ -129,6 +131,7 @@ export function KanbanColumn({
 								<SortableTaskCard
 									key={task.id}
 									task={task}
+									onOpen={onOpenTask}
 									onEdit={onEdit}
 									onDelete={onDelete}
 									onAttribute={onAttribute}
