@@ -395,7 +395,7 @@ export function KanbanBoard({
 				{columns.map((column) => (
 					<div
 						key={column.id}
-						className="flex flex-col gap-3 min-w-[280px] w-[280px]"
+						className="flex flex-col gap-3 min-w-70 w-70"
 					>
 						<KanbanColumn
 							column={column}
