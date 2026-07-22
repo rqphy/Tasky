@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog"
@@ -120,6 +121,9 @@ export function TaskDetailDialog({
 					<DialogTitle className="text-lg font-semibold leading-snug mt-0.5">
 						{displayTitle}
 					</DialogTitle>
+					<DialogDescription className="sr-only">
+						Task details and comments
+					</DialogDescription>
 					<div className="flex items-center gap-3 mt-2 flex-wrap">
 						{labelMeta && (
 							<Badge
