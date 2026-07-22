@@ -66,13 +66,25 @@ export function TaskDetailDialog({
 }: TaskDetailDialogProps) {
 	const { projectId } = useParams<{ projectId: string }>()
 	const { user } = useAuth()
-	const { data: task, isLoading } = useTask(projectId, id, open)
+	const { data: task, isLoading, isError } = useTask(projectId, id, open)
 	const createComment = useCreateComment(projectId!)
 	const deleteComment = useDeleteComment(projectId!)
 	const [draft, setDraft] = useState("")
 
+	const displayTitle = task?.title ?? title
+	const displayDescription = task?.description ?? description
+	const displayAssignee = task?.assignee
+		? { name: task.assignee.name }
+		: assignee
+	const displayLabel = task?.label
+		? (task.label.toLowerCase() as TaskLabel)
+		: label
+	const displayPriority = task?.priority
+		? (task.priority.toLowerCase() as TaskPriority)
+		: priority
+
 	const comments = (task?.comments ?? []).map(mapComment)
-	const labelMeta = label ? labelConfig[label] : null
+	const labelMeta = displayLabel ? labelConfig[displayLabel] : null
 
 	useEffect(() => {
 		if (!open) setDraft("")
@@ -106,7 +118,7 @@ export function TaskDetailDialog({
 						TSK: {id}
 					</span>
 					<DialogTitle className="text-lg font-semibold leading-snug mt-0.5">
-						{title}
+						{displayTitle}
 					</DialogTitle>
 					<div className="flex items-center gap-3 mt-2 flex-wrap">
 						{labelMeta && (
@@ -117,10 +129,10 @@ export function TaskDetailDialog({
 								{labelMeta.text}
 							</Badge>
 						)}
-						{priority &&
-							priority !== "none" &&
+						{displayPriority &&
+							displayPriority !== "none" &&
 							(() => {
-								const p = priorityConfig[priority]
+								const p = priorityConfig[displayPriority]
 								return (
 									<div
 										className={`flex items-center gap-1.5 ${p.color}`}
@@ -134,21 +146,21 @@ export function TaskDetailDialog({
 									</div>
 								)
 							})()}
-						{assignee && (
+						{displayAssignee && (
 							<div className="flex items-center gap-2">
 								<Avatar className="size-5">
-									{assignee.avatarUrl && (
+									{displayAssignee.avatarUrl && (
 										<AvatarImage
-											src={assignee.avatarUrl}
-											alt={assignee.name}
+											src={displayAssignee.avatarUrl}
+											alt={displayAssignee.name}
 										/>
 									)}
 									<AvatarFallback className="text-[10px]">
-										{getInitials(assignee.name)}
+										{getInitials(displayAssignee.name)}
 									</AvatarFallback>
 								</Avatar>
 								<span className="text-xs text-muted-foreground">
-									{assignee.name}
+									{displayAssignee.name}
 								</span>
 							</div>
 						)}
@@ -159,15 +171,23 @@ export function TaskDetailDialog({
 
 				<ScrollArea className="flex-1 min-h-0">
 					<div className="px-6 py-5 space-y-6">
-						{description ? (
+						{isError ? (
+							<p className="text-sm text-destructive">
+								Failed to load task. It may have been deleted.
+							</p>
+						) : displayDescription ? (
 							<section>
 								<h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
 									Description
 								</h3>
 								<p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-									{description}
+									{displayDescription}
 								</p>
 							</section>
+						) : isLoading ? (
+							<p className="text-sm text-muted-foreground italic">
+								Loading…
+							</p>
 						) : (
 							<p className="text-sm text-muted-foreground italic">
 								No description provided.

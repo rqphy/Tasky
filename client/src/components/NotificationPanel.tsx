@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { NotificationItem } from "@/components/NotificationItem"
+import { type Notification } from "@/lib/notifications"
 import { useNotifications, useMarkAsRead } from "@/hooks/useNotifications"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { CheckmarkBadge02Icon } from "@hugeicons/core-free-icons"
@@ -17,12 +18,14 @@ interface NotificationPanelProps {
 	projectId: string
 	open: boolean
 	onOpenChange: (open: boolean) => void
+	onTaskOpen: (notification: Notification) => void
 }
 
 export function NotificationPanel({
 	projectId,
 	open,
 	onOpenChange,
+	onTaskOpen,
 }: NotificationPanelProps) {
 	const { unreadCount, unreadNotifications, readNotifications, refresh } =
 		useNotifications(projectId)
@@ -35,6 +38,15 @@ export function NotificationPanel({
 
 	const handleMarkAllAsRead = () => {
 		markAllAsRead(projectId, refresh)
+	}
+
+	const handleOpenTask = (notification: Notification) => {
+		if (!notification.metadata?.taskId) return
+		if (!notification.isRead) {
+			markAsRead(notification.id, refresh)
+		}
+		onOpenChange(false)
+		onTaskOpen(notification)
 	}
 
 	return (
@@ -82,6 +94,11 @@ export function NotificationPanel({
 													key={notification.id}
 													notification={notification}
 													onMarkAsRead={handleMarkAsRead}
+													onOpen={
+														notification.metadata?.taskId
+															? () => handleOpenTask(notification)
+															: undefined
+													}
 												/>
 											))}
 										</div>
@@ -104,6 +121,11 @@ export function NotificationPanel({
 													key={notification.id}
 													notification={notification}
 													onMarkAsRead={handleMarkAsRead}
+													onOpen={
+														notification.metadata?.taskId
+															? () => handleOpenTask(notification)
+															: undefined
+													}
 												/>
 											))}
 										</div>

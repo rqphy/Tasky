@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ProjectMembersPanel } from "@/components/ProjectMembersPanel"
 import { NotificationPanel } from "@/components/NotificationPanel"
+import { TaskDetailDialog } from "@/components/TaskDetailDialog"
 import { ShareLinkDialog } from "@/components/ShareLinkDialog"
 import { useNotifications } from "@/hooks/useNotifications"
 import { useProject } from "@/hooks/useProjects"
@@ -32,6 +33,10 @@ export function BoardPage() {
 	const [notificationsOpen, setNotificationsOpen] = useState(false)
 	const [shareOpen, setShareOpen] = useState(false)
 	const [copied, setCopied] = useState(false)
+	const [selectedTask, setSelectedTask] = useState<{
+		id: string
+		title: string
+	} | null>(null)
 	const { unreadCount } = useNotifications(projectId || "")
 
 	useEffect(() => {
@@ -142,7 +147,21 @@ export function BoardPage() {
 				projectId={project.id}
 				open={notificationsOpen}
 				onOpenChange={setNotificationsOpen}
+				onTaskOpen={(n) =>
+					setSelectedTask({
+						id: n.metadata!.taskId!,
+						title: n.metadata!.taskTitle ?? "Task",
+					})
+				}
 			/>
+			{selectedTask && (
+				<TaskDetailDialog
+					open={!!selectedTask}
+					onOpenChange={(open) => !open && setSelectedTask(null)}
+					id={selectedTask.id}
+					title={selectedTask.title}
+				/>
+			)}
 			<ProjectMembersPanel
 				project={project}
 				isOwner={isOwner}

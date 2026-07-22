@@ -9,13 +9,24 @@ import { cn } from "@/lib/utils"
 interface NotificationItemProps {
 	notification: Notification
 	onMarkAsRead: (id: string) => void
+	onOpen?: () => void
 }
 
 export function NotificationItem({
 	notification,
 	onMarkAsRead,
+	onOpen,
 }: NotificationItemProps) {
 	const [isHovered, setIsHovered] = useState(false)
+	const isClickable = !!onOpen
+
+	function handleKeyDown(e: React.KeyboardEvent) {
+		if (!onOpen) return
+		if (e.key === "Enter" || e.key === " ") {
+			e.preventDefault()
+			onOpen()
+		}
+	}
 
 	return (
 		<div
@@ -23,8 +34,13 @@ export function NotificationItem({
 				"relative flex gap-3 p-3 rounded-lg border transition-colors",
 				notification.isRead
 					? "bg-transparent border-transparent"
-					: "bg-accent border-border"
+					: "bg-accent border-border",
+				isClickable && "cursor-pointer hover:bg-accent/80"
 			)}
+			role={isClickable ? "button" : undefined}
+			tabIndex={isClickable ? 0 : undefined}
+			onClick={onOpen}
+			onKeyDown={handleKeyDown}
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
