@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { patchTaskMoved } from "@/lib/projectCachePatches"
 import {
 	projectsApi,
 	patchTaskCount,
@@ -221,6 +222,8 @@ export function useDeleteTask(projectId: string) {
 }
 
 export function useMoveTask(projectId: string) {
+	const queryClient = useQueryClient()
+
 	return useMutation({
 		mutationFn: ({
 			taskId,
@@ -229,6 +232,14 @@ export function useMoveTask(projectId: string) {
 			taskId: string
 			data: MoveTaskInput
 		}) => projectsApi.moveTask(projectId, taskId, data).then((r) => r.data),
+		onSuccess: (updatedTask, { taskId }) => {
+			patchTaskMoved(queryClient, {
+				projectId,
+				taskId,
+				columnId: updatedTask.columnId,
+				position: updatedTask.position,
+			})
+		},
 	})
 }
 
