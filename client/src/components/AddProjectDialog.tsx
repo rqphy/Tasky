@@ -78,7 +78,7 @@ export function AddProjectDialog({
 							side="bottom"
 						>
 							<EmojiPicker
-								className="h-[342px]"
+								className="h-85.5"
 								onEmojiSelect={({ emoji: selected }) => {
 									setEmoji(selected)
 									setEmojiOpen(false)
