@@ -1,5 +1,3 @@
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { type Notification } from "@/lib/notifications"
 import { formatRelativeTime } from "@/lib/notifications"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -17,7 +15,6 @@ export function NotificationItem({
 	onMarkAsRead,
 	onOpen,
 }: NotificationItemProps) {
-	const [isHovered, setIsHovered] = useState(false)
 	const isClickable = !!onOpen
 
 	function handleKeyDown(e: React.KeyboardEvent) {
@@ -31,7 +28,7 @@ export function NotificationItem({
 	return (
 		<div
 			className={cn(
-				"relative flex gap-3 p-3 rounded-lg border transition-colors",
+				"group relative flex gap-3 p-3 rounded-lg border transition-colors",
 				notification.isRead
 					? "bg-transparent border-transparent"
 					: "bg-accent border-border",
@@ -41,8 +38,6 @@ export function NotificationItem({
 			tabIndex={isClickable ? 0 : undefined}
 			onClick={onOpen}
 			onKeyDown={handleKeyDown}
-			onMouseEnter={() => setIsHovered(true)}
-			onMouseLeave={() => setIsHovered(false)}
 		>
 			<div className="shrink-0 mt-0.5">
 				<div
@@ -81,21 +76,27 @@ export function NotificationItem({
 				</p>
 			</div>
 
-			{!notification.isRead && isHovered && (
-				<div className="shrink-0">
-					<Button
-						variant="ghost"
-						size="icon"
-						className="size-8"
-						onClick={(e) => {
-							e.stopPropagation()
-							onMarkAsRead(notification.id)
-						}}
-						title="Mark as read"
-					>
-						<HugeiconsIcon icon={Tick02Icon} size={16} />
-					</Button>
-				</div>
+			{!notification.isRead && (
+				<button
+					type="button"
+					className={cn(
+						"absolute inset-y-0 right-0 w-[12%] min-w-11",
+						"flex items-center justify-center",
+						"rounded-r-lg border-l border-border/60",
+						"bg-muted/95 text-muted-foreground",
+						"hover:bg-primary/15 hover:text-primary",
+						"opacity-0 pointer-events-none transition-opacity",
+						"group-hover:opacity-100 group-hover:pointer-events-auto"
+					)}
+					onClick={(e) => {
+						e.stopPropagation()
+						onMarkAsRead(notification.id)
+					}}
+					title="Mark as read"
+					aria-label="Mark as read"
+				>
+					<HugeiconsIcon icon={Tick02Icon} size={18} />
+				</button>
 			)}
 		</div>
 	)
