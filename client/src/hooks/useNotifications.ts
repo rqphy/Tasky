@@ -110,23 +110,12 @@ export function useMarkAsRead() {
 		markReadMutation.mutate(notificationId, { onSuccess: () => onSuccess?.() })
 	}
 
-	const toggleRead = (notificationId: string, onSuccess?: () => void) => {
-		const notification = queryClient
-			.getQueryData<Notification[]>(["notifications"])
-			?.find((n) => n.id === notificationId)
-
-		if (notification && !notification.isRead) {
-			markAsRead(notificationId, onSuccess)
-		}
-	}
-
 	const markAllAsRead = (projectId: string, onSuccess?: () => void) => {
 		markAllReadMutation.mutate(projectId, { onSuccess: () => onSuccess?.() })
 	}
 
 	return {
 		markAsRead,
-		toggleRead,
 		markAllAsRead,
 	}
 }

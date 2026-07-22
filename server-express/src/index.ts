@@ -12,6 +12,20 @@ import {
 	registerUserSocket,
 	unregisterUserSocket,
 } from "./lib/socket.js"
+import { deleteExpiredNotifications } from "./lib/notifications.js"
+
+const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000
+
+async function runNotificationCleanup() {
+	try {
+		const deleted = await deleteExpiredNotifications()
+		if (deleted > 0) {
+			console.log(`Deleted ${deleted} expired notification(s)`)
+		}
+	} catch (error) {
+		console.error("Notification cleanup error:", error)
+	}
+}
 
 const app = express()
 const httpServer = createServer(app)
@@ -53,4 +67,8 @@ app.use("/api", apiRoutes)
 
 httpServer.listen(PORT, () => {
 	console.log(`🚀 Server running on http://localhost:${PORT}`)
+	void runNotificationCleanup()
+	setInterval(() => {
+		void runNotificationCleanup()
+	}, CLEANUP_INTERVAL_MS)
 })

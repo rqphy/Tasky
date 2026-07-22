@@ -3,17 +3,17 @@ import { Button } from "@/components/ui/button"
 import { type Notification } from "@/lib/notifications"
 import { formatRelativeTime } from "@/lib/notifications"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Notification02Icon, Tick02Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
+import { Notification02Icon, Tick02Icon } from "@hugeicons/core-free-icons"
 import { cn } from "@/lib/utils"
 
 interface NotificationItemProps {
 	notification: Notification
-	onToggleRead: (id: string) => void
+	onMarkAsRead: (id: string) => void
 }
 
 export function NotificationItem({
 	notification,
-	onToggleRead,
+	onMarkAsRead,
 }: NotificationItemProps) {
 	const [isHovered, setIsHovered] = useState(false)
 
@@ -65,7 +65,7 @@ export function NotificationItem({
 				</p>
 			</div>
 
-			{isHovered && (
+			{!notification.isRead && isHovered && (
 				<div className="shrink-0">
 					<Button
 						variant="ghost"
@@ -73,18 +73,11 @@ export function NotificationItem({
 						className="size-8"
 						onClick={(e) => {
 							e.stopPropagation()
-							onToggleRead(notification.id)
+							onMarkAsRead(notification.id)
 						}}
-						title={
-							notification.isRead
-								? "Mark as unread"
-								: "Mark as read"
-						}
+						title="Mark as read"
 					>
-						<HugeiconsIcon
-							icon={notification.isRead ? Cancel01Icon : Tick02Icon}
-							size={16}
-						/>
+						<HugeiconsIcon icon={Tick02Icon} size={16} />
 					</Button>
 				</div>
 			)}

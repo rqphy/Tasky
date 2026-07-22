@@ -1,6 +1,9 @@
 import express from "express"
 import { prisma } from "../lib/db.js"
-import { toNotificationResponse } from "../lib/notifications.js"
+import {
+	toNotificationResponse,
+	getNotificationRetentionCutoff,
+} from "../lib/notifications.js"
 import {
 	notificationListQuerySchema,
 	notificationReadAllQuerySchema,
@@ -19,6 +22,7 @@ router.get("/", async (req, res) => {
 		const notifications = await prisma.notification.findMany({
 			where: {
 				userId,
+				createdAt: { gte: getNotificationRetentionCutoff() },
 				...(projectId ? { projectId } : {}),
 			},
 			orderBy: { createdAt: "desc" },

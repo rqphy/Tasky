@@ -26,11 +26,11 @@ export function NotificationPanel({
 }: NotificationPanelProps) {
 	const { unreadCount, unreadNotifications, readNotifications, refresh } =
 		useNotifications(projectId)
-	const { toggleRead, markAllAsRead } = useMarkAsRead()
+	const { markAsRead, markAllAsRead } = useMarkAsRead()
 	const hasNotifications = unreadNotifications.length > 0 || readNotifications.length > 0
 
-	const handleToggleRead = (id: string) => {
-		toggleRead(id, refresh)
+	const handleMarkAsRead = (id: string) => {
+		markAsRead(id, refresh)
 	}
 
 	const handleMarkAllAsRead = () => {
@@ -81,7 +81,7 @@ export function NotificationPanel({
 												<NotificationItem
 													key={notification.id}
 													notification={notification}
-													onToggleRead={handleToggleRead}
+													onMarkAsRead={handleMarkAsRead}
 												/>
 											))}
 										</div>
@@ -103,7 +103,7 @@ export function NotificationPanel({
 												<NotificationItem
 													key={notification.id}
 													notification={notification}
-													onToggleRead={handleToggleRead}
+													onMarkAsRead={handleMarkAsRead}
 												/>
 											))}
 										</div>

@@ -182,3 +182,18 @@ export function toNotificationResponse(notification: Notification) {
 }
 
 export type NotificationResponse = ReturnType<typeof toNotificationResponse>
+
+export const NOTIFICATION_RETENTION_DAYS = 30
+
+export function getNotificationRetentionCutoff(): Date {
+	const cutoff = new Date()
+	cutoff.setDate(cutoff.getDate() - NOTIFICATION_RETENTION_DAYS)
+	return cutoff
+}
+
+export async function deleteExpiredNotifications(): Promise<number> {
+	const result = await prisma.notification.deleteMany({
+		where: { createdAt: { lt: getNotificationRetentionCutoff() } },
+	})
+	return result.count
+}
