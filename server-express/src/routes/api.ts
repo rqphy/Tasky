@@ -1,6 +1,6 @@
 import express from "express"
 import authRoutes from "./auth.js"
-import projectRoutes from "./projects.js"
+import projectRoutes from "./projects/index.js"
 import shareRoutes from "./share.js"
 import inviteRoutes from "./invites.js"
 import notificationRoutes from "./notifications.js"
