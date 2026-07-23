@@ -38,7 +38,11 @@ import {
 } from "@/hooks/useProjects"
 import type { Project } from "@/lib/projects"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Loading01Icon, MoreHorizontalIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
+import {
+	Loading01Icon,
+	MoreHorizontalIcon,
+	PlusSignIcon,
+} from "@hugeicons/core-free-icons"
 import { isAxiosError } from "axios"
 
 type PendingProjectAction =
@@ -63,7 +67,8 @@ export function AppSidebar() {
 	const { projectId } = useParams<{ projectId: string }>()
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [editingProject, setEditingProject] = useState<Project | null>(null)
-	const [pendingAction, setPendingAction] = useState<PendingProjectAction>(null)
+	const [pendingAction, setPendingAction] =
+		useState<PendingProjectAction>(null)
 	const [actionError, setActionError] = useState("")
 	const { user, logout } = useAuth()
 	const navigate = useNavigate()
@@ -149,9 +154,11 @@ export function AppSidebar() {
 						<SidebarMenuItem>
 							<SidebarMenuButton size="lg" asChild>
 								<NavLink to="/">
-									<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
-										T
-									</div>
+									<img
+										src="/android-chrome-192x192.png"
+										alt="Tasky"
+										className="size-8 rounded-lg"
+									/>
 									<div className="flex flex-col gap-0.5 leading-none">
 										<span className="font-semibold">
 											Tasky
@@ -185,13 +192,16 @@ export function AppSidebar() {
 									</SidebarMenuItem>
 								) : (
 									projects?.map((project) => {
-										const unreadCount = getUnreadCountForProject(
-											notifications,
-											project.id,
-										)
-										const isActive = project.id === projectId
+										const unreadCount =
+											getUnreadCountForProject(
+												notifications,
+												project.id,
+											)
+										const isActive =
+											project.id === projectId
 										const isOwner =
-											!!user && project.ownerId === user.id
+											!!user &&
+											project.ownerId === user.id
 
 										return (
 											<SidebarMenuItem key={project.id}>
@@ -216,7 +226,9 @@ export function AppSidebar() {
 													</NavLink>
 												</SidebarMenuButton>
 												<DropdownMenu>
-													<DropdownMenuTrigger asChild>
+													<DropdownMenuTrigger
+														asChild
+													>
 														<SidebarMenuAction
 															showOnHover
 															className={
@@ -248,8 +260,7 @@ export function AppSidebar() {
 																		)
 																	}
 																>
-																	Edit
-																	project
+																	Edit project
 																</DropdownMenuItem>
 																<DropdownMenuItem
 																	variant="destructive"
