@@ -38,7 +38,7 @@ import {
 } from "@/hooks/useProjects"
 import type { Project } from "@/lib/projects"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Loading01Icon, MoreHorizontalIcon } from "@hugeicons/core-free-icons"
+import { Loading01Icon, MoreHorizontalIcon, PlusSignIcon } from "@hugeicons/core-free-icons"
 import { isAxiosError } from "axios"
 
 type PendingProjectAction =
@@ -298,10 +298,27 @@ export function AppSidebar() {
 										className="text-muted-foreground"
 										onClick={() => setDialogOpen(true)}
 										disabled={createProject.isPending}
+										tooltip="New project"
 									>
-										{createProject.isPending
-											? "Creating..."
-											: "+ Create a new project"}
+										{createProject.isPending ? (
+											<HugeiconsIcon
+												icon={Loading01Icon}
+												size={16}
+												strokeWidth={2}
+												className="animate-spin"
+											/>
+										) : (
+											<HugeiconsIcon
+												icon={PlusSignIcon}
+												size={16}
+												strokeWidth={2}
+											/>
+										)}
+										<span>
+											{createProject.isPending
+												? "Creating..."
+												: "New project"}
+										</span>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
 							</SidebarMenu>
