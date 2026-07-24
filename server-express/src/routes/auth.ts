@@ -8,6 +8,7 @@ import {
 	getRefreshTokenExpiryDate,
 } from "../lib/jwt.js"
 import { authMiddleware } from "../middleware/auth.js"
+import { stripPassword } from "../lib/userHelpers.js"
 
 const router = express.Router()
 
@@ -77,6 +78,10 @@ router.post("/login", async (req, res) => {
 		})
 
 		if (!user) {
+			return res.status(401).json({ error: "Invalid credentials" })
+		}
+
+		if (user.email.endsWith("@deleted.tasky")) {
 			return res.status(401).json({ error: "Invalid credentials" })
 		}
 
@@ -174,7 +179,7 @@ router.get("/me", authMiddleware, async (req, res) => {
 			return res.status(404).json({ error: "User not found" })
 		}
 
-		res.status(200).json({ user })
+		res.status(200).json({ user: stripPassword(user) })
 	} catch (error) {
 		console.error("Me error:", error)
 		res.status(500).json({ error: "Internal server error" })

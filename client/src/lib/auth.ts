@@ -86,6 +86,35 @@ export async function getCurrentUser(): Promise<User> {
 	return response.data.user
 }
 
+export async function updateName(name: string): Promise<User> {
+	const response = await api.patch<{ user: User }>("/users/me/name", { name })
+	return response.data.user
+}
+
+export async function updateEmail(
+	email: string,
+	password: string,
+): Promise<User> {
+	const response = await api.patch<{ user: User }>("/users/me/email", {
+		email,
+		password,
+	})
+	return response.data.user
+}
+
+export async function updatePassword(
+	currentPassword: string,
+	newPassword: string,
+): Promise<void> {
+	await api.patch("/users/me/password", { currentPassword, newPassword })
+	clearTokens()
+}
+
+export async function deleteAccount(password: string): Promise<void> {
+	await api.delete("/users/me", { data: { password } })
+	clearTokens()
+}
+
 export async function refreshTokens(): Promise<TokenResponse> {
 	const refreshToken = getRefreshToken()
 	if (!refreshToken) {

@@ -4,6 +4,7 @@ import projectRoutes from "./projects/index.js"
 import shareRoutes from "./share.js"
 import inviteRoutes from "./invites.js"
 import notificationRoutes from "./notifications.js"
+import userRoutes from "./users.js"
 
 const router = express.Router()
 
@@ -21,9 +22,6 @@ router.use("/share", shareRoutes)
 router.use("/invites", inviteRoutes)
 router.use("/notifications", notificationRoutes)
 router.use("/projects", projectRoutes)
-
-// TODO: Add other route modules as you build them
-// router.use("/tasks", taskRoutes)
-// router.use("/users", userRoutes)
+router.use("/users", userRoutes)
 
 export default router

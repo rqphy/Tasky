@@ -15,6 +15,34 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>
 
+export const updateNameSchema = z.object({
+	name: z.string().min(1, "Name is required").max(100, "Name too long"),
+})
+
+export type UpdateNameInput = z.infer<typeof updateNameSchema>
+
+export const updateEmailSchema = z.object({
+	email: z.string().email("Invalid email format"),
+	password: z.string().min(8, "Password must be at least 8 characters"),
+})
+
+export type UpdateEmailInput = z.infer<typeof updateEmailSchema>
+
+export const updatePasswordSchema = z.object({
+	currentPassword: z
+		.string()
+		.min(8, "Password must be at least 8 characters"),
+	newPassword: z.string().min(8, "Password must be at least 8 characters"),
+})
+
+export type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>
+
+export const deleteAccountSchema = z.object({
+	password: z.string().min(8, "Password must be at least 8 characters"),
+})
+
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>
+
 export const createProjectSchema = z.object({
 	name: z.string().min(1, "Name is required").max(100, "Name too long"),
 	emoji: z.string().optional(),
