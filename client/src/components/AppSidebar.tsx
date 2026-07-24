@@ -25,6 +25,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { AddProjectDialog } from "./AddProjectDialog"
 import { EditProjectDialog } from "./EditProjectDialog"
+import { AccountDialog } from "./account/AccountDialog"
 import { ConfirmMemberActionDialog } from "@/components/ConfirmMemberActionDialog"
 import { getUnreadCountForProject } from "@/lib/notifications"
 import { useAllNotifications } from "@/hooks/useNotifications"
@@ -66,6 +67,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
 export function AppSidebar() {
 	const { projectId } = useParams<{ projectId: string }>()
 	const [dialogOpen, setDialogOpen] = useState(false)
+	const [accountDialogOpen, setAccountDialogOpen] = useState(false)
 	const [editingProject, setEditingProject] = useState<Project | null>(null)
 	const [pendingAction, setPendingAction] =
 		useState<PendingProjectAction>(null)
@@ -372,8 +374,10 @@ export function AppSidebar() {
 										My Account
 									</DropdownMenuLabel>
 									<DropdownMenuSeparator />
-									<DropdownMenuItem disabled>
-										Profile
+									<DropdownMenuItem
+										onClick={() => setAccountDialogOpen(true)}
+									>
+										Account
 									</DropdownMenuItem>
 									<DropdownMenuItem onClick={handleLogout}>
 										Logout
@@ -401,6 +405,12 @@ export function AppSidebar() {
 				project={editingProject}
 				onSave={handleSave}
 				isPending={updateProject.isPending}
+			/>
+
+			<AccountDialog
+				open={accountDialogOpen}
+				onOpenChange={setAccountDialogOpen}
+				user={user}
 			/>
 
 			<ConfirmMemberActionDialog
