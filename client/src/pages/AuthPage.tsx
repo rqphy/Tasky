@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from "react"
-import { Navigate, useSearchParams } from "react-router-dom"
+import { Navigate, useSearchParams, Link } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -145,6 +145,14 @@ export function AuthPage() {
 									required
 									disabled={isSubmitting}
 								/>
+								<div className="text-right">
+									<Link
+										to="/forgot-password"
+										className="text-sm text-muted-foreground hover:text-foreground"
+									>
+										Forgot password?
+									</Link>
+								</div>
 							</div>
 							{loginError && (
 								<p className="text-sm text-destructive">{loginError}</p>

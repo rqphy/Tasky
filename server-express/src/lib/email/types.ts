@@ -7,6 +7,12 @@ export interface SendInviteEmailParams {
 	acceptUrl: string
 }
 
+export interface SendPasswordResetEmailParams {
+	to: string
+	userName: string
+	resetUrl: string
+}
+
 export interface EmailSendResult {
 	sent: boolean
 	error?: string
@@ -15,6 +21,11 @@ export interface EmailSendResult {
 export interface EmailProvider {
 	sendInvite(
 		params: SendInviteEmailParams,
+		subject: string,
+		html: string,
+	): Promise<EmailSendResult>
+	sendPasswordReset(
+		params: SendPasswordResetEmailParams,
 		subject: string,
 		html: string,
 	): Promise<EmailSendResult>

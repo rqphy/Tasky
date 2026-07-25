@@ -115,6 +115,17 @@ export async function deleteAccount(password: string): Promise<void> {
 	clearTokens()
 }
 
+export async function forgotPassword(email: string): Promise<void> {
+	await api.post("/auth/forgot-password", { email })
+}
+
+export async function resetPassword(
+	token: string,
+	newPassword: string,
+): Promise<void> {
+	await api.post("/auth/reset-password", { token, newPassword })
+}
+
 export async function refreshTokens(): Promise<TokenResponse> {
 	const refreshToken = getRefreshToken()
 	if (!refreshToken) {

@@ -1,7 +1,7 @@
 import express from "express"
 import bcrypt from "bcryptjs"
 import { prisma } from "../lib/db.js"
-import { registerSchema, loginSchema } from "../lib/validation.js"
+import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "../lib/validation.js"
 import {
 	generateAccessToken,
 	generateRefreshToken,
@@ -9,6 +9,12 @@ import {
 } from "../lib/jwt.js"
 import { authMiddleware } from "../middleware/auth.js"
 import { stripPassword } from "../lib/userHelpers.js"
+import {
+	buildResetPasswordUrl,
+	generatePasswordResetToken,
+	getPasswordResetExpiryDate,
+} from "../lib/passwordReset.js"
+import { sendPasswordResetEmail } from "../lib/email/index.js"
 
 const router = express.Router()
 
@@ -165,6 +171,102 @@ router.post("/logout", async (req, res) => {
 		res.status(200).json({ message: "Logged out successfully" })
 	} catch (error) {
 		console.error("Logout error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
+
+router.post("/forgot-password", async (req, res) => {
+	try {
+		const { email } = forgotPasswordSchema.parse(req.body)
+
+		const user = await prisma.user.findUnique({
+			where: { email },
+		})
+
+		if (user && !user.email.endsWith("@deleted.tasky")) {
+			const token = generatePasswordResetToken()
+			const expiresAt = getPasswordResetExpiryDate()
+
+			await prisma.passwordResetToken.deleteMany({
+				where: { userId: user.id },
+			})
+
+			await prisma.passwordResetToken.create({
+				data: {
+					token,
+					userId: user.id,
+					expiresAt,
+				},
+			})
+
+			const resetUrl = buildResetPasswordUrl(token)
+			await sendPasswordResetEmail({
+				to: user.email,
+				userName: user.name,
+				resetUrl,
+			})
+		}
+
+		res.status(200).json({
+			message:
+				"If an account exists for that email, a reset link has been sent.",
+		})
+	} catch (error) {
+		if (error instanceof Error && error.name === "ZodError") {
+			return res
+				.status(400)
+				.json({ error: "Validation failed", details: error })
+		}
+
+		console.error("Forgot password error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
+
+router.post("/reset-password", async (req, res) => {
+	try {
+		const { token, newPassword } = resetPasswordSchema.parse(req.body)
+
+		const storedToken = await prisma.passwordResetToken.findUnique({
+			where: { token },
+			include: { user: true },
+		})
+
+		if (!storedToken) {
+			return res.status(400).json({ error: "Invalid or expired reset link" })
+		}
+
+		if (storedToken.expiresAt < new Date()) {
+			await prisma.passwordResetToken.delete({
+				where: { id: storedToken.id },
+			})
+			return res.status(400).json({ error: "Invalid or expired reset link" })
+		}
+
+		const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+		await prisma.$transaction([
+			prisma.user.update({
+				where: { id: storedToken.userId },
+				data: { password: hashedPassword },
+			}),
+			prisma.passwordResetToken.deleteMany({
+				where: { userId: storedToken.userId },
+			}),
+			prisma.refreshToken.deleteMany({
+				where: { userId: storedToken.userId },
+			}),
+		])
+
+		res.status(200).json({ message: "Password reset successfully" })
+	} catch (error) {
+		if (error instanceof Error && error.name === "ZodError") {
+			return res
+				.status(400)
+				.json({ error: "Validation failed", details: error })
+		}
+
+		console.error("Reset password error:", error)
 		res.status(500).json({ error: "Internal server error" })
 	}
 })
