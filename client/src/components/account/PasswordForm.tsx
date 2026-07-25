@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react"
+import { useEffect, useState, type SubmitEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,7 +24,7 @@ export function PasswordForm({ open, onSuccess }: PasswordFormProps) {
 		}
 	}, [open])
 
-	async function handleSubmit(e: FormEvent) {
+	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
 		if (!currentPassword || !newPassword) return
 
@@ -35,7 +35,10 @@ export function PasswordForm({ open, onSuccess }: PasswordFormProps) {
 			await onSuccess()
 		} catch (submitError) {
 			setError(
-				getAccountErrorMessage(submitError, "Failed to update password."),
+				getAccountErrorMessage(
+					submitError,
+					"Failed to update password.",
+				),
 			)
 		}
 	}
@@ -43,10 +46,13 @@ export function PasswordForm({ open, onSuccess }: PasswordFormProps) {
 	return (
 		<form onSubmit={handleSubmit} className="space-y-4">
 			<p className="text-sm text-muted-foreground">
-				You will be signed out on all devices after changing your password.
+				You will be signed out on all devices after changing your
+				password.
 			</p>
 			<div className="space-y-2">
-				<Label htmlFor="account-current-password">Current password</Label>
+				<Label htmlFor="account-current-password">
+					Current password
+				</Label>
 				<Input
 					id="account-current-password"
 					type="password"

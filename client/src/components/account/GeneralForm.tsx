@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react"
+import { useEffect, useState, type SubmitEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,7 +26,7 @@ export function GeneralForm({ open, user, onUserUpdated }: GeneralFormProps) {
 		}
 	}, [open, user])
 
-	async function handleSubmit(e: FormEvent) {
+	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
 		const trimmed = name.trim()
 		if (!trimmed) return

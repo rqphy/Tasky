@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react"
+import { useEffect, useState, type SubmitEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,7 +28,7 @@ export function EmailForm({ open, user, onUserUpdated }: EmailFormProps) {
 		}
 	}, [open, user])
 
-	async function handleSubmit(e: FormEvent) {
+	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
 		const trimmedEmail = email.trim()
 		if (!trimmedEmail || !password) return
@@ -45,7 +45,9 @@ export function EmailForm({ open, user, onUserUpdated }: EmailFormProps) {
 			setPassword("")
 			setSuccess("Email updated.")
 		} catch (submitError) {
-			setError(getAccountErrorMessage(submitError, "Failed to update email."))
+			setError(
+				getAccountErrorMessage(submitError, "Failed to update email."),
+			)
 		}
 	}
 
@@ -72,7 +74,9 @@ export function EmailForm({ open, user, onUserUpdated }: EmailFormProps) {
 				/>
 			</div>
 			{error && <p className="text-sm text-destructive">{error}</p>}
-			{success && <p className="text-sm text-muted-foreground">{success}</p>}
+			{success && (
+				<p className="text-sm text-muted-foreground">{success}</p>
+			)}
 			<DialogFooter className="px-0">
 				<Button
 					type="submit"
