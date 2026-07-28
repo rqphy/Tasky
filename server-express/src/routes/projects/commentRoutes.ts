@@ -3,6 +3,7 @@ import { prisma } from "../../lib/db.js"
 import { createCommentSchema } from "../../lib/validation.js"
 import { verifyProjectMember } from "../../lib/projectAccess.js"
 import { dispatchTaskNotifications } from "../../lib/notifications.js"
+import { userPublicSelect } from "../../lib/userHelpers.js"
 
 const router = express.Router()
 
@@ -40,7 +41,7 @@ router.post("/:projectId/tasks/:taskId/comments", async (req, res) => {
 			},
 			include: {
 				author: {
-					select: { id: true, name: true, email: true },
+					select: userPublicSelect,
 				},
 			},
 		})

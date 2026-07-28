@@ -38,7 +38,7 @@ export function BoardPage() {
 		id: string
 		title: string
 		description?: string
-		assignee?: { name: string; avatarUrl?: string }
+		assignee?: { name: string; imageUrl?: string }
 		label?: TaskLabel
 		priority?: TaskPriority
 	} | null>(null)

@@ -12,6 +12,8 @@ import {
 	registerUserSocket,
 	unregisterUserSocket,
 } from "./lib/socket.js"
+import { createRouteHandler } from "uploadthing/express"
+import { uploadRouter } from "./lib/uploadthing.js"
 import { deleteExpiredNotifications } from "./lib/notifications.js"
 
 const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000
@@ -62,6 +64,11 @@ app.use(
 )
 app.use(express.json())
 app.use(cookieParser())
+
+app.use(
+	"/api/uploadthing",
+	createRouteHandler({ router: uploadRouter }),
+)
 
 app.use("/api", apiRoutes)
 

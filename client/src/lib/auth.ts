@@ -4,6 +4,7 @@ export interface User {
 	id: string
 	name: string
 	email: string
+	imageUrl?: string | null
 	createdAt: string
 	updatedAt: string
 }
@@ -124,6 +125,11 @@ export async function resetPassword(
 	newPassword: string,
 ): Promise<void> {
 	await api.post("/auth/reset-password", { token, newPassword })
+}
+
+export async function removeProfileImage(): Promise<User> {
+	const response = await api.delete<{ user: User }>("/users/me/image")
+	return response.data.user
 }
 
 export async function refreshTokens(): Promise<TokenResponse> {

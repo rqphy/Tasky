@@ -4,6 +4,7 @@ import { acceptInviteSchema } from "../lib/validation.js"
 import { authMiddleware } from "../middleware/auth.js"
 import { emitToProjectExceptUser } from "../lib/socket.js"
 import { SOCKET_EVENTS } from "../lib/socketEvents.js"
+import { userPublicSelect } from "../lib/userHelpers.js"
 
 const router = express.Router()
 
@@ -117,7 +118,7 @@ router.post("/accept", async (req, res) => {
 				},
 				include: {
 					user: {
-						select: { id: true, name: true, email: true },
+						select: userPublicSelect,
 					},
 				},
 			})

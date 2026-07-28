@@ -5,6 +5,7 @@ import { createInviteSchema } from "../../lib/validation.js"
 import { verifyProjectOwner } from "../../lib/projectAccess.js"
 import { buildInviteUrl } from "../../lib/invite.js"
 import { sendInviteEmail } from "../../lib/email/index.js"
+import { userPublicSelect } from "../../lib/userHelpers.js"
 
 const router = express.Router()
 
@@ -124,7 +125,7 @@ router.get("/:id/invites", async (req, res) => {
 				expiresAt: true,
 				createdAt: true,
 				invitedBy: {
-					select: { id: true, name: true, email: true },
+					select: userPublicSelect,
 				},
 			},
 			orderBy: { createdAt: "desc" },

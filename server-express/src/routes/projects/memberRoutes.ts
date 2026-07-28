@@ -3,6 +3,7 @@ import { prisma } from "../../lib/db.js"
 import { transferOwnershipSchema } from "../../lib/validation.js"
 import { emitToProjectExceptUser } from "../../lib/socket.js"
 import { SOCKET_EVENTS } from "../../lib/socketEvents.js"
+import { userPublicSelect } from "../../lib/userHelpers.js"
 
 const router = express.Router()
 
@@ -14,7 +15,7 @@ router.get("/:id/members", async (req, res) => {
 			where: { projectId: id },
 			include: {
 				user: {
-					select: { id: true, name: true, email: true },
+					select: userPublicSelect,
 				},
 			},
 		})

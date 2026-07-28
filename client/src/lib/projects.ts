@@ -13,6 +13,7 @@ export interface ProjectMember {
 		id: string
 		name: string
 		email: string
+		imageUrl?: string | null
 	}
 }
 
@@ -26,6 +27,7 @@ export interface Task {
 		id: string
 		name: string
 		email: string
+		imageUrl?: string | null
 	}
 	label?: string
 	priority: string
@@ -46,6 +48,7 @@ export interface Comment {
 		id: string
 		name: string
 		email: string
+		imageUrl?: string | null
 	}
 }
 
@@ -132,6 +135,7 @@ export function mapComment(comment: Comment): TaskComment {
 		id: comment.id,
 		authorId: comment.authorId,
 		author: comment.author.name,
+		imageUrl: comment.author.imageUrl ?? undefined,
 		body: comment.content,
 		createdAt: comment.createdAt,
 	}

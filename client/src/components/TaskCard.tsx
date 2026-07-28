@@ -29,7 +29,7 @@ interface TaskCardProps {
 	description?: string
 	assignee?: {
 		name: string
-		avatarUrl?: string
+		imageUrl?: string
 	}
 	label?: TaskLabel
 	priority?: TaskPriority
@@ -122,9 +122,9 @@ export function TaskCard({
 					{assignee ? (
 						<div className="flex items-center gap-2">
 							<Avatar className="size-6">
-								{assignee.avatarUrl && (
+								{assignee.imageUrl && (
 									<AvatarImage
-										src={assignee.avatarUrl}
+										src={assignee.imageUrl}
 										alt={assignee.name}
 									/>
 								)}

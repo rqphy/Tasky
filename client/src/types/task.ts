@@ -19,7 +19,7 @@ export interface TaskComment {
 	id: string
 	authorId: string
 	author: string
-	avatarUrl?: string
+	imageUrl?: string
 	body: string
 	createdAt: string
 }
@@ -32,7 +32,7 @@ export interface Task {
 	assignee?: {
 		id?: string
 		name: string
-		avatarUrl?: string
+		imageUrl?: string
 	}
 	label?: TaskLabel
 	priority?: TaskPriority

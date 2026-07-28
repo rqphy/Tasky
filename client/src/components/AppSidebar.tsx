@@ -22,7 +22,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { AddProjectDialog } from "./AddProjectDialog"
 import { EditProjectDialog } from "./EditProjectDialog"
 import { AccountDialog } from "./account/AccountDialog"
@@ -346,9 +346,15 @@ export function AppSidebar() {
 								<DropdownMenuTrigger asChild>
 									<SidebarMenuButton size="lg">
 										<Avatar className="size-8">
+											{user?.imageUrl && (
+												<AvatarImage
+													src={user.imageUrl}
+													alt={user.name}
+												/>
+											)}
 											{user?.name && (
 												<AvatarFallback className="text-xs">
-													{user?.name
+													{user.name
 														.split(" ")
 														.map((n) => n[0])
 														.join("") || "U"}

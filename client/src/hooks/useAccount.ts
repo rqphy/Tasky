@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query"
 import { isAxiosError } from "axios"
 import {
 	deleteAccount,
+	removeProfileImage,
 	updateEmail,
 	updateName,
 	updatePassword,
@@ -69,5 +70,11 @@ export function useUpdatePassword() {
 export function useDeleteAccount() {
 	return useMutation({
 		mutationFn: (password: string) => deleteAccount(password),
+	})
+}
+
+export function useRemoveProfileImage() {
+	return useMutation({
+		mutationFn: () => removeProfileImage(),
 	})
 }

@@ -1,4 +1,12 @@
 import { SOCKET_EVENTS } from "./socketEvents.js"
+import { userPublicSelect } from "./userHelpers.js"
+
+export type PublicUser = {
+	id: string
+	name: string
+	email: string
+	imageUrl: string | null
+}
 
 export type BoardTaskPayload = {
 	id: string
@@ -11,7 +19,7 @@ export type BoardTaskPayload = {
 	position: number
 	createdAt: Date
 	updatedAt: Date
-	assignee: { id: string; name: string; email: string } | null
+	assignee: PublicUser | null
 	_count: { comments: number }
 }
 
@@ -31,7 +39,7 @@ export type BoardMemberPayload = {
 	projectId: string
 	role: string
 	createdAt: Date
-	user: { id: string; name: string; email: string }
+	user: PublicUser
 }
 
 export type TaskCreatedPayload = {
@@ -133,6 +141,6 @@ export type SocketEventPayloadMap = {
 export type ServerBroadcastEvent = keyof SocketEventPayloadMap
 
 export const boardTaskInclude = {
-	assignee: { select: { id: true, name: true, email: true } },
+	assignee: { select: userPublicSelect },
 	_count: { select: { comments: true } },
 } as const

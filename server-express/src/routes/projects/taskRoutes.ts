@@ -10,6 +10,7 @@ import { emitToProjectExceptUser } from "../../lib/socket.js"
 import { SOCKET_EVENTS } from "../../lib/socketEvents.js"
 import { boardTaskInclude } from "../../lib/socketPayloads.js"
 import { dispatchTaskNotifications } from "../../lib/notifications.js"
+import { userPublicSelect } from "../../lib/userHelpers.js"
 
 const router = express.Router()
 
@@ -115,13 +116,13 @@ router.get("/:projectId/tasks/:taskId", async (req, res) => {
 			include: {
 				column: true,
 				assignee: {
-					select: { id: true, name: true, email: true },
+					select: userPublicSelect,
 				},
 				comments: {
 					orderBy: { createdAt: "asc" },
 					include: {
 						author: {
-							select: { id: true, name: true, email: true },
+							select: userPublicSelect,
 						},
 					},
 				},

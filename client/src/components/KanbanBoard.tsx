@@ -90,7 +90,11 @@ export function KanbanBoard({
 						| TaskPriority
 						| undefined,
 					assignee: t.assignee
-						? { id: t.assignee.id, name: t.assignee.name }
+						? {
+								id: t.assignee.id,
+								name: t.assignee.name,
+								imageUrl: t.assignee.imageUrl ?? undefined,
+							}
 						: undefined,
 					status: t.columnId,
 					position: t.position,

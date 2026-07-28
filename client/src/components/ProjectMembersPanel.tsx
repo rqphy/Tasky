@@ -7,7 +7,7 @@ import {
 	SheetTitle,
 	SheetDescription,
 } from "@/components/ui/sheet"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -158,6 +158,9 @@ export function ProjectMembersPanel({
 								className="flex items-center gap-3 rounded-md px-2 py-2"
 							>
 								<Avatar className="size-8">
+									{user.imageUrl && (
+										<AvatarImage src={user.imageUrl} alt={user.name} />
+									)}
 									<AvatarFallback className="text-xs">
 										{user.name
 											.split(" ")

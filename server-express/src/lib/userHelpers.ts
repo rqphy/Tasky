@@ -3,6 +3,13 @@ import type { User } from "../generated/client.js"
 
 export const DELETED_USER_NAME = "Deleted User"
 
+export const userPublicSelect = {
+	id: true,
+	name: true,
+	email: true,
+	imageUrl: true,
+} as const
+
 export function deletedUserEmail(userId: string): string {
 	return `deleted-${userId}@deleted.tasky`
 }

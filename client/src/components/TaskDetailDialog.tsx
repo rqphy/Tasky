@@ -31,7 +31,7 @@ interface TaskDetailDialogProps {
 	description?: string
 	assignee?: {
 		name: string
-		avatarUrl?: string
+		imageUrl?: string
 	}
 	label?: TaskLabel
 	priority?: TaskPriority
@@ -75,7 +75,10 @@ export function TaskDetailDialog({
 	const displayTitle = task?.title ?? title
 	const displayDescription = task?.description ?? description
 	const displayAssignee = task?.assignee
-		? { name: task.assignee.name }
+		? {
+				name: task.assignee.name,
+				imageUrl: task.assignee.imageUrl ?? undefined,
+			}
 		: assignee
 	const displayLabel = task?.label
 		? (task.label.toLowerCase() as TaskLabel)
@@ -153,9 +156,9 @@ export function TaskDetailDialog({
 						{displayAssignee && (
 							<div className="flex items-center gap-2">
 								<Avatar className="size-5">
-									{displayAssignee.avatarUrl && (
+									{displayAssignee.imageUrl && (
 										<AvatarImage
-											src={displayAssignee.avatarUrl}
+											src={displayAssignee.imageUrl}
 											alt={displayAssignee.name}
 										/>
 									)}
@@ -224,9 +227,9 @@ export function TaskDetailDialog({
 								{comments.map((comment) => (
 									<li key={comment.id} className="flex gap-3">
 										<Avatar className="size-7 shrink-0 mt-0.5">
-											{comment.avatarUrl && (
+											{comment.imageUrl && (
 												<AvatarImage
-													src={comment.avatarUrl}
+													src={comment.imageUrl}
 													alt={comment.author}
 												/>
 											)}

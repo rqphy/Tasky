@@ -171,4 +171,20 @@ router.delete("/me", async (req, res) => {
 	}
 })
 
+router.delete("/me/image", async (req, res) => {
+	try {
+		const userId = req.user!.userId
+
+		const user = await prisma.user.update({
+			where: { id: userId },
+			data: { imageUrl: null },
+		})
+
+		res.status(200).json({ user: stripPassword(user) })
+	} catch (error) {
+		console.error("Remove profile image error:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+})
+
 export default router
