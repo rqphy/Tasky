@@ -11,26 +11,37 @@ declare global {
 	}
 }
 
-export function authMiddleware(
-	req: Request,
-	res: Response,
-	next: NextFunction,
-): void {
+export function authenticateRequest(
+	req: Pick<Request, "headers">,
+): { userId: string } | null {
 	const authHeader = req.headers.authorization
 
-	if (!authHeader || !authHeader.startsWith("Bearer ")) {
-		res.status(401).json({ error: "Missing or invalid authorization header" })
-		return
+	if (!authHeader?.startsWith("Bearer ")) {
+		return null
 	}
 
 	const token = authHeader.substring(7)
 	const payload = verifyAccessToken(token)
 
 	if (!payload) {
-		res.status(401).json({ error: "Invalid or expired token" })
+		return null
+	}
+
+	return { userId: payload.userId }
+}
+
+export function authMiddleware(
+	req: Request,
+	res: Response,
+	next: NextFunction,
+): void {
+	const user = authenticateRequest(req)
+
+	if (!user) {
+		res.status(401).json({ error: "Missing or invalid authorization header" })
 		return
 	}
 
-	req.user = { userId: payload.userId }
+	req.user = user
 	next()
 }

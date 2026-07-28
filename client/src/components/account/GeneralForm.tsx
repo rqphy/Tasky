@@ -37,6 +37,9 @@ export function GeneralForm({ open, user, onUserUpdated }: GeneralFormProps) {
 	const removeProfileImage = useRemoveProfileImage()
 
 	const { startUpload, isUploading } = useUploadThing("profilePicture", {
+		headers: () => ({
+			Authorization: `Bearer ${getAccessToken() ?? ""}`,
+		}),
 		onClientUploadComplete: (res) => {
 			const imageUrl = res[0]?.serverData?.imageUrl
 			if (typeof imageUrl === "string") {
@@ -81,11 +84,7 @@ export function GeneralForm({ open, user, onUserUpdated }: GeneralFormProps) {
 		setError("")
 		setSuccess("")
 
-		await startUpload(Array.from(files), {
-			headers: {
-				Authorization: `Bearer ${getAccessToken() ?? ""}`,
-			},
-		})
+		await startUpload(Array.from(files))
 
 		e.target.value = ""
 	}
