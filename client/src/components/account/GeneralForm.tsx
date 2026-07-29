@@ -54,11 +54,16 @@ export function GeneralForm({ open, user, onUserUpdated }: GeneralFormProps) {
 
 	useEffect(() => {
 		if (open) {
-			setName(user.name)
 			setError("")
 			setSuccess("")
 		}
-	}, [open, user])
+	}, [open])
+
+	useEffect(() => {
+		if (open) {
+			setName(user.name)
+		}
+	}, [open, user.name])
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
@@ -150,7 +155,9 @@ export function GeneralForm({ open, user, onUserUpdated }: GeneralFormProps) {
 				/>
 			</div>
 			{error && <p className="text-sm text-destructive">{error}</p>}
-			{success && <p className="text-sm text-muted-foreground">{success}</p>}
+			{success && (
+				<p className="text-sm text-emerald-600 dark:text-emerald-400">{success}</p>
+			)}
 			<DialogFooter className="px-0">
 				<Button
 					type="submit"

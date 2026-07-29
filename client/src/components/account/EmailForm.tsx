@@ -21,12 +21,17 @@ export function EmailForm({ open, user, onUserUpdated }: EmailFormProps) {
 
 	useEffect(() => {
 		if (open) {
-			setEmail(user.email)
 			setPassword("")
 			setError("")
 			setSuccess("")
 		}
-	}, [open, user])
+	}, [open])
+
+	useEffect(() => {
+		if (open) {
+			setEmail(user.email)
+		}
+	}, [open, user.email])
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
@@ -75,7 +80,7 @@ export function EmailForm({ open, user, onUserUpdated }: EmailFormProps) {
 			</div>
 			{error && <p className="text-sm text-destructive">{error}</p>}
 			{success && (
-				<p className="text-sm text-muted-foreground">{success}</p>
+				<p className="text-sm text-emerald-600 dark:text-emerald-400">{success}</p>
 			)}
 			<DialogFooter className="px-0">
 				<Button
