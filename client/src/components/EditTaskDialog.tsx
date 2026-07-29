@@ -3,6 +3,7 @@ import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
+	DialogDescription,
 	DialogTitle,
 	DialogFooter,
 } from "@/components/ui/dialog"
@@ -69,79 +70,84 @@ export function EditTaskDialog({
 					<DialogTitle>Edit task</DialogTitle>
 				</DialogHeader>
 
-				<div className="space-y-4 py-1">
-					{/* Title */}
-					<div className="space-y-1.5">
-						<label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-							Title <span className="text-destructive">*</span>
-						</label>
-						<input
-							autoFocus
-							value={title}
-							onChange={(e) => setTitle(e.target.value)}
-							onKeyDown={handleKeyDown}
-							placeholder="Task title…"
-							className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
-						/>
-					</div>
-
-					{/* Description */}
-					<div className="space-y-1.5">
-						<label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-							Description
-						</label>
-						<textarea
-							value={description}
-							onChange={(e) => setDescription(e.target.value)}
-							placeholder="Optional description…"
-							rows={3}
-							className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors resize-none"
-						/>
-					</div>
-
-					{/* Label + Priority side by side */}
-					<div className="grid grid-cols-2 gap-3">
+				<DialogDescription>
+					<div className="space-y-4 py-1">
 						<div className="space-y-1.5">
 							<label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-								Label
+								Title{" "}
+								<span className="text-destructive">*</span>
 							</label>
-							<select
-								value={label}
-								onChange={(e) =>
-									setLabel(e.target.value as TaskLabel | "")
-								}
-								className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
-							>
-								<option value="">None</option>
-								{TASK_LABELS.map((l) => (
-									<option key={l.value} value={l.value}>
-										{l.label}
-									</option>
-								))}
-							</select>
+							<input
+								autoFocus
+								value={title}
+								onChange={(e) => setTitle(e.target.value)}
+								onKeyDown={handleKeyDown}
+								placeholder="Task title…"
+								className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+							/>
 						</div>
 
+						{/* Description */}
 						<div className="space-y-1.5">
 							<label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-								Priority
+								Description
 							</label>
-							<select
-								value={priority}
-								onChange={(e) =>
-									setPriority(e.target.value as TaskPriority)
-								}
-								className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
-							>
-								{TASK_PRIORITIES.map((p) => (
-									<option key={p.value} value={p.value}>
-										{p.label}
-									</option>
-								))}
-							</select>
+							<textarea
+								value={description}
+								onChange={(e) => setDescription(e.target.value)}
+								placeholder="Optional description…"
+								rows={3}
+								className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors resize-none"
+							/>
+						</div>
+
+						{/* Label + Priority side by side */}
+						<div className="grid grid-cols-2 gap-3">
+							<div className="space-y-1.5">
+								<label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+									Label
+								</label>
+								<select
+									value={label}
+									onChange={(e) =>
+										setLabel(
+											e.target.value as TaskLabel | "",
+										)
+									}
+									className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+								>
+									<option value="">None</option>
+									{TASK_LABELS.map((l) => (
+										<option key={l.value} value={l.value}>
+											{l.label}
+										</option>
+									))}
+								</select>
+							</div>
+
+							<div className="space-y-1.5">
+								<label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+									Priority
+								</label>
+								<select
+									value={priority}
+									onChange={(e) =>
+										setPriority(
+											e.target.value as TaskPriority,
+										)
+									}
+									className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+								>
+									{TASK_PRIORITIES.map((p) => (
+										<option key={p.value} value={p.value}>
+											{p.label}
+										</option>
+									))}
+								</select>
+							</div>
 						</div>
 					</div>
-				</div>
-
+				</DialogDescription>
 				<DialogFooter>
 					<Button
 						variant="outline"
