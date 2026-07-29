@@ -5,7 +5,7 @@ import {
 	updateColumnSchema,
 	reorderColumnsSchema,
 } from "../../lib/validation.js"
-import { verifyProjectOwner } from "../../lib/projectAccess.js"
+import { verifyProjectMember } from "../../lib/projectAccess.js"
 import { emitToProjectExceptUser } from "../../lib/socket.js"
 import { SOCKET_EVENTS } from "../../lib/socketEvents.js"
 
@@ -17,11 +17,11 @@ router.post("/:id/columns", async (req, res) => {
 		const { id } = req.params
 		const validatedData = createColumnSchema.parse(req.body)
 
-		const ownerCheck = await verifyProjectOwner(id, userId)
-		if ("error" in ownerCheck) {
+		const memberCheck = await verifyProjectMember(id, userId)
+		if ("error" in memberCheck) {
 			return res
-				.status(ownerCheck.status)
-				.json({ error: ownerCheck.error })
+				.status(memberCheck.status)
+				.json({ error: memberCheck.error })
 		}
 
 		const lastColumn = await prisma.column.findFirst({
@@ -63,11 +63,11 @@ router.patch("/:id/columns/:columnId", async (req, res) => {
 		const { id, columnId } = req.params
 		const validatedData = updateColumnSchema.parse(req.body)
 
-		const ownerCheck = await verifyProjectOwner(id, userId)
-		if ("error" in ownerCheck) {
+		const memberCheck = await verifyProjectMember(id, userId)
+		if ("error" in memberCheck) {
 			return res
-				.status(ownerCheck.status)
-				.json({ error: ownerCheck.error })
+				.status(memberCheck.status)
+				.json({ error: memberCheck.error })
 		}
 
 		const column = await prisma.column.findUnique({
@@ -106,11 +106,11 @@ router.delete("/:id/columns/:columnId", async (req, res) => {
 		const userId = req.user!.userId
 		const { id, columnId } = req.params
 
-		const ownerCheck = await verifyProjectOwner(id, userId)
-		if ("error" in ownerCheck) {
+		const memberCheck = await verifyProjectMember(id, userId)
+		if ("error" in memberCheck) {
 			return res
-				.status(ownerCheck.status)
-				.json({ error: ownerCheck.error })
+				.status(memberCheck.status)
+				.json({ error: memberCheck.error })
 		}
 
 		const column = await prisma.column.findUnique({
@@ -143,11 +143,11 @@ router.post("/:id/columns/reorder", async (req, res) => {
 		const { id } = req.params
 		const validatedData = reorderColumnsSchema.parse(req.body)
 
-		const ownerCheck = await verifyProjectOwner(id, userId)
-		if ("error" in ownerCheck) {
+		const memberCheck = await verifyProjectMember(id, userId)
+		if ("error" in memberCheck) {
 			return res
-				.status(ownerCheck.status)
-				.json({ error: ownerCheck.error })
+				.status(memberCheck.status)
+				.json({ error: memberCheck.error })
 		}
 
 		const columns = await prisma.column.findMany({
