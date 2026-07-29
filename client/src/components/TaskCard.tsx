@@ -179,7 +179,7 @@ export function TaskCard({
 											onAttribute?.(id)
 										}}
 									>
-										Attribute
+										Assign
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem

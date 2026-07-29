@@ -4,7 +4,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useProjectMembers } from "@/hooks/useProjects"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Loading01Icon } from "@hugeicons/core-free-icons"
@@ -21,15 +21,6 @@ interface AssignTaskDialogProps {
 	/** Id of the currently assigned user, if any */
 	currentAssigneeId?: string
 	onAssign: (user: Assignee | null) => void
-}
-
-function getInitials(name: string) {
-	return name
-		.split(" ")
-		.map((n) => n[0])
-		.slice(0, 2)
-		.join("")
-		.toUpperCase()
 }
 
 export function AssignTaskDialog({
@@ -115,9 +106,20 @@ export function AssignTaskDialog({
 										}`}
 									>
 										<Avatar className="size-7">
-											<AvatarFallback className="text-[10px]">
-												{getInitials(user.name)}
-											</AvatarFallback>
+											{user?.imageUrl && (
+												<AvatarImage
+													src={user.imageUrl}
+													alt={user.name}
+												/>
+											)}
+											{user?.name && (
+												<AvatarFallback className="text-xs">
+													{user.name
+														.split(" ")
+														.map((n) => n[0])
+														.join("") || "U"}
+												</AvatarFallback>
+											)}
 										</Avatar>
 										{user.name}
 										{isActive && (
