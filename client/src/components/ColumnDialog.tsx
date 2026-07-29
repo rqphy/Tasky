@@ -74,48 +74,49 @@ export function ColumnDialog({
 					<DialogTitle>
 						{isEdit ? "Edit column" : "Add column"}
 					</DialogTitle>
+					<DialogDescription className="sr-only">
+						Create or edit a column with a name and color.
+					</DialogDescription>
 				</DialogHeader>
 
-				<DialogDescription>
-					<div className="space-y-5 py-2">
-						{/* Name */}
-						<div className="space-y-1.5">
-							<label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-								Name
-							</label>
-							<input
-								autoFocus
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								onKeyDown={handleKeyDown}
-								placeholder="Column name…"
-								className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
-							/>
-						</div>
+				<div className="space-y-5 py-2">
+					{/* Name */}
+					<div className="space-y-1.5">
+						<label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+							Name
+						</label>
+						<input
+							autoFocus
+							value={name}
+							onChange={(e) => setName(e.target.value)}
+							onKeyDown={handleKeyDown}
+							placeholder="Column name…"
+							className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+						/>
+					</div>
 
-						{/* Color swatches */}
-						<div className="space-y-1.5">
-							<label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-								Color
-							</label>
-							<div className="flex flex-wrap gap-2">
-								{PRESET_COLORS.map((c) => (
-									<button
-										key={c.value}
-										type="button"
-										title={c.label}
-										onClick={() => setColor(c.value)}
-										className={`size-6 rounded-full transition-all ${c.value} ${
-											color === c.value
-												? "ring-2 ring-offset-2 ring-offset-background ring-foreground scale-110"
-												: "opacity-60 hover:opacity-100 hover:scale-110"
-										}`}
-									/>
-								))}
-							</div>
+					{/* Color swatches */}
+					<div className="space-y-1.5">
+						<label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+							Color
+						</label>
+						<div className="flex flex-wrap gap-2">
+							{PRESET_COLORS.map((c) => (
+								<button
+									key={c.value}
+									type="button"
+									title={c.label}
+									onClick={() => setColor(c.value)}
+									className={`size-6 rounded-full transition-all ${c.value} ${
+										color === c.value
+											? "ring-2 ring-offset-2 ring-offset-background ring-foreground scale-110"
+											: "opacity-60 hover:opacity-100 hover:scale-110"
+									}`}
+								/>
+							))}
 						</div>
 					</div>
-				</DialogDescription>
+				</div>
 
 				<DialogFooter>
 					<Button

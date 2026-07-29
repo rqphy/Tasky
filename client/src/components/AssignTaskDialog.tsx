@@ -1,6 +1,7 @@
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog"
@@ -46,6 +47,9 @@ export function AssignTaskDialog({
 			<DialogContent className="max-w-xs">
 				<DialogHeader>
 					<DialogTitle>Assign task</DialogTitle>
+					<DialogDescription className="sr-only">
+						Select a user to assign the task to.
+					</DialogDescription>
 				</DialogHeader>
 
 				<ul className="flex flex-col gap-1 py-1 max-h-[60vh] overflow-y-auto">

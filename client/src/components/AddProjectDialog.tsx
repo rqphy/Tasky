@@ -3,6 +3,7 @@ import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
+	DialogDescription,
 	DialogTitle,
 	DialogFooter,
 } from "@/components/ui/dialog"
@@ -58,6 +59,9 @@ export function AddProjectDialog({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>New project</DialogTitle>
+					<DialogDescription className="sr-only">
+						Create a new project with a name and emoji.
+					</DialogDescription>
 				</DialogHeader>
 				<div className="flex gap-2">
 					<Popover open={emojiOpen} onOpenChange={setEmojiOpen} modal>

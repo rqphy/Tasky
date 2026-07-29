@@ -65,52 +65,49 @@ export function EditProjectDialog({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Edit project</DialogTitle>
+					<DialogDescription className="sr-only">
+						Edit the name and emoji of the project.
+					</DialogDescription>
 				</DialogHeader>
-				<DialogDescription>
-					<div className="flex gap-2">
-						<Popover
-							open={emojiOpen}
-							onOpenChange={setEmojiOpen}
-							modal
-						>
-							<PopoverTrigger asChild>
-								<Button
-									type="button"
-									variant="outline"
-									size="icon"
-									className="size-9 shrink-0 text-xl"
-									aria-label="Choose project emoji"
-								>
-									{emoji}
-								</Button>
-							</PopoverTrigger>
-							<PopoverContent
-								className="w-fit p-0"
-								align="start"
-								side="bottom"
+				<div className="flex gap-2">
+					<Popover open={emojiOpen} onOpenChange={setEmojiOpen} modal>
+						<PopoverTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon"
+								className="size-9 shrink-0 text-xl"
+								aria-label="Choose project emoji"
 							>
-								<EmojiPicker
-									className="h-85.5"
-									onEmojiSelect={({ emoji: selected }) => {
-										setEmoji(selected)
-										setEmojiOpen(false)
-									}}
-								>
-									<EmojiPickerSearch />
-									<EmojiPickerContent />
-									<EmojiPickerFooter />
-								</EmojiPicker>
-							</PopoverContent>
-						</Popover>
-						<Input
-							placeholder="Project name"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							onKeyDown={(e) => e.key === "Enter" && handleSave()}
-							autoFocus
-						/>
-					</div>
-				</DialogDescription>
+								{emoji}
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent
+							className="w-fit p-0"
+							align="start"
+							side="bottom"
+						>
+							<EmojiPicker
+								className="h-85.5"
+								onEmojiSelect={({ emoji: selected }) => {
+									setEmoji(selected)
+									setEmojiOpen(false)
+								}}
+							>
+								<EmojiPickerSearch />
+								<EmojiPickerContent />
+								<EmojiPickerFooter />
+							</EmojiPicker>
+						</PopoverContent>
+					</Popover>
+					<Input
+						placeholder="Project name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						onKeyDown={(e) => e.key === "Enter" && handleSave()}
+						autoFocus
+					/>
+				</div>
 
 				<DialogFooter>
 					<Button
