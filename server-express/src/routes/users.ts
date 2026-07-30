@@ -4,7 +4,7 @@ import { prisma } from "../lib/db.js"
 import {
 	deleteAccountSchema,
 	updateEmailSchema,
-	updateNameSchema,
+	updateProfileSchema,
 	updatePasswordSchema,
 } from "../lib/validation.js"
 import { stripPassword, verifyUserPassword } from "../lib/userHelpers.js"
@@ -22,14 +22,25 @@ async function getAuthenticatedUser(userId: string) {
 	return prisma.user.findUnique({ where: { id: userId } })
 }
 
-router.patch("/me/name", async (req, res) => {
+function normalizeOptional(value: string | undefined): string | null {
+	if (value === undefined) return null
+	const trimmed = value.trim()
+	return trimmed === "" ? null : trimmed
+}
+
+router.patch("/me/profile", async (req, res) => {
 	try {
 		const userId = req.user!.userId
-		const { name } = updateNameSchema.parse(req.body)
+		const { name, bio, jobTitle, company } = updateProfileSchema.parse(req.body)
 
 		const user = await prisma.user.update({
 			where: { id: userId },
-			data: { name },
+			data: {
+				name,
+				bio: normalizeOptional(bio),
+				jobTitle: normalizeOptional(jobTitle),
+				company: normalizeOptional(company),
+			},
 		})
 
 		res.status(200).json({ user: stripPassword(user) })
@@ -40,7 +51,7 @@ router.patch("/me/name", async (req, res) => {
 				.json({ error: "Validation failed", details: error })
 		}
 
-		console.error("Update name error:", error)
+		console.error("Update profile error:", error)
 		res.status(500).json({ error: "Internal server error" })
 	}
 })

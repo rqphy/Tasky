@@ -84,8 +84,13 @@ export async function getCurrentUser(): Promise<User> {
 	return response.data.user
 }
 
-export async function updateName(name: string): Promise<User> {
-	const response = await api.patch<{ user: User }>("/users/me/name", { name })
+export async function updateProfile(input: {
+	name: string
+	bio?: string
+	jobTitle?: string
+	company?: string
+}): Promise<User> {
+	const response = await api.patch<{ user: User }>("/users/me/profile", input)
 	return response.data.user
 }
 

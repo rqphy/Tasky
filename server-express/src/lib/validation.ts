@@ -15,11 +15,14 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>
 
-export const updateNameSchema = z.object({
+export const updateProfileSchema = z.object({
 	name: z.string().min(1, "Name is required").max(100, "Name too long"),
+	bio: z.string().max(500, "Bio too long").optional(),
+	jobTitle: z.string().max(100, "Job title too long").optional(),
+	company: z.string().max(100, "Company too long").optional(),
 })
 
-export type UpdateNameInput = z.infer<typeof updateNameSchema>
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
 
 export const updateEmailSchema = z.object({
 	email: z.string().email("Invalid email format"),

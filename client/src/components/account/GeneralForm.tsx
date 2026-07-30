@@ -3,13 +3,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { DialogFooter } from "@/components/ui/dialog"
 import type { User } from "@/lib/auth"
 import { getAccessToken } from "@/lib/auth"
 import {
 	getAccountErrorMessage,
 	useRemoveProfileImage,
-	useUpdateName,
+	useUpdateProfile,
 } from "@/hooks/useAccount"
 import { useUploadThing } from "@/lib/uploadthing"
 import { getInitials } from "@/lib/user"
@@ -20,12 +21,31 @@ interface GeneralFormProps {
 	onUserUpdated: (user: User) => void
 }
 
+function optionalField(value: string | null | undefined): string {
+	return value ?? ""
+}
+
+function hasProfileChanges(
+	user: User,
+	fields: { name: string; bio: string; jobTitle: string; company: string },
+): boolean {
+	return (
+		fields.name.trim() !== user.name ||
+		fields.bio.trim() !== optionalField(user.bio).trim() ||
+		fields.jobTitle.trim() !== optionalField(user.jobTitle).trim() ||
+		fields.company.trim() !== optionalField(user.company).trim()
+	)
+}
+
 export function GeneralForm({ open, user, onUserUpdated }: GeneralFormProps) {
 	const [name, setName] = useState(user.name)
+	const [bio, setBio] = useState(optionalField(user.bio))
+	const [jobTitle, setJobTitle] = useState(optionalField(user.jobTitle))
+	const [company, setCompany] = useState(optionalField(user.company))
 	const [error, setError] = useState("")
 	const [success, setSuccess] = useState("")
 	const fileInputRef = useRef<HTMLInputElement>(null)
-	const updateName = useUpdateName()
+	const updateProfile = useUpdateProfile()
 	const removeProfileImage = useRemoveProfileImage()
 
 	const { startUpload, isUploading } = useUploadThing("profilePicture", {
@@ -44,6 +64,8 @@ export function GeneralForm({ open, user, onUserUpdated }: GeneralFormProps) {
 		},
 	})
 
+	const isDirty = hasProfileChanges(user, { name, bio, jobTitle, company })
+
 	useEffect(() => {
 		if (open) {
 			setError("")
@@ -54,23 +76,31 @@ export function GeneralForm({ open, user, onUserUpdated }: GeneralFormProps) {
 	useEffect(() => {
 		if (open) {
 			setName(user.name)
+			setBio(optionalField(user.bio))
+			setJobTitle(optionalField(user.jobTitle))
+			setCompany(optionalField(user.company))
 		}
-	}, [open, user.name])
+	}, [open, user.name, user.bio, user.jobTitle, user.company])
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
-		const trimmed = name.trim()
-		if (!trimmed) return
+		const trimmedName = name.trim()
+		if (!trimmedName) return
 
 		setError("")
 		setSuccess("")
 
 		try {
-			const updatedUser = await updateName.mutateAsync(trimmed)
+			const updatedUser = await updateProfile.mutateAsync({
+				name: trimmedName,
+				bio,
+				jobTitle,
+				company,
+			})
 			onUserUpdated(updatedUser)
-			setSuccess("Display name updated.")
+			setSuccess("Profile updated.")
 		} catch (submitError) {
-			setError(getAccountErrorMessage(submitError, "Failed to update name."))
+			setError(getAccountErrorMessage(submitError, "Failed to update profile."))
 		}
 	}
 
@@ -146,6 +176,41 @@ export function GeneralForm({ open, user, onUserUpdated }: GeneralFormProps) {
 					autoComplete="name"
 				/>
 			</div>
+
+			<div className="space-y-2">
+				<Label htmlFor="account-job-title">Job title</Label>
+				<Input
+					id="account-job-title"
+					value={jobTitle}
+					onChange={(e) => setJobTitle(e.target.value)}
+					placeholder="Software Engineer"
+					autoComplete="organization-title"
+				/>
+			</div>
+
+			<div className="space-y-2">
+				<Label htmlFor="account-company">Company</Label>
+				<Input
+					id="account-company"
+					value={company}
+					onChange={(e) => setCompany(e.target.value)}
+					placeholder="Acme Inc."
+					autoComplete="organization"
+				/>
+			</div>
+
+			<div className="space-y-2">
+				<Label htmlFor="account-bio">Bio</Label>
+				<Textarea
+					id="account-bio"
+					value={bio}
+					onChange={(e) => setBio(e.target.value)}
+					placeholder="Tell your team a little about yourself"
+					rows={4}
+					maxLength={500}
+				/>
+			</div>
+
 			{error && <p className="text-sm text-destructive">{error}</p>}
 			{success && (
 				<p className="text-sm text-emerald-600 dark:text-emerald-400">{success}</p>
@@ -153,13 +218,9 @@ export function GeneralForm({ open, user, onUserUpdated }: GeneralFormProps) {
 			<DialogFooter className="px-0">
 				<Button
 					type="submit"
-					disabled={
-						!name.trim() ||
-						name.trim() === user.name ||
-						updateName.isPending
-					}
+					disabled={!name.trim() || !isDirty || updateProfile.isPending}
 				>
-					{updateName.isPending ? "Saving..." : "Save changes"}
+					{updateProfile.isPending ? "Saving..." : "Save changes"}
 				</Button>
 			</DialogFooter>
 		</form>

@@ -4,7 +4,7 @@ import {
 	deleteAccount,
 	removeProfileImage,
 	updateEmail,
-	updateName,
+	updateProfile,
 	updatePassword,
 } from "@/lib/auth"
 
@@ -42,9 +42,14 @@ export function getOwnedProjectsFromError(error: unknown): OwnedProject[] {
 	return []
 }
 
-export function useUpdateName() {
+export function useUpdateProfile() {
 	return useMutation({
-		mutationFn: (name: string) => updateName(name),
+		mutationFn: (input: {
+			name: string
+			bio?: string
+			jobTitle?: string
+			company?: string
+		}) => updateProfile(input),
 	})
 }
 
