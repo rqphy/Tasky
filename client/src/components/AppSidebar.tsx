@@ -23,6 +23,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getInitials } from "@/lib/user"
 import { AddProjectDialog } from "./AddProjectDialog"
 import { EditProjectDialog } from "./EditProjectDialog"
 import { AccountDialog } from "./account/AccountDialog"
@@ -354,10 +355,7 @@ export function AppSidebar() {
 											)}
 											{user?.name && (
 												<AvatarFallback className="text-xs">
-													{user.name
-														.split(" ")
-														.map((n) => n[0])
-														.join("") || "U"}
+													{getInitials(user.name) || "U"}
 												</AvatarFallback>
 											)}
 										</Avatar>

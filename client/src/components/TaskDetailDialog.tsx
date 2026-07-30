@@ -22,7 +22,8 @@ import {
 	useDeleteComment,
 } from "@/hooks/useProjects"
 import { useAuth } from "@/contexts/AuthContext"
-import { UserHoverCard, getInitials } from "@/components/UserHoverCard"
+import { UserHoverCard } from "@/components/UserHoverCard"
+import { getInitials } from "@/lib/user"
 import type { PublicUserProfile } from "@/types/user"
 
 interface TaskDetailDialogProps {

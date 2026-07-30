@@ -8,6 +8,7 @@ import {
 	SheetDescription,
 } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getInitials } from "@/lib/user"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -168,10 +169,7 @@ export function ProjectMembersPanel({
 												<AvatarImage src={user.imageUrl} alt={user.name} />
 											)}
 											<AvatarFallback className="text-xs">
-												{user.name
-													.split(" ")
-													.map((n) => n[0])
-													.join("")}
+												{getInitials(user.name)}
 											</AvatarFallback>
 										</Avatar>
 									}

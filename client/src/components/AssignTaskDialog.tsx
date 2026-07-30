@@ -6,6 +6,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getInitials } from "@/lib/user"
 import { useProjectMembers } from "@/hooks/useProjects"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Loading01Icon } from "@hugeicons/core-free-icons"
@@ -118,10 +119,7 @@ export function AssignTaskDialog({
 											)}
 											{user?.name && (
 												<AvatarFallback className="text-xs">
-													{user.name
-														.split(" ")
-														.map((n) => n[0])
-														.join("") || "U"}
+													{getInitials(user.name) || "U"}
 												</AvatarFallback>
 											)}
 										</Avatar>

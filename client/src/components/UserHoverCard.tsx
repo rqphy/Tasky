@@ -6,16 +6,8 @@ import {
 	HoverCardTrigger,
 } from "@/components/ui/hover-card"
 import { cn } from "@/lib/utils"
+import { getInitials } from "@/lib/user"
 import type { PublicUserProfile } from "@/types/user"
-
-function getInitials(name: string): string {
-	return name
-		.split(" ")
-		.map((part) => part[0])
-		.slice(0, 2)
-		.join("")
-		.toUpperCase()
-}
 
 function formatJobLine(jobTitle?: string | null, company?: string | null): string | null {
 	if (jobTitle && company) return `${jobTitle} at ${company}`
@@ -85,5 +77,3 @@ export function UserHoverCard({
 		</span>
 	)
 }
-
-export { getInitials }

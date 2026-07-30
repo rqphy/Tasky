@@ -12,20 +12,12 @@ import {
 	useUpdateName,
 } from "@/hooks/useAccount"
 import { useUploadThing } from "@/lib/uploadthing"
+import { getInitials } from "@/lib/user"
 
 interface GeneralFormProps {
 	open: boolean
 	user: User
 	onUserUpdated: (user: User) => void
-}
-
-function getInitials(name: string): string {
-	return name
-		.split(" ")
-		.map((part) => part[0])
-		.join("")
-		.slice(0, 2)
-		.toUpperCase()
 }
 
 export function GeneralForm({ open, user, onUserUpdated }: GeneralFormProps) {

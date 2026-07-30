@@ -18,6 +18,7 @@ import type { TaskLabel, TaskPriority } from "@/types/task"
 import type { PublicUserProfile } from "@/types/user"
 import { labelConfig } from "@/lib/labels"
 import { priorityConfig } from "@/lib/priority"
+import { getInitials } from "@/lib/user"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
 	MoreVerticalIcon,
@@ -37,15 +38,6 @@ interface TaskCardProps {
 	onEdit?: (id: string) => void
 	onDelete?: (id: string) => void
 	onAttribute?: (id: string) => void
-}
-
-function getInitials(name: string) {
-	return name
-		.split(" ")
-		.map((n) => n[0])
-		.slice(0, 2)
-		.join("")
-		.toUpperCase()
 }
 
 export function TaskCard({
