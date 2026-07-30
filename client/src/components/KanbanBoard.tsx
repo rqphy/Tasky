@@ -93,7 +93,11 @@ export function KanbanBoard({
 						? {
 								id: t.assignee.id,
 								name: t.assignee.name,
+								email: t.assignee.email,
 								imageUrl: t.assignee.imageUrl ?? undefined,
+								bio: t.assignee.bio,
+								jobTitle: t.assignee.jobTitle,
+								company: t.assignee.company,
 							}
 						: undefined,
 					status: t.columnId,

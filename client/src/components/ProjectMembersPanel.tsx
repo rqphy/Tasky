@@ -24,6 +24,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { InviteMemberDialog } from "@/components/InviteMemberDialog"
 import { ConfirmMemberActionDialog } from "@/components/ConfirmMemberActionDialog"
+import { UserHoverCard } from "@/components/UserHoverCard"
 import { useProjectInvites, useRevokeInvite } from "@/hooks/useInvites"
 import {
 	useRemoveMember,
@@ -157,20 +158,25 @@ export function ProjectMembersPanel({
 								key={pm.userId}
 								className="flex items-center gap-3 rounded-md px-2 py-2"
 							>
-								<Avatar className="size-8">
-									{user.imageUrl && (
-										<AvatarImage src={user.imageUrl} alt={user.name} />
-									)}
-									<AvatarFallback className="text-xs">
-										{user.name
-											.split(" ")
-											.map((n) => n[0])
-											.join("")}
-									</AvatarFallback>
-								</Avatar>
-								<span className="flex-1 text-sm font-medium truncate">
-									{user.name}
-								</span>
+								<UserHoverCard
+									user={user}
+									className="inline-flex min-w-0 flex-1 items-center gap-3"
+								>
+									<Avatar className="size-8 shrink-0">
+										{user.imageUrl && (
+											<AvatarImage src={user.imageUrl} alt={user.name} />
+										)}
+										<AvatarFallback className="text-xs">
+											{user.name
+												.split(" ")
+												.map((n) => n[0])
+												.join("")}
+										</AvatarFallback>
+									</Avatar>
+									<span className="flex-1 text-sm font-medium truncate">
+										{user.name}
+									</span>
+								</UserHoverCard>
 								<Badge
 									variant="secondary"
 									className={roleBadgeClass[pm.role]}

@@ -8,6 +8,9 @@ export const userPublicSelect = {
 	name: true,
 	email: true,
 	imageUrl: true,
+	bio: true,
+	jobTitle: true,
+	company: true,
 } as const
 
 export function deletedUserEmail(userId: string): string {

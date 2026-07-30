@@ -1,5 +1,6 @@
 import { api } from "./api"
 import type { TaskComment } from "@/types/task"
+import type { PublicUserProfile } from "@/types/user"
 
 export type ProjectRole = "OWNER" | "MEMBER" | "VIEWER"
 
@@ -9,12 +10,7 @@ export interface ProjectMember {
 	projectId: string
 	role: ProjectRole
 	createdAt: string
-	user?: {
-		id: string
-		name: string
-		email: string
-		imageUrl?: string | null
-	}
+	user?: PublicUserProfile
 }
 
 export interface Task {
@@ -23,12 +19,7 @@ export interface Task {
 	title: string
 	description?: string
 	assigneeId?: string
-	assignee?: {
-		id: string
-		name: string
-		email: string
-		imageUrl?: string | null
-	}
+	assignee?: PublicUserProfile
 	label?: string
 	priority: string
 	position: number
@@ -44,12 +35,7 @@ export interface Comment {
 	taskId: string
 	authorId: string
 	createdAt: string
-	author: {
-		id: string
-		name: string
-		email: string
-		imageUrl?: string | null
-	}
+	author: PublicUserProfile
 }
 
 export interface Column {
@@ -136,6 +122,7 @@ export function mapComment(comment: Comment): TaskComment {
 		authorId: comment.authorId,
 		author: comment.author.name,
 		imageUrl: comment.author.imageUrl ?? undefined,
+		authorProfile: comment.author,
 		body: comment.content,
 		createdAt: comment.createdAt,
 	}

@@ -1,3 +1,5 @@
+import type { PublicUserProfile } from "@/types/user"
+
 export type TaskLabel =
 	| "bug"
 	| "feature"
@@ -20,6 +22,7 @@ export interface TaskComment {
 	authorId: string
 	author: string
 	imageUrl?: string
+	authorProfile?: PublicUserProfile
 	body: string
 	createdAt: string
 }
@@ -29,11 +32,7 @@ export interface Task {
 	id: string
 	title: string
 	description?: string
-	assignee?: {
-		id?: string
-		name: string
-		imageUrl?: string
-	}
+	assignee?: PublicUserProfile
 	label?: TaskLabel
 	priority?: TaskPriority
 	/** Holds the id of the Column this task belongs to */

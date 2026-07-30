@@ -1,10 +1,7 @@
 import { api } from "./api"
+import type { PublicUserProfile } from "@/types/user"
 
-export interface User {
-	id: string
-	name: string
-	email: string
-	imageUrl?: string | null
+export interface User extends PublicUserProfile {
 	createdAt: string
 	updatedAt: string
 }

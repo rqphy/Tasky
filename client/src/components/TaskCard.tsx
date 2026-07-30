@@ -15,6 +15,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { TaskLabel, TaskPriority } from "@/types/task"
+import type { PublicUserProfile } from "@/types/user"
 import { labelConfig } from "@/lib/labels"
 import { priorityConfig } from "@/lib/priority"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -27,10 +28,7 @@ interface TaskCardProps {
 	id: string
 	title: string
 	description?: string
-	assignee?: {
-		name: string
-		imageUrl?: string
-	}
+	assignee?: PublicUserProfile
 	label?: TaskLabel
 	priority?: TaskPriority
 	commentCount?: number

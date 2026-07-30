@@ -22,6 +22,8 @@ import {
 	useDeleteComment,
 } from "@/hooks/useProjects"
 import { useAuth } from "@/contexts/AuthContext"
+import { UserHoverCard, getInitials } from "@/components/UserHoverCard"
+import type { PublicUserProfile } from "@/types/user"
 
 interface TaskDetailDialogProps {
 	open: boolean
@@ -29,21 +31,24 @@ interface TaskDetailDialogProps {
 	id: string
 	title: string
 	description?: string
-	assignee?: {
-		name: string
-		imageUrl?: string
-	}
+	assignee?: PublicUserProfile
 	label?: TaskLabel
 	priority?: TaskPriority
 }
 
-function getInitials(name: string) {
-	return name
-		.split(" ")
-		.map((n) => n[0])
-		.slice(0, 2)
-		.join("")
-		.toUpperCase()
+function toPublicProfile(
+	profile?: Partial<PublicUserProfile> & { name: string },
+): PublicUserProfile | undefined {
+	if (!profile?.name) return undefined
+	return {
+		id: profile.id ?? "",
+		name: profile.name,
+		email: profile.email ?? "",
+		imageUrl: profile.imageUrl,
+		bio: profile.bio,
+		jobTitle: profile.jobTitle,
+		company: profile.company,
+	}
 }
 
 function formatDate(iso: string) {
@@ -75,11 +80,8 @@ export function TaskDetailDialog({
 	const displayTitle = task?.title ?? title
 	const displayDescription = task?.description ?? description
 	const displayAssignee = task?.assignee
-		? {
-				name: task.assignee.name,
-				imageUrl: task.assignee.imageUrl ?? undefined,
-			}
-		: assignee
+		? toPublicProfile(task.assignee)
+		: toPublicProfile(assignee)
 	const displayLabel = task?.label
 		? (task.label.toLowerCase() as TaskLabel)
 		: label
@@ -154,7 +156,7 @@ export function TaskDetailDialog({
 								)
 							})()}
 						{displayAssignee && (
-							<div className="flex items-center gap-2">
+							<UserHoverCard user={displayAssignee}>
 								<Avatar className="size-5">
 									{displayAssignee.imageUrl && (
 										<AvatarImage
@@ -169,7 +171,7 @@ export function TaskDetailDialog({
 								<span className="text-xs text-muted-foreground">
 									{displayAssignee.name}
 								</span>
-							</div>
+							</UserHoverCard>
 						)}
 					</div>
 				</DialogHeader>
@@ -224,53 +226,68 @@ export function TaskDetailDialog({
 							) : null}
 
 							<ul className="space-y-4 mb-4">
-								{comments.map((comment) => (
-									<li key={comment.id} className="flex gap-3">
-										<Avatar className="size-7 shrink-0 mt-0.5">
-											{comment.imageUrl && (
-												<AvatarImage
-													src={comment.imageUrl}
-													alt={comment.author}
-												/>
-											)}
-											<AvatarFallback className="text-[10px]">
-												{getInitials(comment.author)}
-											</AvatarFallback>
-										</Avatar>
-										<div className="flex-1 min-w-0">
-											<div className="flex items-baseline gap-2 mb-1">
-												<span className="text-xs font-semibold">
-													{comment.author}
-												</span>
-												<span className="text-[10px] text-muted-foreground">
-													{formatDate(
-														comment.createdAt,
-													)}
-												</span>
-												{comment.authorId ===
-													user?.id && (
-													<button
-														type="button"
-														onClick={() =>
-															handleDeleteComment(
-																comment.id,
-															)
-														}
-														disabled={
-															deleteComment.isPending
-														}
-														className="ml-auto text-[10px] text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
+								{comments.map((comment) => {
+									const authorProfile =
+										comment.authorProfile ??
+										toPublicProfile({
+											id: comment.authorId,
+											name: comment.author,
+											imageUrl: comment.imageUrl,
+										})!
+
+									return (
+										<li key={comment.id} className="flex gap-3">
+											<div className="flex-1 min-w-0">
+												<div className="flex items-baseline gap-2 mb-1">
+													<UserHoverCard
+														user={authorProfile}
+														className="inline-flex items-center gap-2 shrink-0"
 													>
-														Delete
-													</button>
-												)}
+														<Avatar className="size-7">
+															{comment.imageUrl && (
+																<AvatarImage
+																	src={comment.imageUrl}
+																	alt={comment.author}
+																/>
+															)}
+															<AvatarFallback className="text-[10px]">
+																{getInitials(comment.author)}
+															</AvatarFallback>
+														</Avatar>
+														<span className="text-xs font-semibold">
+															{comment.author}
+														</span>
+													</UserHoverCard>
+													<span className="text-[10px] text-muted-foreground">
+														{formatDate(
+															comment.createdAt,
+														)}
+													</span>
+													{comment.authorId ===
+														user?.id && (
+														<button
+															type="button"
+															onClick={() =>
+																handleDeleteComment(
+																	comment.id,
+																)
+															}
+															disabled={
+																deleteComment.isPending
+															}
+															className="ml-auto text-[10px] text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
+														>
+															Delete
+														</button>
+													)}
+												</div>
+												<p className="text-sm text-foreground leading-relaxed pl-9">
+													{comment.body}
+												</p>
 											</div>
-											<p className="text-sm text-foreground leading-relaxed">
-												{comment.body}
-											</p>
-										</div>
-									</li>
-								))}
+										</li>
+									)
+								})}
 							</ul>
 
 							<div className="flex gap-3 items-start">

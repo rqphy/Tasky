@@ -14,6 +14,7 @@ import { useShareLink } from "@/hooks/useShare"
 import { useAuth } from "@/contexts/AuthContext"
 import { joinProjectRoom, leaveProjectRoom } from "@/lib/socket"
 import type { TaskLabel, TaskPriority } from "@/types/task"
+import type { PublicUserProfile } from "@/types/user"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
 	Notification02Icon,
@@ -38,7 +39,7 @@ export function BoardPage() {
 		id: string
 		title: string
 		description?: string
-		assignee?: { name: string; imageUrl?: string }
+		assignee?: PublicUserProfile
 		label?: TaskLabel
 		priority?: TaskPriority
 	} | null>(null)

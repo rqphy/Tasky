@@ -12,7 +12,15 @@ export type BoardTaskPayload = {
 	position: number
 	createdAt: string
 	updatedAt: string
-	assignee: { id: string; name: string; email: string } | null
+	assignee: {
+		id: string
+		name: string
+		email: string
+		imageUrl?: string | null
+		bio?: string | null
+		jobTitle?: string | null
+		company?: string | null
+	} | null
 	_count: { comments: number }
 }
 
@@ -32,7 +40,15 @@ export type BoardMemberPayload = {
 	projectId: string
 	role: ProjectRole
 	createdAt: string
-	user: { id: string; name: string; email: string }
+	user: {
+		id: string
+		name: string
+		email: string
+		imageUrl?: string | null
+		bio?: string | null
+		jobTitle?: string | null
+		company?: string | null
+	}
 }
 
 export type TaskCreatedPayload = {
