@@ -238,9 +238,12 @@ export function TaskDetailDialog({
 										})!
 
 									return (
-										<li key={comment.id} className="flex gap-3">
+										<li
+											key={comment.id}
+											className="flex gap-3"
+										>
 											<div className="flex-1 min-w-0">
-												<div className="flex items-baseline gap-2 mb-1">
+												<div className="flex items-center gap-2 mb-1">
 													<UserHoverCard
 														user={authorProfile}
 														className="shrink-0"
@@ -249,12 +252,18 @@ export function TaskDetailDialog({
 															<Avatar className="size-7">
 																{comment.imageUrl && (
 																	<AvatarImage
-																		src={comment.imageUrl}
-																		alt={comment.author}
+																		src={
+																			comment.imageUrl
+																		}
+																		alt={
+																			comment.author
+																		}
 																	/>
 																)}
 																<AvatarFallback className="text-[10px]">
-																	{getInitials(comment.author)}
+																	{getInitials(
+																		comment.author,
+																	)}
 																</AvatarFallback>
 															</Avatar>
 														}
