@@ -156,22 +156,23 @@ export function TaskDetailDialog({
 								)
 							})()}
 						{displayAssignee && (
-							<UserHoverCard user={displayAssignee}>
-								<Avatar className="size-5">
-									{displayAssignee.imageUrl && (
-										<AvatarImage
-											src={displayAssignee.imageUrl}
-											alt={displayAssignee.name}
-										/>
-									)}
-									<AvatarFallback className="text-[10px]">
-										{getInitials(displayAssignee.name)}
-									</AvatarFallback>
-								</Avatar>
-								<span className="text-xs text-muted-foreground">
-									{displayAssignee.name}
-								</span>
-							</UserHoverCard>
+							<UserHoverCard
+								user={displayAssignee}
+								nameClassName="text-xs text-muted-foreground"
+								avatar={
+									<Avatar className="size-5">
+										{displayAssignee.imageUrl && (
+											<AvatarImage
+												src={displayAssignee.imageUrl}
+												alt={displayAssignee.name}
+											/>
+										)}
+										<AvatarFallback className="text-[10px]">
+											{getInitials(displayAssignee.name)}
+										</AvatarFallback>
+									</Avatar>
+								}
+							/>
 						)}
 					</div>
 				</DialogHeader>
@@ -241,23 +242,22 @@ export function TaskDetailDialog({
 												<div className="flex items-baseline gap-2 mb-1">
 													<UserHoverCard
 														user={authorProfile}
-														className="inline-flex items-center gap-2 shrink-0"
-													>
-														<Avatar className="size-7">
-															{comment.imageUrl && (
-																<AvatarImage
-																	src={comment.imageUrl}
-																	alt={comment.author}
-																/>
-															)}
-															<AvatarFallback className="text-[10px]">
-																{getInitials(comment.author)}
-															</AvatarFallback>
-														</Avatar>
-														<span className="text-xs font-semibold">
-															{comment.author}
-														</span>
-													</UserHoverCard>
+														className="shrink-0"
+														nameClassName="text-xs font-semibold"
+														avatar={
+															<Avatar className="size-7">
+																{comment.imageUrl && (
+																	<AvatarImage
+																		src={comment.imageUrl}
+																		alt={comment.author}
+																	/>
+																)}
+																<AvatarFallback className="text-[10px]">
+																	{getInitials(comment.author)}
+																</AvatarFallback>
+															</Avatar>
+														}
+													/>
 													<span className="text-[10px] text-muted-foreground">
 														{formatDate(
 															comment.createdAt,

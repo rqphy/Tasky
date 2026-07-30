@@ -160,23 +160,22 @@ export function ProjectMembersPanel({
 							>
 								<UserHoverCard
 									user={user}
-									className="inline-flex min-w-0 flex-1 items-center gap-3"
-								>
-									<Avatar className="size-8 shrink-0">
-										{user.imageUrl && (
-											<AvatarImage src={user.imageUrl} alt={user.name} />
-										)}
-										<AvatarFallback className="text-xs">
-											{user.name
-												.split(" ")
-												.map((n) => n[0])
-												.join("")}
-										</AvatarFallback>
-									</Avatar>
-									<span className="flex-1 text-sm font-medium truncate">
-										{user.name}
-									</span>
-								</UserHoverCard>
+									className="min-w-0 flex-1 items-center gap-3"
+									nameClassName="flex-1 text-sm font-medium truncate"
+									avatar={
+										<Avatar className="size-8 shrink-0">
+											{user.imageUrl && (
+												<AvatarImage src={user.imageUrl} alt={user.name} />
+											)}
+											<AvatarFallback className="text-xs">
+												{user.name
+													.split(" ")
+													.map((n) => n[0])
+													.join("")}
+											</AvatarFallback>
+										</Avatar>
+									}
+								/>
 								<Badge
 									variant="secondary"
 									className={roleBadgeClass[pm.role]}

@@ -5,6 +5,7 @@ import {
 	HoverCardContent,
 	HoverCardTrigger,
 } from "@/components/ui/hover-card"
+import { cn } from "@/lib/utils"
 import type { PublicUserProfile } from "@/types/user"
 
 function getInitials(name: string): string {
@@ -25,52 +26,63 @@ function formatJobLine(jobTitle?: string | null, company?: string | null): strin
 
 interface UserHoverCardProps {
 	user: PublicUserProfile
-	children: ReactNode
+	avatar?: ReactNode
 	className?: string
+	nameClassName?: string
 }
 
-export function UserHoverCard({ user, children, className }: UserHoverCardProps) {
+export function UserHoverCard({
+	user,
+	avatar,
+	className,
+	nameClassName,
+}: UserHoverCardProps) {
 	const jobLine = formatJobLine(user.jobTitle, user.company)
 
 	return (
-		<HoverCard openDelay={200} closeDelay={100}>
-			<HoverCardTrigger asChild>
-				<button
-					type="button"
-					className={className ?? "inline-flex items-center gap-2 cursor-default text-left"}
-				>
-					{children}
-				</button>
-			</HoverCardTrigger>
-			<HoverCardContent align="start" className="w-72">
-				<div className="flex gap-3">
-					<Avatar className="size-10 shrink-0">
-						{user.imageUrl && (
-							<AvatarImage src={user.imageUrl} alt={user.name} />
+		<span className={cn("inline-flex items-center gap-2 min-w-0", className)}>
+			{avatar}
+			<HoverCard openDelay={200} closeDelay={100}>
+				<HoverCardTrigger asChild>
+					<span
+						className={cn(
+							"cursor-default truncate hover:underline underline-offset-2",
+							nameClassName,
 						)}
-						<AvatarFallback className="text-xs">
-							{getInitials(user.name)}
-						</AvatarFallback>
-					</Avatar>
-					<div className="min-w-0 flex-1">
-						<p className="font-semibold truncate">{user.name}</p>
-						{user.email && (
-							<p className="text-xs text-muted-foreground truncate">
-								{user.email}
-							</p>
-						)}
+					>
+						{user.name}
+					</span>
+				</HoverCardTrigger>
+				<HoverCardContent align="start" className="w-72">
+					<div className="flex gap-3">
+						<Avatar className="size-10 shrink-0">
+							{user.imageUrl && (
+								<AvatarImage src={user.imageUrl} alt={user.name} />
+							)}
+							<AvatarFallback className="text-xs">
+								{getInitials(user.name)}
+							</AvatarFallback>
+						</Avatar>
+						<div className="min-w-0 flex-1">
+							<p className="font-semibold truncate">{user.name}</p>
+							{user.email && (
+								<p className="text-xs text-muted-foreground truncate">
+									{user.email}
+								</p>
+							)}
+						</div>
 					</div>
-				</div>
-				{jobLine && (
-					<p className="mt-3 text-xs text-muted-foreground">{jobLine}</p>
-				)}
-				{user.bio && (
-					<p className="mt-2 text-sm text-foreground leading-relaxed line-clamp-3">
-						{user.bio}
-					</p>
-				)}
-			</HoverCardContent>
-		</HoverCard>
+					{jobLine && (
+						<p className="mt-3 text-xs text-muted-foreground">{jobLine}</p>
+					)}
+					{user.bio && (
+						<p className="mt-2 text-sm text-foreground leading-relaxed line-clamp-3">
+							{user.bio}
+						</p>
+					)}
+				</HoverCardContent>
+			</HoverCard>
+		</span>
 	)
 }
 
