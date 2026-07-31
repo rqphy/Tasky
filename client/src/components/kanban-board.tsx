@@ -16,16 +16,16 @@ import {
 	arrayMove,
 	horizontalListSortingStrategy,
 } from "@dnd-kit/sortable"
-import { SortableKanbanColumn } from "@/components/SortableKanbanColumn"
-import { KanbanColumn } from "@/components/KanbanColumn"
-import { ColumnDialog } from "@/components/ColumnDialog"
-import { AddTaskDialog } from "@/components/AddTaskDialog"
-import { EditTaskDialog } from "@/components/EditTaskDialog"
+import { SortableKanbanColumn } from "@/components/sortable-kanban-column"
+import { KanbanColumn } from "@/components/kanban-column"
+import { ColumnDialog } from "@/components/column-dialog"
+import { AddTaskDialog } from "@/components/add-task-dialog"
+import { EditTaskDialog } from "@/components/edit-task-dialog"
 import {
 	AssignTaskDialog,
 	type Assignee,
-} from "@/components/AssignTaskDialog"
-import { TaskCard } from "@/components/TaskCard"
+} from "@/components/assign-task-dialog"
+import { TaskCard } from "@/components/task-card"
 import type { Task } from "@/types/task"
 import type { Column as UIColumn, TaskLabel, TaskPriority } from "@/types/task"
 import type { Column as BackendColumn } from "@/lib/projects"

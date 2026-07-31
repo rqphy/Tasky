@@ -15,7 +15,7 @@ import type {
 	TaskDeletedPayload,
 	TaskMovedPayload,
 	TaskUpdatedPayload,
-} from "@/lib/socketPayloads"
+} from "@/lib/socket-payloads"
 
 function sortByPosition<T extends { position: number }>(items: T[]): T[] {
 	return [...items].sort((a, b) => a.position - b.position)

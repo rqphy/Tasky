@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { patchTaskMoved } from "@/lib/projectCachePatches"
+import { patchTaskMoved } from "@/lib/project-cache-patches"
 import {
 	projectsApi,
 	patchTaskCount,

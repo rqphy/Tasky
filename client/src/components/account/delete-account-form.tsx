@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { DialogFooter } from "@/components/ui/dialog"
-import { ConfirmMemberActionDialog } from "@/components/ConfirmMemberActionDialog"
+import { ConfirmMemberActionDialog } from "@/components/confirm-member-action-dialog"
 import {
 	getAccountErrorMessage,
 	getOwnedProjectsFromError,

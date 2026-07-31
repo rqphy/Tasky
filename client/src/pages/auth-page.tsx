@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import {
 	getPendingInviteToken,
 	setPendingInviteToken,
-} from "@/lib/inviteToken"
+} from "@/lib/invite-token"
 
 export function AuthPage() {
 	const { login, register, isAuthenticated, isLoading } = useAuth()

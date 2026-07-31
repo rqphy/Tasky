@@ -1,4 +1,4 @@
-import { SOCKET_EVENTS } from "@/lib/socketEvents"
+import { SOCKET_EVENTS } from "@/lib/socket-events"
 import type { ProjectRole } from "@/lib/projects"
 
 export type BoardTaskPayload = {

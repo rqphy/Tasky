@@ -1,8 +1,8 @@
 import React from "react"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useDroppable } from "@dnd-kit/core"
-import { SortableTaskCard } from "@/components/SortableTaskCard"
-import { TaskCard } from "@/components/TaskCard"
+import { SortableTaskCard } from "@/components/sortable-task-card"
+import { TaskCard } from "@/components/task-card"
 import {
 	DropdownMenu,
 	DropdownMenuContent,

@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { NotificationItem } from "@/components/NotificationItem"
+import { NotificationItem } from "@/components/notification-item"
 import { type Notification } from "@/lib/notifications"
 import { useNotifications, useMarkAsRead } from "@/hooks/useNotifications"
 import { HugeiconsIcon } from "@hugeicons/react"

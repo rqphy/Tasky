@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { getSocket } from "@/lib/socket"
-import { SOCKET_EVENTS } from "@/lib/socketEvents"
+import { SOCKET_EVENTS } from "@/lib/socket-events"
 import {
 	patchColumnCreated,
 	patchColumnDeleted,
@@ -13,7 +13,7 @@ import {
 	patchTaskDeleted,
 	patchTaskMoved,
 	patchTaskUpdated,
-} from "@/lib/projectCachePatches"
+} from "@/lib/project-cache-patches"
 import type {
 	ColumnCreatedPayload,
 	ColumnDeletedPayload,
@@ -25,7 +25,7 @@ import type {
 	TaskDeletedPayload,
 	TaskMovedPayload,
 	TaskUpdatedPayload,
-} from "@/lib/socketPayloads"
+} from "@/lib/socket-payloads"
 
 export function useProjectSocketEvents(projectId: string | undefined) {
 	const queryClient = useQueryClient()

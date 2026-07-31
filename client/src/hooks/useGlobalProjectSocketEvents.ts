@@ -2,15 +2,15 @@ import { useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useQueryClient } from "@tanstack/react-query"
 import { getSocket } from "@/lib/socket"
-import { SOCKET_EVENTS } from "@/lib/socketEvents"
+import { SOCKET_EVENTS } from "@/lib/socket-events"
 import {
 	patchProjectDeleted,
 	patchProjectUpdated,
-} from "@/lib/projectCachePatches"
+} from "@/lib/project-cache-patches"
 import type {
 	ProjectDeletedPayload,
 	ProjectUpdatedPayload,
-} from "@/lib/socketPayloads"
+} from "@/lib/socket-payloads"
 
 export function useGlobalProjectSocketEvents() {
 	const queryClient = useQueryClient()

@@ -9,10 +9,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/contexts/AuthContext"
 import type { User } from "@/lib/auth"
-import { GeneralForm } from "./GeneralForm"
-import { EmailForm } from "./EmailForm"
-import { PasswordForm } from "./PasswordForm"
-import { DeleteAccountForm } from "./DeleteAccountForm"
+import { GeneralForm } from "./general-form"
+import { EmailForm } from "./email-form"
+import { PasswordForm } from "./password-form"
+import { DeleteAccountForm } from "./delete-account-form"
 
 interface AccountDialogProps {
 	open: boolean

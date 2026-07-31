@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { KanbanColumn } from "@/components/KanbanColumn"
+import { KanbanColumn } from "@/components/kanban-column"
 import type { Task } from "@/types/task"
 import type { Column } from "@/types/task"
 

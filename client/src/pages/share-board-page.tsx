@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom"
-import { KanbanBoard } from "@/components/KanbanBoard"
+import { KanbanBoard } from "@/components/kanban-board"
 import { Badge } from "@/components/ui/badge"
 import { useSharedProject } from "@/hooks/useShare"
 import { HugeiconsIcon } from "@hugeicons/react"

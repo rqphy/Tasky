@@ -23,9 +23,9 @@ import {
 	Delete02Icon,
 	MoreHorizontalIcon,
 } from "@hugeicons/core-free-icons"
-import { InviteMemberDialog } from "@/components/InviteMemberDialog"
-import { ConfirmMemberActionDialog } from "@/components/ConfirmMemberActionDialog"
-import { UserHoverCard } from "@/components/UserHoverCard"
+import { InviteMemberDialog } from "@/components/invite-member-dialog"
+import { ConfirmMemberActionDialog } from "@/components/confirm-member-action-dialog"
+import { UserHoverCard } from "@/components/user-hover-card"
 import { useProjectInvites, useRevokeInvite } from "@/hooks/useInvites"
 import {
 	useRemoveMember,

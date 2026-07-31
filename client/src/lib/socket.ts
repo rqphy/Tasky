@@ -1,6 +1,6 @@
 import { io } from "socket.io-client"
-import { SOCKET_EVENTS } from "@/lib/socketEvents"
-import type { AppSocket } from "@/lib/socketTypes"
+import { SOCKET_EVENTS } from "@/lib/socket-events"
+import type { AppSocket } from "@/lib/socket-types"
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001"
 
@@ -87,4 +87,4 @@ export function leaveProjectRoom(projectId: string) {
 	getSocket()?.emit(SOCKET_EVENTS.PROJECT_LEAVE, projectId)
 }
 
-export type { AppSocket, ServerToClientEvents } from "@/lib/socketTypes"
+export type { AppSocket, ServerToClientEvents } from "@/lib/socket-types"

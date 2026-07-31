@@ -1,12 +1,12 @@
 import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { getSocket } from "@/lib/socket"
-import { SOCKET_EVENTS } from "@/lib/socketEvents"
+import { SOCKET_EVENTS } from "@/lib/socket-events"
 import {
 	mapNotification,
 	patchNotificationCreated,
 } from "@/lib/notifications"
-import type { NotificationCreatedPayload } from "@/lib/socketPayloads"
+import type { NotificationCreatedPayload } from "@/lib/socket-payloads"
 
 export function useGlobalNotificationSocketEvents() {
 	const queryClient = useQueryClient()

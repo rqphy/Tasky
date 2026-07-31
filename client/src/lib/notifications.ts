@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query"
 import { api } from "./api"
-import type { NotificationCreatedPayload } from "./socketPayloads"
+import type { NotificationCreatedPayload } from "./socket-payloads"
 
 export type NotificationType =
 	| "task_assigned"

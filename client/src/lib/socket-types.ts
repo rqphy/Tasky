@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io-client"
-import type { SocketEventPayloadMap } from "@/lib/socketPayloads"
+import type { SocketEventPayloadMap } from "@/lib/socket-payloads"
 
 export type ServerToClientEvents = {
 	[K in keyof SocketEventPayloadMap]: (

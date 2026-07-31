@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { AppSidebar } from "@/components/AppSidebar"
+import { AppSidebar } from "@/components/app-sidebar"
 import { useGlobalProjectSocketEvents } from "@/hooks/useGlobalProjectSocketEvents"
 import { useGlobalNotificationSocketEvents } from "@/hooks/useGlobalNotificationSocketEvents"
 

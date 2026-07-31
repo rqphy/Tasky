@@ -22,7 +22,7 @@ import {
 	useDeleteComment,
 } from "@/hooks/useProjects"
 import { useAuth } from "@/contexts/AuthContext"
-import { UserHoverCard } from "@/components/UserHoverCard"
+import { UserHoverCard } from "@/components/user-hover-card"
 import { getInitials } from "@/lib/user"
 import type { PublicUserProfile } from "@/types/user"
 

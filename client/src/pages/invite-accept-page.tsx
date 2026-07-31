@@ -7,7 +7,7 @@ import { useAcceptInvite, useValidateInvite } from "@/hooks/useInvites"
 import {
 	clearPendingInviteToken,
 	setPendingInviteToken,
-} from "@/lib/inviteToken"
+} from "@/lib/invite-token"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Loading01Icon } from "@hugeicons/core-free-icons"
 import { isAxiosError } from "axios"
