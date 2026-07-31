@@ -20,7 +20,9 @@ import {
 	useTask,
 	useCreateComment,
 	useDeleteComment,
+	useProjectMembers,
 } from "@/hooks/useProjects"
+import { renderComment } from "@/lib/render-comment"
 import { useAuth } from "@/contexts/AuthContext"
 import { UserHoverCard } from "@/components/user-hover-card"
 import { getInitials } from "@/lib/user"
@@ -74,6 +76,7 @@ export function TaskDetailDialog({
 	const { projectId } = useParams<{ projectId: string }>()
 	const { user } = useAuth()
 	const { data: task, isLoading, isError } = useTask(projectId, id, open)
+	const { data: members = [] } = useProjectMembers(projectId, open)
 	const createComment = useCreateComment(projectId!)
 	const deleteComment = useDeleteComment(projectId!)
 	const [draft, setDraft] = useState("")
@@ -292,7 +295,11 @@ export function TaskDetailDialog({
 													)}
 												</div>
 												<p className="text-sm text-foreground leading-relaxed pl-9">
-													{comment.body}
+													{renderComment(
+														comment.body,
+														members,
+														user?.name,
+													)}
 												</p>
 											</div>
 										</li>
