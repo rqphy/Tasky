@@ -22,6 +22,7 @@ import {
 	useDeleteComment,
 	useProjectMembers,
 } from "@/hooks/useProjects"
+import { CommentTextarea } from "@/components/comment-textarea"
 import { renderComment } from "@/lib/render-comment"
 import { useAuth } from "@/contexts/AuthContext"
 import { UserHoverCard } from "@/components/user-hover-card"
@@ -112,12 +113,6 @@ export function TaskDetailDialog({
 
 	function handleDeleteComment(commentId: string) {
 		deleteComment.mutate({ taskId: id, commentId })
-	}
-
-	function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-		if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-			handleAddComment()
-		}
 	}
 
 	return (
@@ -314,15 +309,12 @@ export function TaskDetailDialog({
 									</AvatarFallback>
 								</Avatar>
 								<div className="flex-1 space-y-2">
-									<textarea
+									<CommentTextarea
 										value={draft}
-										onChange={(e) =>
-											setDraft(e.target.value)
-										}
-										onKeyDown={handleKeyDown}
-										placeholder="Leave a comment… (⌘↵ to send)"
-										rows={3}
-										className="w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
+										onChange={setDraft}
+										members={members}
+										onSubmit={handleAddComment}
+										disabled={createComment.isPending}
 									/>
 									<div className="flex justify-end">
 										<Button

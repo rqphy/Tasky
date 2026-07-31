@@ -1,17 +1,11 @@
 import type { ReactNode } from "react"
 import type { ProjectMember } from "@/lib/projects"
+import { getMemberNames } from "@/lib/mentions"
 
 const MEMBER_MENTION_CLASS = "text-sky-600 dark:text-sky-400 font-medium"
 const SELF_MENTION_CLASS = "text-violet-600 dark:text-violet-400 font-semibold"
 
 const WORD_BOUNDARY = /[\s,.!?;:)]/
-
-function getMemberNames(members: ProjectMember[]): string[] {
-	return members
-		.map((m) => m.user?.name)
-		.filter((name): name is string => Boolean(name))
-		.sort((a, b) => b.length - a.length)
-}
 
 function findMemberMatch(
 	text: string,
