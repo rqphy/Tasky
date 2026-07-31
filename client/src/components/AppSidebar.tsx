@@ -28,6 +28,7 @@ import { AddProjectDialog } from "./AddProjectDialog"
 import { EditProjectDialog } from "./EditProjectDialog"
 import { AccountDialog } from "./account/AccountDialog"
 import { ConfirmMemberActionDialog } from "@/components/ConfirmMemberActionDialog"
+import { ModeToggle } from "@/components/mode-toggle"
 import { getUnreadCountForProject } from "@/lib/notifications"
 import { useAllNotifications } from "@/hooks/useNotifications"
 import { useAuth } from "@/contexts/AuthContext"
@@ -355,7 +356,8 @@ export function AppSidebar() {
 											)}
 											{user?.name && (
 												<AvatarFallback className="text-xs">
-													{getInitials(user.name) || "U"}
+													{getInitials(user.name) ||
+														"U"}
 												</AvatarFallback>
 											)}
 										</Avatar>
@@ -375,14 +377,17 @@ export function AppSidebar() {
 									className="w-56"
 								>
 									<DropdownMenuLabel>
-										My Account
+										Settings
 									</DropdownMenuLabel>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem
-										onClick={() => setAccountDialogOpen(true)}
+										onClick={() =>
+											setAccountDialogOpen(true)
+										}
 									>
 										Account
 									</DropdownMenuItem>
+									<ModeToggle />
 									<DropdownMenuItem onClick={handleLogout}>
 										Logout
 									</DropdownMenuItem>

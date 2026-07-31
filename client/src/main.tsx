@@ -13,6 +13,7 @@ import { InviteAcceptPage } from "@/pages/InviteAcceptPage"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { ProjectRedirect } from "@/components/ProjectRedirect"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -68,9 +69,11 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
 		<QueryClientProvider client={queryClient}>
-			<AuthProvider>
-				<RouterProvider router={router} />
-			</AuthProvider>
+			<ThemeProvider>
+				<AuthProvider>
+					<RouterProvider router={router} />
+				</AuthProvider>
+			</ThemeProvider>
 		</QueryClientProvider>
 	</StrictMode>,
 )
