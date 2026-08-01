@@ -1,4 +1,5 @@
-import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ComputerIcon, MoonIcon, SunIcon } from "@hugeicons/core-free-icons"
 import { useTheme } from "next-themes"
 import {
 	DropdownMenuItem,
@@ -15,15 +16,19 @@ export function ModeToggle() {
 			<DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
 			<DropdownMenuSubContent>
 				<DropdownMenuItem onClick={() => setTheme("light")}>
-					<SunIcon />
+					<HugeiconsIcon icon={SunIcon} size={20} strokeWidth={2} />
 					Light
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={() => setTheme("dark")}>
-					<MoonIcon />
+					<HugeiconsIcon icon={MoonIcon} size={20} strokeWidth={2} />
 					Dark
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={() => setTheme("system")}>
-					<MonitorIcon />
+					<HugeiconsIcon
+						icon={ComputerIcon}
+						size={20}
+						strokeWidth={2}
+					/>
 					System
 				</DropdownMenuItem>
 			</DropdownMenuSubContent>

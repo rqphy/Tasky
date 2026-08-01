@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom"
-import { StarIcon } from "lucide-react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
 	KanbanIcon,
 	RefreshIcon,
 	ShieldIcon,
 	UserGroupIcon,
+	StarIcon,
 } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,7 +14,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/contexts/AuthContext"
 
 const GITHUB_URL = "https://github.com/rqphy/Tasky"
@@ -167,7 +166,11 @@ export default function LandingPage() {
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									<StarIcon />
+									<HugeiconsIcon
+										icon={StarIcon}
+										size={20}
+										strokeWidth={2}
+									/>
 									Star on GitHub
 								</a>
 							</Button>
