@@ -14,6 +14,8 @@ export function AuthPage() {
 	const [searchParams] = useSearchParams()
 	const inviteToken =
 		searchParams.get("inviteToken") ?? getPendingInviteToken()
+	const defaultTab =
+		searchParams.get("tab") === "register" ? "register" : "login"
 
 	const [loginEmail, setLoginEmail] = useState("")
 	const [loginPassword, setLoginPassword] = useState("")
@@ -43,7 +45,7 @@ export function AuthPage() {
 	if (isAuthenticated) {
 		return (
 			<Navigate
-				to={inviteToken ? `/invite/${inviteToken}` : "/"}
+				to={inviteToken ? `/invite/${inviteToken}` : "/board"}
 				replace
 			/>
 		)
@@ -104,7 +106,7 @@ export function AuthPage() {
 					</p>
 				</div>
 
-				<Tabs defaultValue="login" className="w-full">
+				<Tabs defaultValue={defaultTab} className="w-full">
 					<TabsList className="grid w-full grid-cols-2">
 						<TabsTrigger value="login">Login</TabsTrigger>
 						<TabsTrigger value="register">Register</TabsTrigger>

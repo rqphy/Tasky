@@ -14,6 +14,7 @@ import { ProtectedRoute } from "@/components/protected-route"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { ProjectRedirect } from "@/components/project-redirect"
 import { ThemeProvider } from "@/components/theme-provider"
+import LandingPage from "./pages/landing-page"
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -25,6 +26,10 @@ const queryClient = new QueryClient({
 })
 
 const router = createBrowserRouter([
+	{
+		path: "/",
+		element: <LandingPage />,
+	},
 	{
 		path: "/auth",
 		element: <AuthPage />,
@@ -46,7 +51,7 @@ const router = createBrowserRouter([
 		element: <InviteAcceptPage />,
 	},
 	{
-		path: "/",
+		path: "/board",
 		element: <ProtectedRoute />,
 		children: [
 			{
@@ -57,7 +62,7 @@ const router = createBrowserRouter([
 						element: <ProjectRedirect />,
 					},
 					{
-						path: "board/:projectId",
+						path: "/board/:projectId",
 						element: <BoardPage />,
 					},
 				],
