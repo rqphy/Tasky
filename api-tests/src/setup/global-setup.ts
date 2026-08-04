@@ -18,8 +18,8 @@ export default async function globalSetup(): Promise<void> {
 		throw new Error(
 			[
 				`Cannot reach the API at ${API_BASE_URL}/health (${message}).`,
-				"Start a server first, for example:",
-				"  cd server-express && npm run dev",
+				"Start the test server first:",
+				"  cd server-express && npm run dev:test",
 			].join("\n"),
 		)
 	}

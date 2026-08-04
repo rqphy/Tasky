@@ -5,10 +5,12 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "nodemon --exec tsx src/index.ts",
+		"dev:test": "nodemon --exec \"tsx --env-file=.env.test src/index.ts\"",
 		"build": "tsc",
 		"start": "node dist/index.js",
 		"db:generate": "prisma generate",
 		"db:push": "prisma db push",
+		"db:test:reset": "rm -f ../api-test.db ../api-test.db-journal && DATABASE_URL=\"file:../api-test.db\" prisma db push",
 		"db:studio": "prisma studio"
 	},
 	"keywords": [],
