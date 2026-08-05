@@ -66,10 +66,10 @@ Restart `dev:test` if it's already running.
 
 Optional overrides (defaults shown):
 
-| Variable       | Default                        |
-| -------------- | ------------------------------ |
-| `API_BASE_URL` | `http://localhost:3001/api`    |
-| `SOCKET_URL`   | `http://localhost:3001`        |
+| Variable       | Default                     |
+| -------------- | --------------------------- |
+| `API_BASE_URL` | `http://localhost:3001/api` |
+| `SOCKET_URL`   | `http://localhost:3001`     |
 
 Example:
 
@@ -88,7 +88,7 @@ src/
 
 ## Writing tests
 
-1. Check the relevant doc in `docs/api/`
+1. Check the relevant doc in `docs/api/`r
 2. Add a test file under `src/rest/`
 3. Use the shared `api` axios client with `validateStatus: () => true` so error responses don't throw
 4. Run `npm test`
