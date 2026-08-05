@@ -1,36 +1,28 @@
 import { describe, it, expect } from "vitest"
-import axios from "axios"
-
-const API_URL = "http://localhost:3001/api"
-
-// Don't throw on 4xx/5xx — lets us test error responses
-const api = axios.create({
-	baseURL: API_URL,
-	validateStatus: () => true,
-})
+import { api, authHeaders } from "../helpers/client.js"
+import {
+	registerUser,
+	uniqueEmail,
+	testPassword,
+	authAs,
+} from "../helpers/fixtures.js"
 
 describe("register", () => {
 	it("return 201 for valid registration", async () => {
-		const email = `user-${Date.now()}@test.com`
+		const { email, accessToken, refreshToken } = await registerUser()
 
-		const response = await api.post("/auth/register", {
-			name: "John Doe",
-			email,
-			password: "password123",
-		})
-
-		expect(response.status).toBe(201)
-		expect(response.data.user.email).toBe(email)
-		expect(response.data.accessToken).toBeDefined()
-		expect(response.data.refreshToken).toBeDefined()
+		expect(email).toBe(email)
+		expect(accessToken).toBeDefined()
+		expect(refreshToken).toBeDefined()
 	})
 
 	it("returns 400 when email is already registered", async () => {
-		const email = `user-${Date.now()}@test.com`
+		const email = uniqueEmail()
+		const password = testPassword()
 		const body = {
 			name: "John Doe",
 			email,
-			password: "password123",
+			password,
 		}
 
 		await api.post("/auth/register", body)
@@ -42,12 +34,13 @@ describe("register", () => {
 	})
 
 	it("returns 400 when password is too short", async () => {
-		const email = `user-${Date.now()}@test.com`
+		const email = uniqueEmail()
+		const password = "short"
 
 		const response = await api.post("/auth/register", {
 			name: "John Doe",
 			email,
-			password: "short",
+			password,
 		})
 
 		expect(response.status).toBe(400)
@@ -57,14 +50,7 @@ describe("register", () => {
 
 describe("login", () => {
 	it("returns 200 for valid credentials", async () => {
-		const email = `user-${Date.now()}@test.com`
-		const password = "password123"
-
-		await api.post("/auth/register", {
-			name: "John Doe",
-			email,
-			password,
-		})
+		const { email, password } = await registerUser()
 
 		const response = await api.post("/auth/login", {
 			email,
@@ -98,14 +84,7 @@ describe("login", () => {
 
 describe("refresh", () => {
 	it("returns 200 for valid refresh token", async () => {
-		const email = `user-${Date.now()}@test.com`
-		const password = "password123"
-
-		await api.post("/auth/register", {
-			name: "John Doe",
-			email,
-			password,
-		})
+		const { email, password } = await registerUser()
 
 		const loginResponse = await api.post("/auth/login", {
 			email,
@@ -140,14 +119,7 @@ describe("refresh", () => {
 
 describe("logout", () => {
 	it("returns 200 for valid refresh token", async () => {
-		const email = `user-${Date.now()}@test.com`
-		const password = "password123"
-
-		await api.post("/auth/register", {
-			name: "John Doe",
-			email,
-			password,
-		})
+		const { email, password } = await registerUser()
 
 		const loginResponse = await api.post("/auth/login", {
 			email,
@@ -174,35 +146,19 @@ describe("logout", () => {
 
 describe("me", () => {
 	it("returns 200 for valid access token", async () => {
-		const email = `user-${Date.now()}@test.com`
-		const password = "password123"
-
-		await api.post("/auth/register", {
-			name: "John Doe",
-			email,
-			password,
-		})
-
-		const loginResponse = await api.post("/auth/login", {
-			email,
-			password,
-		})
+		const { user, headers } = await authAs()
 
 		const meResponse = await api.get("/auth/me", {
-			headers: {
-				Authorization: `Bearer ${loginResponse.data.accessToken}`,
-			},
+			headers,
 		})
 
 		expect(meResponse.status).toBe(200)
-		expect(meResponse.data.user.email).toBe(email)
+		expect(meResponse.data.user.email).toBe(user.email)
 	})
 
 	it("returns 401 for invalid access token", async () => {
 		const response = await api.get("/auth/me", {
-			headers: {
-				Authorization: `Bearer invalid-token`,
-			},
+			headers: authHeaders("invalid-token"),
 		})
 
 		expect(response.status).toBe(401)
@@ -214,7 +170,7 @@ describe("me", () => {
 
 describe("forgot password", () => {
 	it("returns 200", async () => {
-		const email = `user-${Date.now()}@test.com`
+		const email = uniqueEmail()
 
 		const response = await api.post("/auth/forgot-password", {
 			email,

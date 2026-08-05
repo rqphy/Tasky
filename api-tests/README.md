@@ -77,20 +77,66 @@ Example:
 API_BASE_URL=http://localhost:4000/api npm test
 ```
 
-## Project structure
+## Architecture
+
+Tests mirror the API docs and server route groups — one file per area, shared helpers for HTTP and setup.
 
 ```
 src/
-  rest/          # REST endpoint tests (auth.test.ts, ...)
-  setup/         # Vitest global setup (server health check)
-  helpers/       # Shared config and utilities
+  helpers/
+    config.ts       # API_BASE_URL, SOCKET_URL
+    client.ts       # axios instance + authHeaders()
+    fixtures.ts     # uniqueEmail(), registerUser(), authAs()
+  setup/
+    global-setup.ts # health check before tests run
+  rest/
+    auth.test.ts           ← docs/api/auth.md
+    users.test.ts          ← docs/api/users.md (TODO)
+    notifications.test.ts  ← docs/api/notifications.md (TODO)
+    invites.test.ts        ← /api/invites (accept flow)
+    share.test.ts          ← /api/share (public board)
+    projects/
+      projects.test.ts     ← CRUD
+      columns.test.ts
+      tasks.test.ts
+      comments.test.ts
+      members.test.ts
+      invites.test.ts      ← project invites
+      share.test.ts        ← project share link
+  sockets/                 ← realtime tests (later)
+    realtime.test.ts
 ```
+
+### Rules
+
+1. **One file per doc / route group** — if it's a separate section in `docs/api/`, it gets its own test file.
+2. **Read the doc first** — each test asserts what the doc promises (status + body).
+3. **Shared setup goes in `helpers/fixtures.ts`** — e.g. `registerUser()`, later `createProject()`.
+4. **Never import server code** — only HTTP. Keeps tests working across server rewrites.
+5. **One behavior per `it(...)`** — happy path + key errors, not every edge case.
+6. **Unique data per test** — use `uniqueEmail()` so tests don't collide.
+
+### Suggested order
+
+| Step | File | Depends on |
+| ---- | ---- | ---------- |
+| ✓ | `auth.test.ts` | — |
+| 1 | `projects/projects.test.ts` | auth |
+| 2 | `projects/columns.test.ts` | project |
+| 3 | `projects/tasks.test.ts` | column |
+| 4 | `projects/members.test.ts` | project + 2 users |
+| 5 | `users.test.ts` | auth |
+| 6 | `notifications.test.ts` | project + actions |
+| 7 | `projects/comments.test.ts` | task |
+| 8 | invites + share | members |
+| 9 | `sockets/realtime.test.ts` | tasks |
 
 ## Writing tests
 
-1. Check the relevant doc in `docs/api/`r
-2. Add a test file under `src/rest/`
-3. Use the shared `api` axios client with `validateStatus: () => true` so error responses don't throw
-4. Run `npm test`
+1. Check the relevant doc in `docs/api/`
+2. Add or extend a file under `src/rest/`
+3. Import `api` from `helpers/client.js`
+4. Use `registerUser()` or `authAs()` when you need an authenticated user
+5. Run `npm test`
 
 When rewriting the server, implement the documented API and run this suite to verify compatibility.
