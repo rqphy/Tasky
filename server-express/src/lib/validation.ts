@@ -2,14 +2,14 @@ import { z } from "zod"
 
 export const registerSchema = z.object({
 	name: z.string().min(1, "Name is required").max(100, "Name too long"),
-	email: z.string().email("Invalid email format"),
+	email: z.email("Invalid email format"),
 	password: z.string().min(8, "Password must be at least 8 characters"),
 })
 
 export type RegisterInput = z.infer<typeof registerSchema>
 
 export const loginSchema = z.object({
-	email: z.string().email("Invalid email format"),
+	email: z.email("Invalid email format"),
 	password: z.string().min(8, "Password must be at least 8 characters"),
 })
 
@@ -25,7 +25,7 @@ export const updateProfileSchema = z.object({
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
 
 export const updateEmailSchema = z.object({
-	email: z.string().email("Invalid email format"),
+	email: z.email("Invalid email format"),
 	password: z.string().min(8, "Password must be at least 8 characters"),
 })
 
@@ -47,7 +47,7 @@ export const deleteAccountSchema = z.object({
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>
 
 export const forgotPasswordSchema = z.object({
-	email: z.string().email("Invalid email format"),
+	email: z.email("Invalid email format"),
 })
 
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
@@ -67,7 +67,11 @@ export const createProjectSchema = z.object({
 export type CreateProjectInput = z.infer<typeof createProjectSchema>
 
 export const updateProjectSchema = z.object({
-	name: z.string().min(1, "Name is required").max(100, "Name too long").optional(),
+	name: z
+		.string()
+		.min(1, "Name is required")
+		.max(100, "Name too long")
+		.optional(),
 	emoji: z.string().optional(),
 })
 
@@ -81,7 +85,11 @@ export const createColumnSchema = z.object({
 export type CreateColumnInput = z.infer<typeof createColumnSchema>
 
 export const updateColumnSchema = z.object({
-	name: z.string().min(1, "Name is required").max(100, "Name too long").optional(),
+	name: z
+		.string()
+		.min(1, "Name is required")
+		.max(100, "Name too long")
+		.optional(),
 	color: z.string().optional(),
 })
 
@@ -147,7 +155,7 @@ export const updateShareLinkSchema = z.object({
 export type UpdateShareLinkInput = z.infer<typeof updateShareLinkSchema>
 
 export const createInviteSchema = z.object({
-	email: z.string().email(),
+	email: z.email(),
 	role: z.enum(["MEMBER", "VIEWER"]).default("MEMBER"),
 })
 
