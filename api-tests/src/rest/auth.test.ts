@@ -9,11 +9,19 @@ import {
 
 describe("register", () => {
 	it("return 201 for valid registration", async () => {
-		const { email, accessToken, refreshToken } = await registerUser()
+		const email = uniqueEmail()
+		const password = testPassword()
 
-		expect(email).toBe(email)
-		expect(accessToken).toBeDefined()
-		expect(refreshToken).toBeDefined()
+		const response = await api.post("/auth/register", {
+			name: "John Doe",
+			email,
+			password,
+		})
+
+		expect(response.status).toBe(201)
+		expect(response.data.user.email).toBe(email)
+		expect(response.data.accessToken).toBeDefined()
+		expect(response.data.refreshToken).toBeDefined()
 	})
 
 	it("returns 400 when email is already registered", async () => {

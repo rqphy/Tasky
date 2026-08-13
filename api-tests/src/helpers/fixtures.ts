@@ -1,8 +1,9 @@
+import { randomUUID } from "node:crypto"
 import { expect } from "vitest"
 import { api, authHeaders } from "./client.js"
 
 export function uniqueEmail(prefix = "user"): string {
-	return `${prefix}-${Date.now()}@test.com`
+	return `${prefix}-${randomUUID()}@test.com`
 }
 
 export function testPassword(): string {
