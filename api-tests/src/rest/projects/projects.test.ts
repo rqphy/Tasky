@@ -20,7 +20,11 @@ describe("create project", () => {
 	it("return 400 when name is required", async () => {
 		const { headers } = await authAs()
 
-		const response = await api.post("/projects", { emoji: "🚀" }, { headers })
+		const response = await api.post(
+			"/projects",
+			{ emoji: "🚀" },
+			{ headers },
+		)
 
 		expect(response.status).toBe(400)
 		expect(response.data.error).toBe("Validation failed")
@@ -33,7 +37,9 @@ describe("create project", () => {
 		})
 
 		expect(response.status).toBe(401)
-		expect(response.data.error).toBe("Missing or invalid authorization header")
+		expect(response.data.error).toBe(
+			"Missing or invalid authorization header",
+		)
 	})
 })
 
@@ -57,7 +63,9 @@ describe("get projects", () => {
 		const response = await api.get("/projects")
 
 		expect(response.status).toBe(401)
-		expect(response.data.error).toBe("Missing or invalid authorization header")
+		expect(response.data.error).toBe(
+			"Missing or invalid authorization header",
+		)
 	})
 })
 
@@ -71,7 +79,9 @@ describe("get project", () => {
 			{ headers },
 		)
 
-		const response = await api.get(`/projects/${project.data.id}`, { headers })
+		const response = await api.get(`/projects/${project.data.id}`, {
+			headers,
+		})
 
 		expect(response.status).toBe(200)
 		expect(response.data.name).toBe("Test Project")
@@ -82,10 +92,28 @@ describe("get project", () => {
 		const response = await api.get("/projects/1")
 
 		expect(response.status).toBe(401)
-		expect(response.data.error).toBe("Missing or invalid authorization header")
+		expect(response.data.error).toBe(
+			"Missing or invalid authorization header",
+		)
 	})
 
-	// test 403
+	it("return 403 when user is not authorized", async () => {
+		const owner = await authAs("Owner")
+		const outsider = await authAs("Outsider")
+
+		const project = await api.post(
+			"/projects",
+			{ name: "Test Project", emoji: "🚀" },
+			{ headers: owner.headers },
+		)
+
+		const response = await api.get(`/projects/${project.data.id}`, {
+			headers: outsider.headers,
+		})
+
+		expect(response.status).toBe(403)
+		expect(response.data.error).toBe("Access denied")
+	})
 
 	it("return 404 when project is not found", async () => {
 		const { headers } = await authAs()
@@ -137,7 +165,27 @@ describe("update project", () => {
 		expect(response.data.error).toBe("Validation failed")
 	})
 
-	// todo test 403
+	it("return 403 when user is not owner", async () => {
+		const owner = await authAs("Owner")
+		const outsider = await authAs("Outsider")
+
+		const project = await api.post(
+			"/projects",
+			{ name: "Test Project", emoji: "🚀" },
+			{ headers: owner.headers },
+		)
+
+		const response = await api.patch(
+			`/projects/${project.data.id}`,
+			{ name: "Updated Project", emoji: "🔥" },
+			{ headers: outsider.headers },
+		)
+
+		expect(response.status).toBe(403)
+		expect(response.data.error).toBe(
+			"Only the owner can update this project",
+		)
+	})
 })
 
 describe("delete project", () => {
@@ -161,7 +209,9 @@ describe("delete project", () => {
 		const response = await api.delete("/projects/1")
 
 		expect(response.status).toBe(401)
-		expect(response.data.error).toBe("Missing or invalid authorization header")
+		expect(response.data.error).toBe(
+			"Missing or invalid authorization header",
+		)
 	})
 
 	it("return 404 when project is not found", async () => {
@@ -173,5 +223,23 @@ describe("delete project", () => {
 		expect(response.data.error).toBe("Project not found")
 	})
 
-	// todo test 403
+	it("return 403 when user is not owner", async () => {
+		const owner = await authAs("Owner")
+		const outsider = await authAs("Outsider")
+
+		const project = await api.post(
+			"/projects",
+			{ name: "Test Project", emoji: "🚀" },
+			{ headers: owner.headers },
+		)
+
+		const response = await api.delete(`/projects/${project.data.id}`, {
+			headers: outsider.headers,
+		})
+
+		expect(response.status).toBe(403)
+		expect(response.data.error).toBe(
+			"Only the owner can delete this project",
+		)
+	})
 })
