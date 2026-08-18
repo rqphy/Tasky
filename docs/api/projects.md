@@ -6,7 +6,26 @@ All endpoints require a Bearer access token unless noted otherwise.
 
 Validation errors (`400`) include a `details` field with Zod error info.
 
+## Table of contents
+
+### Projects
+
+- [GET /projects — list](#list-projects)
+- [POST /projects — create](#create-project)
+- [GET /projects/:id — get](#get-project)
+- [PATCH /projects/:id — update](#update-project)
+- [DELETE /projects/:id — delete](#delete-project)
+
+### Columns
+
+- [POST /projects/:id/columns — create](#create-column)
+- [PATCH /projects/:id/columns/:columnId — update](#update-column)
+- [DELETE /projects/:id/columns/:columnId — delete](#delete-column)
+- [POST /projects/:id/columns/reorder — reorder](#reorder-columns)
+
 ---
+
+<a id="list-projects"></a>
 
 ## GET /projects
 
@@ -46,6 +65,8 @@ List projects the authenticated user owns or is a member of. Ordered by `updated
 ```
 
 ---
+
+<a id="create-project"></a>
 
 ## POST /projects
 
@@ -114,6 +135,8 @@ Create a new project. The creator is added as a member with role `OWNER`. Defaul
 
 ---
 
+<a id="get-project"></a>
+
 ## GET /projects/:id
 
 Get a project with its members, columns, and tasks.
@@ -156,7 +179,7 @@ Get a project with its members, columns, and tasks.
 			"projectId": "cuid...",
 			"name": "To Do",
 			"color": "#6366f1",
-			"position": 0,
+			"position": 1,
 			"createdAt": "2026-...",
 			"updatedAt": "2026-...",
 			"tasks": [
@@ -209,6 +232,8 @@ Get a project with its members, columns, and tasks.
 ```
 
 ---
+
+<a id="update-project"></a>
 
 ## PATCH /projects/:id
 
@@ -272,6 +297,8 @@ Returns the updated project (no members or columns).
 
 ---
 
+<a id="delete-project"></a>
+
 ## DELETE /projects/:id
 
 Delete a project. Only the owner can delete.
@@ -296,6 +323,248 @@ No response body.
 
 ```json
 { "error": "Only the owner can delete this project" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="create-column"></a>
+
+## POST /projects/:id/columns
+
+Create a column in a project. Only project members (`OWNER` or `MEMBER`) can create a column. Default color is `#6366f1` if omitted. Position is assigned automatically.
+
+**Auth:** Bearer access token
+
+**Request body**
+
+| Field | Type   | Required | Rules       |
+| ----- | ------ | -------- | ----------- |
+| name  | string | yes      | 1–100 chars |
+| color | string | no       |             |
+
+**Success — 201**
+
+```json
+{
+	"id": "cuid...",
+	"projectId": "cuid...",
+	"name": "To Do",
+	"color": "#6366f1",
+	"position": 1,
+	"createdAt": "2026-...",
+	"updatedAt": "2026-..."
+}
+```
+
+**Errors**
+
+- **400** — invalid input
+
+```json
+{ "error": "Validation failed", "details": {} }
+```
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — user is not a project member
+
+```json
+{ "error": "Access denied" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="update-column"></a>
+
+## PATCH /projects/:id/columns/:columnId
+
+Update a column in a project. Only project members can update a column.
+
+**Auth:** Bearer access token
+
+**Request body**
+
+| Field | Type   | Required | Rules       |
+| ----- | ------ | -------- | ----------- |
+| name  | string | no       | 1–100 chars |
+| color | string | no       |             |
+
+**Success — 200**
+
+```json
+{
+	"id": "cuid...",
+	"projectId": "cuid...",
+	"name": "In Progress",
+	"color": "#6366f1",
+	"position": 1,
+	"createdAt": "2026-...",
+	"updatedAt": "2026-..."
+}
+```
+
+**Errors**
+
+- **400** — invalid input
+
+```json
+{ "error": "Validation failed", "details": {} }
+```
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — user is not a project member
+
+```json
+{ "error": "Access denied" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **404** — column not found (or column belongs to another project)
+
+```json
+{ "error": "Column not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="delete-column"></a>
+
+## DELETE /projects/:id/columns/:columnId
+
+Delete a column in a project. Only project members can delete a column.
+
+**Auth:** Bearer access token
+
+**Request body:** none
+
+**Success — 204**
+
+No response body.
+
+**Errors**
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — user is not a project member
+
+```json
+{ "error": "Access denied" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **404** — column not found (or column belongs to another project)
+
+```json
+{ "error": "Column not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="reorder-columns"></a>
+
+## POST /projects/:id/columns/reorder
+
+Reorder columns. Only project members can reorder columns. Positions are reassigned starting at `1` in the order of `columnIds`.
+
+**Auth:** Bearer access token
+
+**Request body**
+
+| Field     | Type       | Required | Rules      |
+| --------- | ---------- | -------- | ---------- |
+| columnIds | `string[]` | yes      | min 1 item |
+
+**Success — 200**
+
+```json
+{
+	"message": "Columns reordered"
+}
+```
+
+**Errors**
+
+- **400** — invalid input
+
+```json
+{ "error": "Validation failed", "details": {} }
+```
+
+- **400** — column IDs do not belong to this project
+
+```json
+{ "error": "Some column IDs do not belong to this project" }
+```
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — user is not a project member
+
+```json
+{ "error": "Access denied" }
 ```
 
 - **404** — project not found
