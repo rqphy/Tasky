@@ -86,7 +86,7 @@ src/
   helpers/
     config.ts       # API_BASE_URL, SOCKET_URL
     client.ts       # axios instance + authHeaders()
-    fixtures.ts     # uniqueEmail(), registerUser(), authAs()
+    fixtures.ts     # uniqueEmail(), registerUser(), authAs(), createProject(), createColumn()
   setup/
     global-setup.ts # health check before tests run
   rest/
@@ -111,7 +111,7 @@ src/
 
 1. **One file per doc / route group** — if it's a separate section in `docs/api/`, it gets its own test file.
 2. **Read the doc first** — each test asserts what the doc promises (status + body).
-3. **Shared setup goes in `helpers/fixtures.ts`** — e.g. `registerUser()`, later `createProject()`.
+3. **Shared setup goes in `helpers/fixtures.ts`** — e.g. `registerUser()`, `createProject()`, `createColumn()`.
 4. **Never import server code** — only HTTP. Keeps tests working across server rewrites.
 5. **One behavior per `it(...)`** — happy path + key errors, not every edge case.
 6. **Unique data per test** — use `uniqueEmail()` so tests don't collide.

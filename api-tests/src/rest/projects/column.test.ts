@@ -1,38 +1,25 @@
 import { describe, it, expect } from "vitest"
 import { api } from "../../helpers/client.js"
-import { authAs } from "../../helpers/fixtures.js"
+import { authAs, createColumn, createProject } from "../../helpers/fixtures.js"
 
 describe("create column", () => {
 	it("return 201 when column is created", async () => {
 		const { headers } = await authAs()
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers },
-		)
+		const project = await createProject(headers)
 
-		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column" },
-			{ headers },
-		)
+		const column = await createColumn(headers, project.id)
 
-		expect(column.status).toBe(201)
-		expect(column.data.name).toBe("Test Column")
+		expect(column.name).toBe("Test Column")
 	})
 
 	it("return 400 when name is required", async () => {
 		const { headers } = await authAs()
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers },
-		)
+		const project = await createProject(headers)
 
 		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
+			`/projects/${project.id}/columns`,
 			{ color: "#6366f1" },
 			{ headers },
 		)
@@ -44,13 +31,9 @@ describe("create column", () => {
 	it("return 401 when user is not authenticated", async () => {
 		const { headers } = await authAs()
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers },
-		)
+		const project = await createProject(headers)
 
-		const column = await api.post(`/projects/${project.data.id}/columns`, {
+		const column = await api.post(`/projects/${project.id}/columns`, {
 			name: "Test Column",
 		})
 
@@ -64,15 +47,13 @@ describe("create column", () => {
 		const owner = await authAs("Owner")
 		const notMember = await authAs("Not Member")
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers: owner.headers },
-		)
+		const project = await createProject(owner.headers)
 
 		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column" },
+			`/projects/${project.id}/columns`,
+			{
+				name: "Test Column",
+			},
 			{ headers: notMember.headers },
 		)
 
@@ -85,20 +66,12 @@ describe("update column", () => {
 	it("return 200 when column is updated", async () => {
 		const { headers } = await authAs()
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers },
-		)
+		const project = await createProject(headers)
 
-		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column" },
-			{ headers },
-		)
+		const column = await createColumn(headers, project.id)
 
 		const updatedColumn = await api.patch(
-			`/projects/${project.data.id}/columns/${column.data.id}`,
+			`/projects/${project.id}/columns/${column.id}`,
 			{ name: "Updated Column" },
 			{ headers },
 		)
@@ -110,20 +83,12 @@ describe("update column", () => {
 	it("return 400 when name is invalid", async () => {
 		const { headers } = await authAs()
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers },
-		)
+		const project = await createProject(headers)
 
-		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column" },
-			{ headers },
-		)
+		const column = await createColumn(headers, project.id)
 
 		const updatedColumn = await api.patch(
-			`/projects/${project.data.id}/columns/${column.data.id}`,
+			`/projects/${project.id}/columns/${column.id}`,
 			{ name: "" },
 			{ headers },
 		)
@@ -135,20 +100,12 @@ describe("update column", () => {
 	it("return 401 when user is not authenticated", async () => {
 		const { headers } = await authAs()
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers },
-		)
+		const project = await createProject(headers)
 
-		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column" },
-			{ headers },
-		)
+		const column = await createColumn(headers, project.id)
 
 		const updatedColumn = await api.patch(
-			`/projects/${project.data.id}/columns/${column.data.id}`,
+			`/projects/${project.id}/columns/${column.id}`,
 			{ name: "Updated Column" },
 		)
 
@@ -162,20 +119,12 @@ describe("update column", () => {
 		const owner = await authAs("Owner")
 		const notMember = await authAs("Not Member")
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers: owner.headers },
-		)
+		const project = await createProject(owner.headers)
 
-		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column" },
-			{ headers: owner.headers },
-		)
+		const column = await createColumn(owner.headers, project.id)
 
 		const updatedColumn = await api.patch(
-			`/projects/${project.data.id}/columns/${column.data.id}`,
+			`/projects/${project.id}/columns/${column.id}`,
 			{ name: "Updated Column" },
 			{ headers: notMember.headers },
 		)
@@ -189,20 +138,12 @@ describe("delete column", () => {
 	it("return 204 when column is deleted", async () => {
 		const { headers } = await authAs()
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers },
-		)
+		const project = await createProject(headers)
 
-		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column" },
-			{ headers },
-		)
+		const column = await createColumn(headers, project.id)
 
 		const deletedColumn = await api.delete(
-			`/projects/${project.data.id}/columns/${column.data.id}`,
+			`/projects/${project.id}/columns/${column.id}`,
 			{ headers },
 		)
 
@@ -212,20 +153,12 @@ describe("delete column", () => {
 	it("return 401 when user is not authenticated", async () => {
 		const { headers } = await authAs()
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers },
-		)
+		const project = await createProject(headers)
 
-		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column" },
-			{ headers },
-		)
+		const column = await createColumn(headers, project.id)
 
 		const deletedColumn = await api.delete(
-			`/projects/${project.data.id}/columns/${column.data.id}`,
+			`/projects/${project.id}/columns/${column.id}`,
 		)
 
 		expect(deletedColumn.status).toBe(401)
@@ -238,20 +171,12 @@ describe("delete column", () => {
 		const owner = await authAs("Owner")
 		const notMember = await authAs("Not Member")
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers: owner.headers },
-		)
+		const project = await createProject(owner.headers)
 
-		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column" },
-			{ headers: owner.headers },
-		)
+		const column = await createColumn(owner.headers, project.id)
 
 		const deletedColumn = await api.delete(
-			`/projects/${project.data.id}/columns/${column.data.id}`,
+			`/projects/${project.id}/columns/${column.id}`,
 			{ headers: notMember.headers },
 		)
 
@@ -264,27 +189,19 @@ describe("reorder columns", () => {
 	it("return 200 when columns are reordered", async () => {
 		const { headers } = await authAs()
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers },
-		)
+		const project = await createProject(headers)
 
-		const column1 = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column1" },
-			{ headers },
-		)
+		const column1 = await createColumn(headers, project.id, {
+			name: "Test Column1",
+		})
 
-		const column2 = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column2" },
-			{ headers },
-		)
+		const column2 = await createColumn(headers, project.id, {
+			name: "Test Column2",
+		})
 
 		const reorderedColumns = await api.post(
-			`/projects/${project.data.id}/columns/reorder`,
-			{ columnIds: [column2.data.id, column1.data.id] },
+			`/projects/${project.id}/columns/reorder`,
+			{ columnIds: [column2.id, column1.id] },
 			{ headers },
 		)
 
@@ -295,14 +212,10 @@ describe("reorder columns", () => {
 	it("return 400 when columns are not provided", async () => {
 		const { headers } = await authAs()
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers },
-		)
+		const project = await createProject(headers)
 
 		const reorderedColumns = await api.post(
-			`/projects/${project.data.id}/columns/reorder`,
+			`/projects/${project.id}/columns/reorder`,
 			{ columnIds: [] },
 			{ headers },
 		)
@@ -314,21 +227,13 @@ describe("reorder columns", () => {
 	it("return 401 when user is not authenticated", async () => {
 		const { headers } = await authAs()
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers },
-		)
+		const project = await createProject(headers)
 
-		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column" },
-			{ headers },
-		)
+		const column = await createColumn(headers, project.id)
 
 		const reorderedColumns = await api.post(
-			`/projects/${project.data.id}/columns/reorder`,
-			{ columnIds: [column.data.id] },
+			`/projects/${project.id}/columns/reorder`,
+			{ columnIds: [column.id] },
 		)
 
 		expect(reorderedColumns.status).toBe(401)
@@ -341,21 +246,13 @@ describe("reorder columns", () => {
 		const owner = await authAs("Owner")
 		const notMember = await authAs("Not Member")
 
-		const project = await api.post(
-			"/projects",
-			{ name: "Test Project", emoji: "🚀" },
-			{ headers: owner.headers },
-		)
+		const project = await createProject(owner.headers)
 
-		const column = await api.post(
-			`/projects/${project.data.id}/columns`,
-			{ name: "Test Column" },
-			{ headers: owner.headers },
-		)
+		const column = await createColumn(owner.headers, project.id)
 
 		const reorderedColumns = await api.post(
-			`/projects/${project.data.id}/columns/reorder`,
-			{ columnIds: [column.data.id] },
+			`/projects/${project.id}/columns/reorder`,
+			{ columnIds: [column.id] },
 			{ headers: notMember.headers },
 		)
 
