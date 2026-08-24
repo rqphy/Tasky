@@ -89,3 +89,27 @@ export async function createColumn(
 	expect(response.status).toBe(201)
 	return response.data
 }
+
+/** Create a task in a column and return the task data. */
+export async function createTask(
+	headers: RequestHeaders,
+	projectId: string,
+	columnId: string,
+	title: string,	
+) {
+	if (columnId === undefined) {
+		throw new Error("Column ID is required")
+	}
+
+	const body: { title: string; columnId: string } = {
+		title: title ?? "New Task",
+		columnId,
+	}
+
+	const response = await api.post(`/projects/${projectId}/tasks`, body, {
+		headers,
+	})
+
+	expect(response.status).toBe(201)
+	return response.data
+}
