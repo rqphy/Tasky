@@ -13,6 +13,7 @@ export function testPassword(): string {
 }
 
 type RegisteredUser = {
+	id: string
 	email: string
 	password: string
 	accessToken: string
@@ -20,9 +21,7 @@ type RegisteredUser = {
 }
 
 /** Register a new user and return credentials + tokens. */
-export async function registerUser(
-	name = "John Doe",
-): Promise<RegisteredUser> {
+export async function registerUser(name = "John Doe"): Promise<RegisteredUser> {
 	const email = uniqueEmail()
 	const password = testPassword()
 
@@ -35,6 +34,7 @@ export async function registerUser(
 	expect(response.status).toBe(201)
 
 	return {
+		id: response.data.user.id,
 		email,
 		password,
 		accessToken: response.data.accessToken,
@@ -95,7 +95,7 @@ export async function createTask(
 	headers: RequestHeaders,
 	projectId: string,
 	columnId: string,
-	title: string,	
+	title: string,
 ) {
 	if (columnId === undefined) {
 		throw new Error("Column ID is required")
@@ -112,4 +112,34 @@ export async function createTask(
 
 	expect(response.status).toBe(201)
 	return response.data
+}
+
+/** Add a second member to a project via invite + accept. */
+
+export async function addMemberViaInvite(
+	ownerHeaders: RequestHeaders,
+	projectId: string,
+	member: { email: string; headers: RequestHeaders },
+) {
+	const invite = await api.post(
+		`/projects/${projectId}/invites`,
+		{
+			email: member.email,
+			role: "MEMBER",
+		},
+		{ headers: ownerHeaders },
+	)
+
+	expect(invite.status).toBe(201)
+
+	const accept = await api.post(
+		"/invites/accept",
+		{
+			token: invite.data.token,
+		},
+		{ headers: member.headers },
+	)
+
+	expect(accept.status).toBe(200)
+	return accept.data.member
 }
