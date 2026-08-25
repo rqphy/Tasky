@@ -31,6 +31,12 @@ Validation errors (`400`) include a `details` field with Zod error info.
 - [DELETE /projects/:id/tasks/:taskId — delete](#delete-task)
 - [POST /projects/:id/tasks/:taskId/move — move](#move-task)
 
+### Tasks
+
+- [GET /projects/:id/members — get](#get-members)
+- [DELETE /projects/:id/members/:userId — delete](#remove-member)
+- [POST /projects/:id/transfer-ownership — transfer](#transfer-ownership)
+
 ---
 
 <a id="list-projects"></a>
@@ -932,9 +938,9 @@ Move a task. Only project members can move tasks.
 
 **Request body**
 
-| Field    | Type   | Required | Rules                            |
-| -------- | ------ | -------- | -------------------------------- |
-| columnId | string | yes      | must belong to the project       |
+| Field    | Type   | Required | Rules                               |
+| -------- | ------ | -------- | ----------------------------------- |
+| columnId | string | yes      | must belong to the project          |
 | position | number | yes      | sort order within the target column |
 
 **Success — 200**
@@ -990,6 +996,193 @@ Move a task. Only project members can move tasks.
 
 ```json
 { "error": "Task not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="get-members"></a>
+
+## GET /projects/:id/members
+
+Get the members list of a project.
+
+**Auth:** Bearer access token
+
+**Request body:** none.
+
+**Success — 200**
+
+```json
+[
+	{
+		"id": "cuid...",
+		"userId": "cuid...",
+		"projectId": "cuid...",
+		"role": "OWNER",
+		"createdAt": "2026-...",
+		"user": {
+			"id": "cuid...",
+			"name": "Alice",
+			"email": "alice@test.com",
+			"imageUrl": null,
+			"bio": null,
+			"jobTitle": null,
+			"company": null
+		}
+	}
+]
+```
+
+**Errors**
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="remove-member"></a>
+
+## DELETE /projects/:id/members/:userId
+
+Remove a member from a project. This endpoint handles two cases:
+
+- **Leave project** — `:userId` is the authenticated user's ID. Any member except the owner can leave.
+- **Remove member** — `:userId` is another member's ID. Only the project owner can remove other members.
+
+When a member is removed, their task assignments in the project are cleared (`assigneeId` set to `null`).
+
+**Auth:** Bearer access token
+
+**Request body:** none.
+
+**Success — 204**
+
+No response body.
+
+**Errors**
+
+- **400** — owner tries to leave without transferring ownership first
+
+```json
+{ "error": "Transfer ownership before leaving the project" }
+```
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — non-owner tries to remove another member
+
+```json
+{ "error": "Access denied" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **404** — member not found
+
+```json
+{ "error": "Member not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="transfer-ownership"></a>
+
+## POST /projects/:id/transfer-ownership
+
+Transfer project ownership to another member. Only the current owner can transfer. The new owner must already be a project member, and the project must have at least two members.
+
+Updates `project.ownerId`, sets the new owner's role to `OWNER`, and demotes the previous owner to `MEMBER`.
+
+**Auth:** Bearer access token
+
+**Request body**
+
+| Field  | Type   | Required | Rules                          |
+| ------ | ------ | -------- | ------------------------------ |
+| userId | string | yes      | must be an existing project member |
+
+**Success — 200**
+
+```json
+{
+	"id": "cuid...",
+	"name": "Horizon",
+	"emoji": "📋",
+	"ownerId": "cuid..."
+}
+```
+
+**Errors**
+
+- **400** — invalid input
+
+```json
+{ "error": "Validation failed", "details": {} }
+```
+
+- **400** — owner tries to transfer to themselves
+
+```json
+{ "error": "Cannot transfer ownership to yourself" }
+```
+
+- **400** — project has fewer than two members
+
+```json
+{ "error": "Add another member before transferring ownership" }
+```
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — requester is not the project owner
+
+```json
+{ "error": "Only the owner can transfer ownership" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **404** — new owner is not a project member
+
+```json
+{ "error": "Member not found" }
 ```
 
 - **500** — server error
