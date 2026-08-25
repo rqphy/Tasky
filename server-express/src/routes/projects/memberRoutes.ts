@@ -55,7 +55,6 @@ router.delete("/:id/members/:userId", async (req, res) => {
 
 		const isSelfLeave = requesterId === targetUserId
 		const isRequesterOwner = project.ownerId === requesterId
-		const isTargetOwner = project.ownerId === targetUserId
 
 		if (isSelfLeave) {
 			if (isRequesterOwner) {
@@ -66,11 +65,6 @@ router.delete("/:id/members/:userId", async (req, res) => {
 		} else {
 			if (!isRequesterOwner) {
 				return res.status(403).json({ error: "Access denied" })
-			}
-			if (isTargetOwner) {
-				return res.status(400).json({
-					error: "Cannot remove the project owner",
-				})
 			}
 		}
 
