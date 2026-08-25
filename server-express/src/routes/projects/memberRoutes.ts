@@ -126,6 +126,16 @@ router.post("/:id/transfer-ownership", async (req, res) => {
 			})
 		}
 
+		const memberCount = await prisma.projectMember.count({
+			where: { projectId },
+		})
+
+		if (memberCount < 2) {
+			return res.status(400).json({
+				error: "Add another member before transferring ownership",
+			})
+		}
+
 		const targetMembership = await prisma.projectMember.findUnique({
 			where: {
 				userId_projectId: {
@@ -138,16 +148,6 @@ router.post("/:id/transfer-ownership", async (req, res) => {
 		if (!targetMembership) {
 			return res.status(404).json({
 				error: "Member not found",
-			})
-		}
-
-		const memberCount = await prisma.projectMember.count({
-			where: { projectId },
-		})
-
-		if (memberCount < 2) {
-			return res.status(400).json({
-				error: "Add another member before transferring ownership",
 			})
 		}
 
