@@ -37,6 +37,11 @@ Validation errors (`400`) include a `details` field with Zod error info.
 - [DELETE /projects/:id/members/:userId — delete](#remove-member)
 - [POST /projects/:id/transfer-ownership — transfer](#transfer-ownership)
 
+### Comments
+
+- [POST /projects/:id/tasks/:taskId/comments — post](#post-comment)
+- [DELETE /projects/:id/tasks/:taskId/comments/:commentId — delete](#delete-comment)
+
 ---
 
 <a id="list-projects"></a>
@@ -605,14 +610,14 @@ Create a task. Only project members can create tasks.
 
 **Request body**
 
-| Field       | Type   | Required | Rules                                                                 |
-| ----------- | ------ | -------- | --------------------------------------------------------------------- |
-| columnId    | string | yes      | must belong to the project                                            |
-| title       | string | yes      | 1–200 chars                                                           |
-| description | string | no       |                                                                       |
-| assigneeId  | string | no       |                                                                       |
-| label       | string | no       | `BUG`, `FEATURE`, `IMPROVEMENT`, `DOCUMENTATION`, or `CHORE`          |
-| priority    | string | no       | `URGENT`, `HIGH`, `MEDIUM`, `LOW`, or `NONE`; defaults to `MEDIUM`    |
+| Field       | Type   | Required | Rules                                                              |
+| ----------- | ------ | -------- | ------------------------------------------------------------------ |
+| columnId    | string | yes      | must belong to the project                                         |
+| title       | string | yes      | 1–200 chars                                                        |
+| description | string | no       |                                                                    |
+| assigneeId  | string | no       |                                                                    |
+| label       | string | no       | `BUG`, `FEATURE`, `IMPROVEMENT`, `DOCUMENTATION`, or `CHORE`       |
+| priority    | string | no       | `URGENT`, `HIGH`, `MEDIUM`, `LOW`, or `NONE`; defaults to `MEDIUM` |
 
 **Success — 201**
 
@@ -790,14 +795,14 @@ Update a task. Only project members can update tasks.
 
 **Request body**
 
-| Field       | Type           | Required | Rules                                                              |
-| ----------- | -------------- | -------- | ------------------------------------------------------------------ |
-| columnId    | string         | no       | must belong to the project                                         |
-| title       | string         | no       | 1–200 chars                                                        |
-| description | string         | no       |                                                                    |
-| assigneeId  | string \| null | no       | set to `null` to unassign; must be a project member when provided  |
+| Field       | Type           | Required | Rules                                                                |
+| ----------- | -------------- | -------- | -------------------------------------------------------------------- |
+| columnId    | string         | no       | must belong to the project                                           |
+| title       | string         | no       | 1–200 chars                                                          |
+| description | string         | no       |                                                                      |
+| assigneeId  | string \| null | no       | set to `null` to unassign; must be a project member when provided    |
 | label       | string \| null | no       | `BUG`, `FEATURE`, `IMPROVEMENT`, `DOCUMENTATION`, `CHORE`, or `null` |
-| priority    | string         | no       | `URGENT`, `HIGH`, `MEDIUM`, `LOW`, or `NONE`                       |
+| priority    | string         | no       | `URGENT`, `HIGH`, `MEDIUM`, `LOW`, or `NONE`                         |
 
 **Success — 200**
 
@@ -1126,8 +1131,8 @@ Updates `project.ownerId`, sets the new owner's role to `OWNER`, and demotes the
 
 **Request body**
 
-| Field  | Type   | Required | Rules                          |
-| ------ | ------ | -------- | ------------------------------ |
+| Field  | Type   | Required | Rules                              |
+| ------ | ------ | -------- | ---------------------------------- |
 | userId | string | yes      | must be an existing project member |
 
 **Success — 200**
@@ -1183,6 +1188,141 @@ Updates `project.ownerId`, sets the new owner's role to `OWNER`, and demotes the
 
 ```json
 { "error": "Member not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="post-comment"></a>
+
+## POST /projects/:id/tasks/:taskId/comments
+
+Post a comment under a task. Only project members (`OWNER` or `MEMBER`) can post comments.
+
+**Auth:** Bearer access token
+
+**Request body**
+
+| Field   | Type   | Required | Rules         |
+| ------- | ------ | -------- | ------------- |
+| content | string | yes      | 1–5000 chars  |
+
+**Success — 201**
+
+```json
+{
+	"id": "cuid...",
+	"content": "I'll take a look",
+	"taskId": "cuid...",
+	"authorId": "cuid...",
+	"createdAt": "2026-...",
+	"author": {
+		"id": "cuid...",
+		"name": "Alice",
+		"email": "alice@test.com",
+		"imageUrl": null,
+		"bio": null,
+		"jobTitle": null,
+		"company": null
+	}
+}
+```
+
+**Errors**
+
+- **400** — invalid input
+
+```json
+{ "error": "Validation failed", "details": {} }
+```
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — user is not a project member
+
+```json
+{ "error": "Access denied" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **404** — task not found
+
+```json
+{ "error": "Task not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="delete-comment"></a>
+
+## DELETE /projects/:id/tasks/:taskId/comments/:commentId
+
+Delete a comment. Only the author can delete their own comment. The requester must be a project member (`OWNER` or `MEMBER`).
+
+**Auth:** Bearer access token
+
+**Request body:** none.
+
+**Success — 204**
+
+No response body.
+
+**Errors**
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — user is not a project member
+
+```json
+{ "error": "Access denied" }
+```
+
+- **403** — requester is not the comment author
+
+```json
+{ "error": "Only the author can delete this comment" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **404** — task not found
+
+```json
+{ "error": "Task not found" }
+```
+
+- **404** — comment not found (or comment belongs to another task)
+
+```json
+{ "error": "Comment not found" }
 ```
 
 - **500** — server error
