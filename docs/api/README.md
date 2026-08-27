@@ -14,7 +14,8 @@ Access tokens are short-lived (default: 15 minutes). Use `POST /auth/refresh` wi
 
 ## Docs
 
-| File | Endpoints |
-| ---- | --------- |
-| [auth.md](./auth.md) | register, login, refresh, logout, forgot/reset password, me |
-| [projects.md](./projects.md) | projects, columns, tasks, members, invites, share |
+| File                         | Endpoints                                                   |
+| ---------------------------- | ----------------------------------------------------------- |
+| [auth.md](./auth.md)         | register, login, refresh, logout, forgot/reset password, me |
+| [user.md](./users.md)        | profile, email, password, delete account, profile image     |
+| [projects.md](./projects.md) | projects, columns, tasks, members, invites, share           |
