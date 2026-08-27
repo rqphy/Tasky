@@ -48,6 +48,11 @@ Validation errors (`400`) include a `details` field with Zod error info.
 - [GET /projects/:id/invites — get](#get-invites)
 - [DELETE /projects/:id/invites/:inviteId — delete](#delete-invite)
 
+### Share
+
+- [GET /projects/:id/share — get](#get-share)
+- [PATCH /projects/:id/share — update](#update-share)
+
 ---
 
 <a id="list-projects"></a>
@@ -1513,6 +1518,126 @@ No response body.
 
 ```json
 { "error": "Invite not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="get-share"></a>
+
+## GET /projects/:id/share
+
+Get the project viewer share link status. Only project members (`OWNER` or `MEMBER`) can check share status.
+
+**Auth:** Bearer access token
+
+**Request body:** none.
+
+**Success — 200** (share link active)
+
+```json
+{
+	"isActive": true,
+	"url": "http://localhost:5173/share/hex..."
+}
+```
+
+**Success — 200** (share link inactive or not created)
+
+```json
+{
+	"isActive": false
+}
+```
+
+**Errors**
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — user is not a project member
+
+```json
+{ "error": "Access denied" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="update-share"></a>
+
+## PATCH /projects/:id/share
+
+Enable or disable the viewer share link. Only the project owner can update share status. Enabling creates a share token if one does not exist; disabling sets `isActive` to `false` without deleting the token.
+
+**Auth:** Bearer access token
+
+**Request body**
+
+| Field    | Type    | Required | Rules |
+| -------- | ------- | -------- | ----- |
+| isActive | boolean | yes      |       |
+
+**Success — 200** (enabled)
+
+```json
+{
+	"isActive": true,
+	"url": "http://localhost:5173/share/hex..."
+}
+```
+
+**Success — 200** (disabled)
+
+```json
+{
+	"isActive": false
+}
+```
+
+**Errors**
+
+- **400** — invalid input
+
+```json
+{ "error": "Validation failed", "details": {} }
+```
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — user is not the project owner
+
+```json
+{ "error": "Only the owner can perform this action" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
 ```
 
 - **500** — server error
