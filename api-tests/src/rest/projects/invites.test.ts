@@ -3,8 +3,6 @@ import { api } from "../../helpers/client.js"
 import {
 	authAs,
 	createProject,
-	createColumn,
-	createTask,
 	addMemberViaInvite,
 } from "../../helpers/fixtures.js"
 
