@@ -39,8 +39,14 @@ Validation errors (`400`) include a `details` field with Zod error info.
 
 ### Comments
 
-- [POST /projects/:id/tasks/:taskId/comments — post](#post-comment)
+- [POST /projects/:id/tasks/:taskId/comments — create](#create-comment)
 - [DELETE /projects/:id/tasks/:taskId/comments/:commentId — delete](#delete-comment)
+
+### Invites
+
+- [POST /projects/:id/invites — create](#create-invite)
+- [GET /projects/:id/invites — get](#get-invites)
+- [DELETE /projects/:id/invites/:inviteId — delete](#delete-invite)
 
 ---
 
@@ -1198,7 +1204,7 @@ Updates `project.ownerId`, sets the new owner's role to `OWNER`, and demotes the
 
 ---
 
-<a id="post-comment"></a>
+<a id="create-comment"></a>
 
 ## POST /projects/:id/tasks/:taskId/comments
 
@@ -1208,9 +1214,9 @@ Post a comment under a task. Only project members (`OWNER` or `MEMBER`) can post
 
 **Request body**
 
-| Field   | Type   | Required | Rules         |
-| ------- | ------ | -------- | ------------- |
-| content | string | yes      | 1–5000 chars  |
+| Field   | Type   | Required | Rules        |
+| ------- | ------ | -------- | ------------ |
+| content | string | yes      | 1–5000 chars |
 
 **Success — 201**
 
@@ -1323,6 +1329,190 @@ No response body.
 
 ```json
 { "error": "Comment not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="create-invite"></a>
+
+## POST /projects/:id/invites
+
+Create an invite for a project. Only the project owner can create invites. If an invite already exists for the same email, it is refreshed (new token, expiry reset, status set back to `PENDING`).
+
+**Auth:** Bearer access token
+
+**Request body**
+
+| Field | Type   | Required | Rules                                      |
+| ----- | ------ | -------- | ------------------------------------------ |
+| email | string | yes      | valid email                                |
+| role  | string | no       | `MEMBER` or `VIEWER`; defaults to `MEMBER` |
+
+**Success — 201**
+
+```json
+{
+	"id": "cuid...",
+	"projectId": "cuid...",
+	"email": "alice@test.com",
+	"role": "MEMBER",
+	"token": "hex...",
+	"status": "PENDING",
+	"invitedById": "cuid...",
+	"expiresAt": "2026-...",
+	"acceptedAt": null,
+	"createdAt": "2026-...",
+	"emailSent": true
+}
+```
+
+**Errors**
+
+- **400** — invalid input
+
+```json
+{ "error": "Validation failed", "details": {} }
+```
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — user is not the project owner
+
+```json
+{ "error": "Only the owner can perform this action" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **409** — invited email already belongs to a project member
+
+```json
+{ "error": "This user is already a member of the project" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="get-invites"></a>
+
+## GET /projects/:id/invites
+
+List pending invites for a project. Only the project owner can list invites. Returns only invites with status `PENDING`.
+
+**Auth:** Bearer access token
+
+**Request body:** none.
+
+**Success — 200**
+
+```json
+[
+	{
+		"id": "cuid...",
+		"projectId": "cuid...",
+		"email": "alice@test.com",
+		"role": "MEMBER",
+		"status": "PENDING",
+		"expiresAt": "2026-...",
+		"createdAt": "2026-...",
+		"invitedBy": {
+			"id": "cuid...",
+			"name": "Alice",
+			"email": "alice@test.com",
+			"imageUrl": null,
+			"bio": null,
+			"jobTitle": null,
+			"company": null
+		}
+	}
+]
+```
+
+**Errors**
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — user is not the project owner
+
+```json
+{ "error": "Only the owner can perform this action" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **500** — server error
+
+```json
+{ "error": "Internal server error" }
+```
+
+---
+
+<a id="delete-invite"></a>
+
+## DELETE /projects/:id/invites/:inviteId
+
+Revoke a pending invite. Only the project owner can revoke invites. Sets the invite status to `REVOKED` (does not delete the record).
+
+**Auth:** Bearer access token
+
+**Request body:** none.
+
+**Success — 204**
+
+No response body.
+
+**Errors**
+
+- **401** — missing or invalid access token
+
+```json
+{ "error": "Missing or invalid authorization header" }
+```
+
+- **403** — user is not the project owner
+
+```json
+{ "error": "Only the owner can perform this action" }
+```
+
+- **404** — project not found
+
+```json
+{ "error": "Project not found" }
+```
+
+- **404** — invite not found (or invite belongs to another project)
+
+```json
+{ "error": "Invite not found" }
 ```
 
 - **500** — server error
