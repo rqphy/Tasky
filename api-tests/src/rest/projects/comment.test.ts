@@ -14,12 +14,10 @@ describe("post comment", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const comment = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/comments`,
@@ -46,12 +44,10 @@ describe("post comment", () => {
 		})
 
 		const column = await createColumn(owner.headers, project.id)
-		const task = await createTask(
-			owner.headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(owner.headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const comment = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/comments`,
@@ -68,12 +64,10 @@ describe("post comment", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const comment = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/comments`,
@@ -90,12 +84,10 @@ describe("post comment", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const comment = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/comments`,
@@ -112,12 +104,10 @@ describe("post comment", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const comment = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/comments`,
@@ -137,12 +127,10 @@ describe("post comment", () => {
 
 		const project = await createProject(owner.headers)
 		const column = await createColumn(owner.headers, project.id)
-		const task = await createTask(
-			owner.headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(owner.headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const comment = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/comments`,
@@ -189,12 +177,10 @@ describe("delete comment", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const comment = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/comments`,
@@ -223,12 +209,10 @@ describe("delete comment", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const comment = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/comments`,
@@ -253,12 +237,10 @@ describe("delete comment", () => {
 
 		const project = await createProject(owner.headers)
 		const column = await createColumn(owner.headers, project.id)
-		const task = await createTask(
-			owner.headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(owner.headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const comment = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/comments`,
@@ -287,12 +269,10 @@ describe("delete comment", () => {
 		})
 
 		const column = await createColumn(owner.headers, project.id)
-		const task = await createTask(
-			owner.headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(owner.headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const comment = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/comments`,
@@ -342,12 +322,10 @@ describe("delete comment", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const deletedComment = await api.delete(
 			`/projects/${project.id}/tasks/${task.id}/comments/123`,

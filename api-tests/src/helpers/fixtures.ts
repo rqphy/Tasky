@@ -91,19 +91,16 @@ export async function createColumn(
 }
 
 /** Create a task in a column and return the task data. */
+
 export async function createTask(
 	headers: RequestHeaders,
 	projectId: string,
-	columnId: string,
-	title: string,
+	data: { title?: string; columnId: string; assigneeId?: string },
 ) {
-	if (columnId === undefined) {
-		throw new Error("Column ID is required")
-	}
-
-	const body: { title: string; columnId: string } = {
-		title: title ?? "New Task",
-		columnId,
+	const body: { title: string; columnId: string; assigneeId?: string } = {
+		title: data.title ?? "New Task",
+		columnId: data.columnId,
+		assigneeId: data.assigneeId,
 	}
 
 	const response = await api.post(`/projects/${projectId}/tasks`, body, {

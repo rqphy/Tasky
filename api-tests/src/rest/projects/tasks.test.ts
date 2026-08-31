@@ -81,9 +81,7 @@ describe("create task", () => {
 		)
 
 		expect(task.status).toBe(401)
-		expect(task.data.error).toBe(
-			"Missing or invalid authorization header",
-		)
+		expect(task.data.error).toBe("Missing or invalid authorization header")
 	})
 
 	it("return 403 when user is not a project member", async () => {
@@ -129,12 +127,10 @@ describe("get task", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.get(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -151,12 +147,10 @@ describe("get task", () => {
 		const { headers } = await authAs()
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.get(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -175,12 +169,10 @@ describe("get task", () => {
 
 		const project = await createProject(owner.headers)
 		const column = await createColumn(owner.headers, project.id)
-		const task = await createTask(
-			owner.headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(owner.headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.get(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -219,12 +211,10 @@ describe("update task", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.patch(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -255,12 +245,10 @@ describe("update task", () => {
 		})
 
 		const column = await createColumn(owner.headers, project.id)
-		const task = await createTask(
-			owner.headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(owner.headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.patch(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -278,12 +266,10 @@ describe("update task", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.patch(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -300,12 +286,10 @@ describe("update task", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.patch(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -321,12 +305,10 @@ describe("update task", () => {
 		const { headers } = await authAs()
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.patch(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -346,12 +328,10 @@ describe("update task", () => {
 
 		const project = await createProject(owner.headers)
 		const column = await createColumn(owner.headers, project.id)
-		const task = await createTask(
-			owner.headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(owner.headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.patch(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -397,12 +377,10 @@ describe("delete task", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.delete(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -424,12 +402,10 @@ describe("delete task", () => {
 		const { headers } = await authAs()
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.delete(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -448,12 +424,10 @@ describe("delete task", () => {
 
 		const project = await createProject(owner.headers)
 		const column = await createColumn(owner.headers, project.id)
-		const task = await createTask(
-			owner.headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(owner.headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.delete(
 			`/projects/${project.id}/tasks/${task.id}`,
@@ -467,7 +441,9 @@ describe("delete task", () => {
 	it("return 404 when project is not found", async () => {
 		const { headers } = await authAs()
 
-		const response = await api.delete("/projects/123/tasks/456", { headers })
+		const response = await api.delete("/projects/123/tasks/456", {
+			headers,
+		})
 
 		expect(response.status).toBe(404)
 		expect(response.data.error).toBe("Project not found")
@@ -477,10 +453,9 @@ describe("delete task", () => {
 		const { headers } = await authAs()
 		const project = await createProject(headers)
 
-		const response = await api.delete(
-			`/projects/${project.id}/tasks/123`,
-			{ headers },
-		)
+		const response = await api.delete(`/projects/${project.id}/tasks/123`, {
+			headers,
+		})
 
 		expect(response.status).toBe(404)
 		expect(response.data.error).toBe("Task not found")
@@ -498,12 +473,10 @@ describe("move task", () => {
 		const column2 = await createColumn(headers, project.id, {
 			name: "Column 2",
 		})
-		const task = await createTask(
-			headers,
-			project.id,
-			column1.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column1.id,
+		})
 
 		const response = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/move`,
@@ -529,13 +502,14 @@ describe("move task", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task1 = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task 1",
-		)
-		await createTask(headers, project.id, column.id, "Test Task 2")
+		const task1 = await createTask(headers, project.id, {
+			title: "Test Task 1",
+			columnId: column.id,
+		})
+		await createTask(headers, project.id, {
+			title: "Test Task 2",
+			columnId: column.id,
+		})
 
 		const response = await api.post(
 			`/projects/${project.id}/tasks/${task1.id}/move`,
@@ -553,12 +527,10 @@ describe("move task", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/move`,
@@ -575,12 +547,10 @@ describe("move task", () => {
 
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/move`,
@@ -596,12 +566,10 @@ describe("move task", () => {
 		const { headers } = await authAs()
 		const project = await createProject(headers)
 		const column = await createColumn(headers, project.id)
-		const task = await createTask(
-			headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/move`,
@@ -621,12 +589,10 @@ describe("move task", () => {
 
 		const project = await createProject(owner.headers)
 		const column = await createColumn(owner.headers, project.id)
-		const task = await createTask(
-			owner.headers,
-			project.id,
-			column.id,
-			"Test Task",
-		)
+		const task = await createTask(owner.headers, project.id, {
+			title: "Test Task",
+			columnId: column.id,
+		})
 
 		const response = await api.post(
 			`/projects/${project.id}/tasks/${task.id}/move`,

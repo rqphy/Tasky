@@ -3,7 +3,6 @@ import { api } from "../helpers/client.js"
 import {
 	authAs,
 	createProject,
-	addMemberViaInvite,
 	uniqueEmail,
 } from "../helpers/fixtures.js"
 
