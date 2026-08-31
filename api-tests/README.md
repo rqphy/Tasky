@@ -93,8 +93,8 @@ src/
     auth.test.ts              ← docs/api/auth.md
     users.test.ts             ← docs/api/users.md
     notifications.test.ts     ← docs/api/notifications.md
-    invites.test.ts           ← docs/api/invites.md (TODO)
-    share.test.ts             ← docs/api/share.md (TODO)
+    invites.test.ts           ← docs/api/invites.md
+    share.test.ts             ← docs/api/share.md
     projects/
       projects.test.ts        ← docs/api/projects.md (projects CRUD)
       column.test.ts          ← docs/api/projects.md (columns)
@@ -141,8 +141,8 @@ src/
 | `projects/member.test.ts` | ✓ |
 | `projects/invites.test.ts` | ✓ |
 | `projects/share.test.ts` | ✓ |
-| `invites.test.ts` | TODO — validate + accept |
-| `share.test.ts` | TODO — public board |
+| `invites.test.ts` | ✓ |
+| `share.test.ts` | ✓ |
 | `sockets/realtime.test.ts` | TODO — next after REST |
 
 ## Writing tests
