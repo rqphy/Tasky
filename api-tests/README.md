@@ -79,7 +79,7 @@ API_BASE_URL=http://localhost:4000/api npm test
 
 ## Architecture
 
-Tests mirror the API docs and server route groups — one file per area, shared helpers for HTTP and setup.
+Tests mirror the API docs and server route groups — **one test file per doc file**, shared helpers for HTTP and setup.
 
 ```
 src/
@@ -90,51 +90,65 @@ src/
   setup/
     global-setup.ts # health check before tests run
   rest/
-    auth.test.ts           ← docs/api/auth.md
-    users.test.ts          ← docs/api/users.md (TODO)
-    notifications.test.ts  ← docs/api/notifications.md (TODO)
-    invites.test.ts        ← /api/invites (accept flow)
-    share.test.ts          ← /api/share (public board)
+    auth.test.ts              ← docs/api/auth.md
+    users.test.ts             ← docs/api/users.md
+    notifications.test.ts     ← docs/api/notifications.md
+    invites.test.ts           ← docs/api/invites.md (TODO)
+    share.test.ts             ← docs/api/share.md (TODO)
     projects/
-      projects.test.ts     ← CRUD
-      columns.test.ts
-      tasks.test.ts
-      comments.test.ts
-      members.test.ts
-      invites.test.ts      ← project invites
-      share.test.ts        ← project share link
-  sockets/                 ← realtime tests (later)
-    realtime.test.ts
+      projects.test.ts        ← docs/api/projects.md (projects CRUD)
+      column.test.ts          ← docs/api/projects.md (columns)
+      tasks.test.ts           ← docs/api/projects.md (tasks)
+      comment.test.ts         ← docs/api/projects.md (comments)
+      member.test.ts          ← docs/api/projects.md (members)
+      invites.test.ts         ← docs/api/projects.md (project invites)
+      share.test.ts           ← docs/api/projects.md (share link management)
+  sockets/                    ← realtime tests (next)
+    realtime.test.ts          ← (TODO)
 ```
+
+### Where to put new tests
+
+| Doc file | Test file | Notes |
+| -------- | --------- | ----- |
+| `docs/api/invites.md` | `src/rest/invites.test.ts` | Top-level — different mount path (`/invites`), not under `projects/` |
+| `docs/api/share.md` | `src/rest/share.test.ts` | Top-level — public route, no auth |
+| `docs/api/projects.md` (invites section) | `src/rest/projects/invites.test.ts` | Already exists — create/list/revoke |
+| `docs/api/projects.md` (share section) | `src/rest/projects/share.test.ts` | Already exists — enable/disable link |
+
+**Rule:** if it has its own doc file (or its own top-level route mount in `server-express/src/routes/api.ts`), it gets its own test file at the same level.
 
 ### Rules
 
-1. **One file per doc / route group** — if it's a separate section in `docs/api/`, it gets its own test file.
+1. **One file per doc / route group** — if it's a separate file in `docs/api/`, it gets its own test file.
 2. **Read the doc first** — each test asserts what the doc promises (status + body).
-3. **Shared setup goes in `helpers/fixtures.ts`** — e.g. `registerUser()`, `createProject()`, `createColumn()`.
+3. **Shared setup goes in `helpers/fixtures.ts`** — e.g. `registerUser()`, `createProject()`, `addMemberViaInvite()`.
 4. **Never import server code** — only HTTP. Keeps tests working across server rewrites.
 5. **One behavior per `it(...)`** — happy path + key errors, not every edge case.
 6. **Unique data per test** — use `uniqueEmail()` so tests don't collide.
 
-### Suggested order
+### REST test status
 
-| Step | File | Depends on |
-| ---- | ---- | ---------- |
-| ✓ | `auth.test.ts` | — |
-| 1 | `projects/projects.test.ts` | auth |
-| 2 | `projects/columns.test.ts` | project |
-| 3 | `projects/tasks.test.ts` | column |
-| 4 | `projects/members.test.ts` | project + 2 users |
-| 5 | `users.test.ts` | auth |
-| 6 | `notifications.test.ts` | project + actions |
-| 7 | `projects/comments.test.ts` | task |
-| 8 | invites + share | members |
-| 9 | `sockets/realtime.test.ts` | tasks |
+| File | Status |
+| ---- | ------ |
+| `auth.test.ts` | ✓ |
+| `users.test.ts` | ✓ |
+| `notifications.test.ts` | ✓ |
+| `projects/projects.test.ts` | ✓ |
+| `projects/column.test.ts` | ✓ |
+| `projects/tasks.test.ts` | ✓ |
+| `projects/comment.test.ts` | ✓ |
+| `projects/member.test.ts` | ✓ |
+| `projects/invites.test.ts` | ✓ |
+| `projects/share.test.ts` | ✓ |
+| `invites.test.ts` | TODO — validate + accept |
+| `share.test.ts` | TODO — public board |
+| `sockets/realtime.test.ts` | TODO — next after REST |
 
 ## Writing tests
 
 1. Check the relevant doc in `docs/api/`
-2. Add or extend a file under `src/rest/`
+2. Add or extend the matching file under `src/rest/`
 3. Import `api` from `helpers/client.js`
 4. Use `registerUser()` or `authAs()` when you need an authenticated user
 5. Run `npm test`
