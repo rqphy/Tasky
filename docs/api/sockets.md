@@ -5,11 +5,11 @@
 - [Connection and Auth](#connection)
 - [Client events](#client-events)
 - [Broadcast events and payloads](#broadcast-events)
-  - [Tasks](#tasks)
-  - [Columns](#columns)
-  - [Members](#members)
-  - [Projects](#projects)
-  - [Notifications](#notifications)
+    - [Tasks](#tasks)
+    - [Columns](#columns)
+    - [Members](#members)
+    - [Projects](#projects)
+    - [Notifications](#notifications)
 - [Rules](#rules)
 
 ---
@@ -47,8 +47,9 @@ Joins a project room to listen to board updates.
 #### Response:
 
 - Success: `{ ok: true }`
-- Error ( not a member / project not found ): `{ ok: false, error: "Not a member of this project" }`
-- Error ( invalid input ): `{ ok: false, error: "Invalid projectId" }`
+- Error (project not found): `{ ok: false, error: "Project not found" }`
+- Error (not a member / no access): `{ ok: false, error: "Access denied" }`
+- Error (invalid input: empty or not a string): `{ ok: false, error: "Invalid projectId" }`
 
 ---
 
@@ -411,23 +412,22 @@ Emitted when a new notification is generated for a user (e.g. assigned to a task
 ## Rules
 
 1. **Authentication:**
-   - Every connection must supply a valid JWT access token in `auth.token` during the handshake. Connections without or with invalid tokens are immediately rejected with `"Unauthorized"`.
+    - Every connection must supply a valid JWT access token in `auth.token` during the handshake. Connections without or with invalid tokens are immediately rejected with `"Unauthorized"`.
 
 2. **Room Scoping:**
-   - Board events (`task:*`, `column:*`, `member:*`) are scoped to the room `project:<projectId>`.
-   - Clients must explicitly join the room using `joinProject` after connecting.
-   - Only users who are active members of the project can join the room. Non-members receive `{ ok: false, error: "Not a member of this project" }`.
+    - Board events (`task:*`, `column:*`, `member:*`) are scoped to the room `project:<projectId>`.
+    - Clients must explicitly join the room using `joinProject` after connecting.
+    - Only users who are active members of the project can join the room. Non-members receive `{ ok: false, error: "Not a member of this project" }`.
 
 3. **Sender Exclusion:**
-   - Broadcast events triggered by a client's HTTP request (such as creating a task, moving a column, or leaving a project) are sent to everyone in the room **except** the user who initiated the action (`emitToProjectExceptUser`). This avoids duplicating state updates for clients that apply optimistic UI updates.
+    - Broadcast events triggered by a client's HTTP request (such as creating a task, moving a column, or leaving a project) are sent to everyone in the room **except** the user who initiated the action (`emitToProjectExceptUser`). This avoids duplicating state updates for clients that apply optimistic UI updates.
 
 4. **Global Project Updates:**
-   - Events affecting workspace level info (`project:updated`, `project:deleted`) are sent to all active sockets belonging to project members (`emitToUsersExceptUser`), regardless of whether they have joined the specific `project:<projectId>` room.
+    - Events affecting workspace level info (`project:updated`, `project:deleted`) are sent to all active sockets belonging to project members (`emitToUsersExceptUser`), regardless of whether they have joined the specific `project:<projectId>` room.
 
 5. **Direct User Messaging:**
-   - Notifications (`notification:created`) are sent directly to the targeted recipient user's active sockets (`emitToUser`) across the application.
+    - Notifications (`notification:created`) are sent directly to the targeted recipient user's active sockets (`emitToUser`) across the application.
 
 6. **Connection Lifecycle & Cleanup:**
-   - When a user socket connects, it is registered in an in-memory map by `userId`.
-   - When a socket disconnects, it is automatically removed from the registry and leaves all joined rooms.
-
+    - When a user socket connects, it is registered in an in-memory map by `userId`.
+    - When a socket disconnects, it is automatically removed from the registry and leaves all joined rooms.
