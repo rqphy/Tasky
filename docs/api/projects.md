@@ -31,7 +31,7 @@ Validation errors (`400`) include a `details` field with Zod error info.
 - [DELETE /projects/:id/tasks/:taskId — delete](#delete-task)
 - [POST /projects/:id/tasks/:taskId/move — move](#move-task)
 
-### Tasks
+### Members
 
 - [GET /projects/:id/members — get](#get-members)
 - [DELETE /projects/:id/members/:userId — delete](#remove-member)
