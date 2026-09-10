@@ -14,7 +14,7 @@ import {
 import { api } from "../helpers/client.js"
 import { Socket } from "socket.io-client"
 
-describe("socket broadcasts", () => {
+describe("membership socket broadcasts", () => {
 	let ownerSocket: Socket | null = null
 	let memberSocket: Socket | null = null
 
