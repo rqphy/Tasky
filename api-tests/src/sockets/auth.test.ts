@@ -1,3 +1,4 @@
+import { describe, it, expect, afterEach } from "vitest"
 import { connectSocket, createSocketClient } from "../helpers/socket"
 import { authAs } from "../helpers/fixtures"
 import type { Socket } from "socket.io-client"
