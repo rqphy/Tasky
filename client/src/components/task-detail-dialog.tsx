@@ -303,11 +303,19 @@ export function TaskDetailDialog({
 							</ul>
 
 							<div className="flex gap-3 items-start">
-								<Avatar className="size-7 shrink-0 mt-0.5">
-									<AvatarFallback className="text-[10px]">
-										{getInitials(user?.name ?? "")}
-									</AvatarFallback>
-								</Avatar>
+								{user?.name && (
+									<Avatar className="size-7 shrink-0 mt-0.5">
+										{user.imageUrl && (
+											<AvatarImage
+												src={user.imageUrl}
+												alt={user.name}
+											/>
+										)}
+										<AvatarFallback className="text-[10px]">
+											{getInitials(user.name)}
+										</AvatarFallback>
+									</Avatar>
+								)}
 								<div className="flex-1 space-y-2">
 									<CommentTextarea
 										value={draft}
