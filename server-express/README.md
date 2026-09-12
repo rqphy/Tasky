@@ -5,16 +5,19 @@ Authentication server for Tasky project management app built with Express, TypeS
 ## Setup
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Copy `.env.example` to `.env` and update values:
+
 ```bash
 cp .env.example .env
 ```
 
 3. Generate Prisma Client and create database:
+
 ```bash
 npm run db:generate
 npm run db:push
@@ -23,6 +26,7 @@ npm run db:push
 ## Development
 
 Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -45,9 +49,11 @@ The SQLite database is located at `../tasky.db` (shared with other server implem
 ## API Endpoints
 
 ### Health Check
+
 - `GET /health` - Server health status
 
 ### Authentication (To be implemented)
+
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
 - `POST /api/auth/refresh` - Refresh access token
