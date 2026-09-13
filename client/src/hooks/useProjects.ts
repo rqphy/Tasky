@@ -1,5 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { patchTaskMoved } from "@/lib/project-cache-patches"
+import {
+	patchTaskDeleted,
+	patchTaskMoved,
+	patchTaskUpdated,
+} from "@/lib/project-cache-patches"
 import {
 	projectsApi,
 	patchTaskCount,
@@ -203,8 +207,8 @@ export function useUpdateTask(projectId: string) {
 			data: UpdateTaskInput
 		}) =>
 			projectsApi.updateTask(projectId, taskId, data).then((r) => r.data),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+		onSuccess: (task) => {
+			patchTaskUpdated(queryClient, { projectId, task })
 		},
 	})
 }
@@ -215,8 +219,8 @@ export function useDeleteTask(projectId: string) {
 	return useMutation({
 		mutationFn: (taskId: string) =>
 			projectsApi.deleteTask(projectId, taskId),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+		onSuccess: (_, taskId) => {
+			patchTaskDeleted(queryClient, { projectId, taskId })
 		},
 	})
 }

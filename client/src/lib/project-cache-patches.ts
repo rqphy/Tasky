@@ -2,7 +2,6 @@ import type { QueryClient } from "@tanstack/react-query"
 import type { Column, Project, ProjectMember, Task } from "@/lib/projects"
 import { leaveProjectRoom } from "@/lib/socket"
 import type {
-	BoardTaskPayload,
 	ColumnCreatedPayload,
 	ColumnDeletedPayload,
 	ColumnReorderedPayload,
@@ -19,23 +18,6 @@ import type {
 
 function sortByPosition<T extends { position: number }>(items: T[]): T[] {
 	return [...items].sort((a, b) => a.position - b.position)
-}
-
-function taskFromPayload(task: BoardTaskPayload): Task {
-	return {
-		id: task.id,
-		columnId: task.columnId,
-		title: task.title,
-		description: task.description ?? undefined,
-		assigneeId: task.assigneeId ?? undefined,
-		assignee: task.assignee ?? undefined,
-		label: task.label ?? undefined,
-		priority: task.priority,
-		position: task.position,
-		createdAt: task.createdAt,
-		updatedAt: task.updatedAt,
-		_count: task._count,
-	}
 }
 
 function updateProjectCache(
@@ -72,7 +54,7 @@ export function patchTaskCreated(
 	queryClient: QueryClient,
 	payload: TaskCreatedPayload,
 ): void {
-	const task = taskFromPayload(payload.task)
+	const { task } = payload
 	updateProjectCache(queryClient, payload.projectId, (project) => {
 		if (!project.columns) return project
 		return {
@@ -86,7 +68,7 @@ export function patchTaskUpdated(
 	queryClient: QueryClient,
 	payload: TaskUpdatedPayload,
 ): void {
-	const task = taskFromPayload(payload.task)
+	const { task } = payload
 
 	updateProjectCache(queryClient, payload.projectId, (project) => {
 		if (!project.columns) return project

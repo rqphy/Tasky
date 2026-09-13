@@ -30,6 +30,7 @@ import type { Task } from "@/types/task"
 import type { Column as UIColumn, TaskLabel, TaskPriority } from "@/types/task"
 import type { Column as BackendColumn } from "@/lib/projects"
 import { hexToTailwind, tailwindToHex } from "@/lib/colors"
+import type { UpdateTaskInput } from "@/lib/projects"
 import {
 	useCreateColumn,
 	useUpdateColumn,
@@ -37,6 +38,7 @@ import {
 	useReorderColumns,
 	useMoveTask,
 	useUpdateTask,
+	useDeleteTask,
 } from "@/hooks/useProjects"
 
 interface KanbanBoardProps {
@@ -126,6 +128,7 @@ export function KanbanBoard({
 	const reorderColumns = useReorderColumns(projectId)
 	const moveTask = useMoveTask(projectId)
 	const updateTask = useUpdateTask(projectId)
+	const deleteTask = useDeleteTask(projectId)
 
 	const columns: UIColumn[] = useMemo(
 		() =>
@@ -174,11 +177,28 @@ export function KanbanBoard({
 	}
 
 	function handleSaveEditedTask(updated: Task) {
+		const snapshot = tasksRef.current
 		setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
+		updateTask.mutate(
+			{
+				taskId: updated.id,
+				data: {
+					title: updated.title,
+					description: updated.description,
+					label: updated.label
+						? (updated.label.toUpperCase() as UpdateTaskInput["label"])
+						: null,
+					priority: (updated.priority ?? "medium").toUpperCase() as UpdateTaskInput["priority"],
+				},
+			},
+			{ onError: () => setTasks(snapshot) },
+		)
 	}
 
 	function handleDeleteTask(id: string) {
+		const snapshot = tasksRef.current
 		setTasks((prev) => prev.filter((t) => t.id !== id))
+		deleteTask.mutate(id, { onError: () => setTasks(snapshot) })
 	}
 
 	function handleOpenAssignTask(id: string) {

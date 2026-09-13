@@ -13,14 +13,15 @@ export interface ProjectMember {
 	user?: PublicUserProfile
 }
 
+/** Task shape returned by the API and real-time board events. */
 export interface Task {
 	id: string
 	columnId: string
 	title: string
-	description?: string
-	assigneeId?: string
-	assignee?: PublicUserProfile
-	label?: string
+	description: string | null
+	assigneeId: string | null
+	assignee: PublicUserProfile | null
+	label: string | null
 	priority: string
 	position: number
 	createdAt: string

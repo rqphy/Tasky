@@ -1,28 +1,5 @@
 import { SOCKET_EVENTS } from "@/lib/socket-events"
-import type { ProjectRole } from "@/lib/projects"
-
-export type BoardTaskPayload = {
-	id: string
-	columnId: string
-	title: string
-	description: string | null
-	assigneeId: string | null
-	label: string | null
-	priority: string
-	position: number
-	createdAt: string
-	updatedAt: string
-	assignee: {
-		id: string
-		name: string
-		email: string
-		imageUrl?: string | null
-		bio?: string | null
-		jobTitle?: string | null
-		company?: string | null
-	} | null
-	_count: { comments: number }
-}
+import type { ProjectRole, Task } from "@/lib/projects"
 
 export type BoardColumnPayload = {
 	id: string
@@ -53,12 +30,12 @@ export type BoardMemberPayload = {
 
 export type TaskCreatedPayload = {
 	projectId: string
-	task: BoardTaskPayload
+	task: Task
 }
 
 export type TaskUpdatedPayload = {
 	projectId: string
-	task: BoardTaskPayload
+	task: Task
 }
 
 export type TaskDeletedPayload = {
