@@ -1,0 +1,20 @@
+# Build output
+target/
+
+# Compiled classes
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Local configuration that may contain secrets
+application-local.properties
+application-local.yml
+
+# IDE
+*.iml
+.classpath
+.project
+.settings/
