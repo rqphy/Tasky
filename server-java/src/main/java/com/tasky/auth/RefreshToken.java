@@ -45,7 +45,19 @@ public class RefreshToken {
         createdAt = Instant.now();
     }
 
+    public String getId() {
+        return id;
+    }
+
     public String getToken() {
         return token;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public Instant getExpiresAt() {
+        return expiresAt;
     }
 }

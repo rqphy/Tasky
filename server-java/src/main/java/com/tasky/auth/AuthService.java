@@ -8,6 +8,9 @@ import com.tasky.auth.dto.LoginRequest;
 import com.tasky.auth.dto.LoginResponse;
 import com.tasky.auth.dto.RegisterRequest;
 import com.tasky.auth.dto.RegisterResponse;
+import com.tasky.auth.dto.RefreshRequest;
+import com.tasky.auth.dto.RefreshResponse;
+
 import com.tasky.user.User;
 import com.tasky.user.UserRepository;
 import com.tasky.user.UserResponse;
@@ -73,6 +76,28 @@ public class AuthService {
             UserResponse.from(user),
             jwtService.generateAccessToken(user.getId()),
             createRefreshToken(user.getId())
+        );
+    }
+
+    @Transactional(noRollbackFor = ExpiredRefreshTokenException.class)
+    public RefreshResponse refresh(RefreshRequest request) {
+        if (request.refreshToken() == null || request.refreshToken().isBlank()) {
+            throw new RefreshTokenRequiredException();
+        }
+
+        RefreshToken storedToken = refreshTokens.findByToken(request.refreshToken())
+            .orElseThrow(InvalidRefreshTokenException::new);
+
+        if (storedToken.getExpiresAt().isBefore(Instant.now())) {
+            refreshTokens.delete(storedToken);
+            throw new ExpiredRefreshTokenException();
+        }
+
+        refreshTokens.delete(storedToken);
+
+        return new RefreshResponse(
+            jwtService.generateAccessToken(storedToken.getUserId()),
+            createRefreshToken(storedToken.getUserId())
         );
     }
 

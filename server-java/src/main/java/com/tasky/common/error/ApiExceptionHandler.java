@@ -4,7 +4,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.tasky.auth.EmailAlreadyRegisteredException;
+import com.tasky.auth.ExpiredRefreshTokenException;
 import com.tasky.auth.InvalidCredentialsException;
+import com.tasky.auth.InvalidRefreshTokenException;
+import com.tasky.auth.RefreshTokenRequiredException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,21 @@ public class ApiExceptionHandler {
     @ExceptionHandler(InvalidCredentialsException.class)
     ResponseEntity<ApiError> invalidCredentials() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiError.of("Invalid credentials"));
+    }
+
+    @ExceptionHandler(RefreshTokenRequiredException.class)
+    ResponseEntity<ApiError> refreshTokenRequired() {
+        return ResponseEntity.badRequest().body(ApiError.of("Refresh token is required"));
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    ResponseEntity<ApiError> invalidRefreshToken() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiError.of("Invalid refresh token"));
+    }
+
+    @ExceptionHandler(ExpiredRefreshTokenException.class)
+    ResponseEntity<ApiError> expiredRefreshToken() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiError.of("Refresh token expired"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
