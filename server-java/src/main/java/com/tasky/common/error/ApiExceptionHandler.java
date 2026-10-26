@@ -8,6 +8,7 @@ import com.tasky.auth.ExpiredRefreshTokenException;
 import com.tasky.auth.InvalidCredentialsException;
 import com.tasky.auth.InvalidRefreshTokenException;
 import com.tasky.auth.RefreshTokenRequiredException;
+import com.tasky.auth.UnknownLogoutTokenException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ExpiredRefreshTokenException.class)
     ResponseEntity<ApiError> expiredRefreshToken() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiError.of("Refresh token expired"));
+    }
+
+    @ExceptionHandler(UnknownLogoutTokenException.class)
+    ResponseEntity<ApiError> unknownLogoutToken() {
+        return ResponseEntity.badRequest().body(ApiError.of("Invalid refresh token"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

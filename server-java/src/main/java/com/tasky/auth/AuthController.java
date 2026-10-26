@@ -6,6 +6,8 @@ import com.tasky.auth.dto.RegisterRequest;
 import com.tasky.auth.dto.RegisterResponse;
 import com.tasky.auth.dto.RefreshRequest;
 import com.tasky.auth.dto.RefreshResponse;
+import com.tasky.auth.dto.LogoutRequest;
+import com.tasky.auth.dto.LogoutResponse;
 
 import jakarta.validation.Valid;
 
@@ -39,5 +41,10 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refresh(@RequestBody RefreshRequest request) {
         return ResponseEntity.ok(authService.refresh(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<LogoutResponse> logout(@RequestBody LogoutRequest request) {
+        return ResponseEntity.ok(authService.logout(request));
     }
 }

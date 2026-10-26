@@ -10,6 +10,8 @@ import com.tasky.auth.dto.RegisterRequest;
 import com.tasky.auth.dto.RegisterResponse;
 import com.tasky.auth.dto.RefreshRequest;
 import com.tasky.auth.dto.RefreshResponse;
+import com.tasky.auth.dto.LogoutRequest;
+import com.tasky.auth.dto.LogoutResponse;
 
 import com.tasky.user.User;
 import com.tasky.user.UserRepository;
@@ -99,6 +101,20 @@ public class AuthService {
             jwtService.generateAccessToken(storedToken.getUserId()),
             createRefreshToken(storedToken.getUserId())
         );
+    }
+
+    @Transactional
+    public LogoutResponse logout(LogoutRequest request) {
+        if (request.refreshToken() == null || request.refreshToken().isBlank()) {
+            throw new RefreshTokenRequiredException();
+        }
+
+        RefreshToken storedToken = refreshTokens.findByToken(request.refreshToken())
+            .orElseThrow(UnknownLogoutTokenException::new);
+
+        refreshTokens.delete(storedToken);
+
+        return new LogoutResponse("Logged out successfully");
     }
 
     private String createRefreshToken(String userId) {
