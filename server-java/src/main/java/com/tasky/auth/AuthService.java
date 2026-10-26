@@ -4,6 +4,8 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.HexFormat;
 
+import com.tasky.auth.dto.LoginRequest;
+import com.tasky.auth.dto.LoginResponse;
 import com.tasky.auth.dto.RegisterRequest;
 import com.tasky.auth.dto.RegisterResponse;
 import com.tasky.user.User;
@@ -55,6 +57,23 @@ public class AuthService {
         String refreshToken = createRefreshToken(user.getId());
 
         return new RegisterResponse(UserResponse.from(user), accessToken, refreshToken);
+    }
+
+    @Transactional
+    public LoginResponse login(LoginRequest request) {
+        User user = users.findByEmail(request.email())
+            .filter(found -> !found.getEmail().endsWith("@deleted.tasky"))
+            .orElseThrow(InvalidCredentialsException::new);
+
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new InvalidCredentialsException();
+        }
+
+        return new LoginResponse(
+            UserResponse.from(user),
+            jwtService.generateAccessToken(user.getId()),
+            createRefreshToken(user.getId())
+        );
     }
 
     private String createRefreshToken(String userId) {

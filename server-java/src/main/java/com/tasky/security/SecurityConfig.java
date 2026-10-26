@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                 .requestMatchers(PATHS.matcher(HttpMethod.GET, "/health")).permitAll()
                 .requestMatchers(PATHS.matcher(HttpMethod.POST, "/auth/register")).permitAll()
+                .requestMatchers(PATHS.matcher(HttpMethod.POST, "/auth/login")).permitAll()
                 .anyRequest().authenticated()
             );
 
