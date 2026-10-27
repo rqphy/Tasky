@@ -3,9 +3,11 @@ package com.tasky.auth;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -32,5 +34,24 @@ public class JwtService {
             .expiration(Date.from(now.plus(properties.accessTokenExpiry())))
             .signWith(accessTokenKey)
             .compact();
+    }
+
+    public Optional<String> parseUserId(String token) {
+        try {
+            String userId = Jwts.parser()
+                .verifyWith(accessTokenKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("userId", String.class);
+
+            if (userId == null || userId.isBlank()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(userId);
+        } catch (JwtException | IllegalArgumentException exception) {
+            return Optional.empty();
+        }
     }
 }

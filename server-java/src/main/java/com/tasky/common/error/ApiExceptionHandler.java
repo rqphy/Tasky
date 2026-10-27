@@ -10,6 +10,7 @@ import com.tasky.auth.InvalidRefreshTokenException;
 import com.tasky.auth.InvalidResetTokenException;
 import com.tasky.auth.RefreshTokenRequiredException;
 import com.tasky.auth.UnknownLogoutTokenException;
+import com.tasky.auth.UserNotFoundException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +54,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(InvalidResetTokenException.class)
     ResponseEntity<ApiError> invalidResetToken() {
         return ResponseEntity.badRequest().body(ApiError.of("Invalid or expired reset link"));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    ResponseEntity<ApiError> userNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.of("User not found"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

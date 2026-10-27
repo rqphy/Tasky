@@ -14,6 +14,7 @@ import com.tasky.auth.dto.LogoutRequest;
 import com.tasky.auth.dto.LogoutResponse;
 import com.tasky.auth.dto.ForgotPasswordRequest;
 import com.tasky.auth.dto.ForgotPasswordResponse;
+import com.tasky.auth.dto.MeResponse;
 import com.tasky.auth.dto.ResetPasswordRequest;
 import com.tasky.auth.dto.ResetPasswordResponse;
 
@@ -21,6 +22,8 @@ import com.tasky.user.User;
 import com.tasky.user.UserRepository;
 import com.tasky.user.UserResponse;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -153,6 +156,20 @@ public class AuthService {
         refreshTokens.deleteByUserId(user.getId());
 
         return new ResetPasswordResponse("Password reset successfully");
+    }
+
+    @Transactional(readOnly = true)
+    public MeResponse me() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof String userId)) {
+            throw new UserNotFoundException();
+        }
+
+        User user = users.findById(userId)
+            .filter(found -> !found.getEmail().endsWith("@deleted.tasky"))
+            .orElseThrow(UserNotFoundException::new);
+
+        return new MeResponse(UserResponse.from(user));
     }
 
     private void createPasswordResetToken(User user) {

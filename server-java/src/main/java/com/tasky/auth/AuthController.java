@@ -8,6 +8,7 @@ import com.tasky.auth.dto.RefreshRequest;
 import com.tasky.auth.dto.RefreshResponse;
 import com.tasky.auth.dto.LogoutRequest;
 import com.tasky.auth.dto.LogoutResponse;
+import com.tasky.auth.dto.MeResponse;
 import com.tasky.auth.dto.ForgotPasswordRequest;
 import com.tasky.auth.dto.ForgotPasswordResponse;
 import com.tasky.auth.dto.ResetPasswordRequest;
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -60,5 +62,10 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ResponseEntity<ResetPasswordResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         return ResponseEntity.ok(authService.resetPassword(request));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<MeResponse> me() {
+        return ResponseEntity.ok(authService.me());
     }
 }

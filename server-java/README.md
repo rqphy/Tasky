@@ -60,6 +60,7 @@ Shared settings live in `src/main/resources/application.properties`:
 - `POST /api/auth/logout`
 - `POST /api/auth/forgot-password`
 - `POST /api/auth/reset-password`
+- `GET /api/auth/me`
 
 The contract for the remaining routes is in [`docs/api`](../docs/api/README.md).
 
