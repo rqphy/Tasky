@@ -14,6 +14,8 @@ import com.tasky.auth.dto.LogoutRequest;
 import com.tasky.auth.dto.LogoutResponse;
 import com.tasky.auth.dto.ForgotPasswordRequest;
 import com.tasky.auth.dto.ForgotPasswordResponse;
+import com.tasky.auth.dto.ResetPasswordRequest;
+import com.tasky.auth.dto.ResetPasswordResponse;
 
 import com.tasky.user.User;
 import com.tasky.user.UserRepository;
@@ -129,6 +131,28 @@ public class AuthService {
             .ifPresent(this::createPasswordResetToken);
 
         return new ForgotPasswordResponse("If an account exists for that email, a reset link has been sent.");
+    }
+
+    @Transactional(noRollbackFor = InvalidResetTokenException.class)
+    public ResetPasswordResponse resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken token = passwordResetTokens.findByToken(request.token())
+            .orElseThrow(InvalidResetTokenException::new);
+
+        if (token.getExpiresAt().isBefore(Instant.now())) {
+            passwordResetTokens.delete(token);
+            throw new InvalidResetTokenException();
+        }
+
+        User user = users.findById(token.getUserId())
+            .orElseThrow(InvalidResetTokenException::new);
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        users.save(user);
+
+        passwordResetTokens.deleteByUserId(user.getId());
+        refreshTokens.deleteByUserId(user.getId());
+
+        return new ResetPasswordResponse("Password reset successfully");
     }
 
     private void createPasswordResetToken(User user) {

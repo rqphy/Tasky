@@ -10,6 +10,8 @@ import com.tasky.auth.dto.LogoutRequest;
 import com.tasky.auth.dto.LogoutResponse;
 import com.tasky.auth.dto.ForgotPasswordRequest;
 import com.tasky.auth.dto.ForgotPasswordResponse;
+import com.tasky.auth.dto.ResetPasswordRequest;
+import com.tasky.auth.dto.ResetPasswordResponse;
 
 import jakarta.validation.Valid;
 
@@ -53,5 +55,10 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         return ResponseEntity.ok(authService.forgotPassword(request));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResetPasswordResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        return ResponseEntity.ok(authService.resetPassword(request));
     }
 }

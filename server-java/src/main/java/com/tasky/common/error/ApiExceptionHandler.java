@@ -7,6 +7,7 @@ import com.tasky.auth.EmailAlreadyRegisteredException;
 import com.tasky.auth.ExpiredRefreshTokenException;
 import com.tasky.auth.InvalidCredentialsException;
 import com.tasky.auth.InvalidRefreshTokenException;
+import com.tasky.auth.InvalidResetTokenException;
 import com.tasky.auth.RefreshTokenRequiredException;
 import com.tasky.auth.UnknownLogoutTokenException;
 
@@ -47,6 +48,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(UnknownLogoutTokenException.class)
     ResponseEntity<ApiError> unknownLogoutToken() {
         return ResponseEntity.badRequest().body(ApiError.of("Invalid refresh token"));
+    }
+
+    @ExceptionHandler(InvalidResetTokenException.class)
+    ResponseEntity<ApiError> invalidResetToken() {
+        return ResponseEntity.badRequest().body(ApiError.of("Invalid or expired reset link"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
