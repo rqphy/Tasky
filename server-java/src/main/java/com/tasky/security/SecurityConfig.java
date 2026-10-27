@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .requestMatchers(PATHS.matcher(HttpMethod.POST, "/auth/login")).permitAll()
                 .requestMatchers(PATHS.matcher(HttpMethod.POST, "/auth/refresh")).permitAll()
                 .requestMatchers(PATHS.matcher(HttpMethod.POST, "/auth/logout")).permitAll()
+                .requestMatchers(PATHS.matcher(HttpMethod.POST, "/auth/forgot-password")).permitAll()
                 .anyRequest().authenticated()
             );
 

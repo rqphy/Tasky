@@ -58,6 +58,7 @@ Shared settings live in `src/main/resources/application.properties`:
 - `POST /api/auth/login`
 - `POST /api/auth/refresh`
 - `POST /api/auth/logout`
+- `POST /api/auth/forgot-password`
 
 The contract for the remaining routes is in [`docs/api`](../docs/api/README.md).
 

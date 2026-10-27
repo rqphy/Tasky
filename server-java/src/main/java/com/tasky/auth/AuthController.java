@@ -8,6 +8,8 @@ import com.tasky.auth.dto.RefreshRequest;
 import com.tasky.auth.dto.RefreshResponse;
 import com.tasky.auth.dto.LogoutRequest;
 import com.tasky.auth.dto.LogoutResponse;
+import com.tasky.auth.dto.ForgotPasswordRequest;
+import com.tasky.auth.dto.ForgotPasswordResponse;
 
 import jakarta.validation.Valid;
 
@@ -46,5 +48,10 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<LogoutResponse> logout(@RequestBody LogoutRequest request) {
         return ResponseEntity.ok(authService.logout(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        return ResponseEntity.ok(authService.forgotPassword(request));
     }
 }

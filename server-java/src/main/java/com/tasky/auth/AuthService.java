@@ -12,6 +12,8 @@ import com.tasky.auth.dto.RefreshRequest;
 import com.tasky.auth.dto.RefreshResponse;
 import com.tasky.auth.dto.LogoutRequest;
 import com.tasky.auth.dto.LogoutResponse;
+import com.tasky.auth.dto.ForgotPasswordRequest;
+import com.tasky.auth.dto.ForgotPasswordResponse;
 
 import com.tasky.user.User;
 import com.tasky.user.UserRepository;
@@ -28,6 +30,7 @@ public class AuthService {
 
     private final UserRepository users;
     private final RefreshTokenRepository refreshTokens;
+    private final PasswordResetTokenRepository passwordResetTokens;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
@@ -35,12 +38,14 @@ public class AuthService {
     public AuthService(
         UserRepository users,
         RefreshTokenRepository refreshTokens,
+        PasswordResetTokenRepository passwordResetTokens,
         PasswordEncoder passwordEncoder,
         JwtService jwtService,
         JwtProperties jwtProperties
     ) {
         this.users = users;
         this.refreshTokens = refreshTokens;
+        this.passwordResetTokens = passwordResetTokens;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.jwtProperties = jwtProperties;
@@ -115,6 +120,27 @@ public class AuthService {
         refreshTokens.delete(storedToken);
 
         return new LogoutResponse("Logged out successfully");
+    }
+
+    @Transactional
+    public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request) {
+        users.findByEmail(request.email())
+            .filter(found -> !found.getEmail().endsWith("@deleted.tasky"))
+            .ifPresent(this::createPasswordResetToken);
+
+        return new ForgotPasswordResponse("If an account exists for that email, a reset link has been sent.");
+    }
+
+    private void createPasswordResetToken(User user) {
+        passwordResetTokens.deleteByUserId(user.getId());
+
+        byte[] bytes = new byte[64];
+        RANDOM.nextBytes(bytes);
+        String token = HexFormat.of().formatHex(bytes);
+        Instant expiresAt = Instant.now().plus(jwtProperties.passwordResetTokenExpiry());
+        passwordResetTokens.save(new PasswordResetToken(token, user.getId(), expiresAt));
+
+        // TODO: Send reset link to email
     }
 
     private String createRefreshToken(String userId) {
