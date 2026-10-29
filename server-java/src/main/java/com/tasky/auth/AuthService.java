@@ -17,6 +17,14 @@ import com.tasky.auth.dto.ForgotPasswordResponse;
 import com.tasky.auth.dto.MeResponse;
 import com.tasky.auth.dto.ResetPasswordRequest;
 import com.tasky.auth.dto.ResetPasswordResponse;
+import com.tasky.auth.exception.EmailAlreadyRegisteredException;
+import com.tasky.auth.exception.ExpiredRefreshTokenException;
+import com.tasky.auth.exception.InvalidCredentialsException;
+import com.tasky.auth.exception.InvalidRefreshTokenException;
+import com.tasky.auth.exception.InvalidResetTokenException;
+import com.tasky.auth.exception.RefreshTokenRequiredException;
+import com.tasky.auth.exception.UnknownLogoutTokenException;
+import com.tasky.auth.exception.UserNotFoundException;
 
 import com.tasky.user.User;
 import com.tasky.user.UserRepository;

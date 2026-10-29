@@ -3,14 +3,14 @@ package com.tasky.common.error;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.tasky.auth.EmailAlreadyRegisteredException;
-import com.tasky.auth.ExpiredRefreshTokenException;
-import com.tasky.auth.InvalidCredentialsException;
-import com.tasky.auth.InvalidRefreshTokenException;
-import com.tasky.auth.InvalidResetTokenException;
-import com.tasky.auth.RefreshTokenRequiredException;
-import com.tasky.auth.UnknownLogoutTokenException;
-import com.tasky.auth.UserNotFoundException;
+import com.tasky.auth.exception.EmailAlreadyRegisteredException;
+import com.tasky.auth.exception.ExpiredRefreshTokenException;
+import com.tasky.auth.exception.InvalidCredentialsException;
+import com.tasky.auth.exception.InvalidRefreshTokenException;
+import com.tasky.auth.exception.InvalidResetTokenException;
+import com.tasky.auth.exception.RefreshTokenRequiredException;
+import com.tasky.auth.exception.UnknownLogoutTokenException;
+import com.tasky.auth.exception.UserNotFoundException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
