@@ -5,5 +5,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProjectRepository extends JpaRepository<Project, String> {
-    List<Project> findByOwnerId(String ownerId);
+    List<Project> findDistinctByOwnerIdOrMembersUserIdOrderByUpdatedAtDesc(String ownerId, String userId);
 }
