@@ -1,13 +1,25 @@
 package com.tasky.user;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tasky.auth.PasswordResetToken;
+import com.tasky.auth.RefreshToken;
+import com.tasky.comment.Comment;
+import com.tasky.invite.ProjectInvite;
+import com.tasky.member.ProjectMember;
+import com.tasky.notification.Notification;
+import com.tasky.project.Project;
+import com.tasky.task.Task;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -42,6 +54,42 @@ public class User {
 
     @Column(nullable = false)
     private Instant updatedAt;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "owner")
+    private List<Project> ownedProjects = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<ProjectMember> projectMembers = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<RefreshToken> refreshTokens = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<PasswordResetToken> passwordResetTokens = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "assignee")
+    private List<Task> assignedTasks = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "author")
+    private List<Comment> comments = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "invitedBy")
+    private List<ProjectInvite> sentInvites = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<Notification> notifications = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "actor")
+    private List<Notification> actedNotifications = new ArrayList<>();
 
     protected User() {
     }
@@ -133,5 +181,41 @@ public class User {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public List<Project> getOwnedProjects() {
+        return ownedProjects;
+    }
+
+    public List<ProjectMember> getProjectMembers() {
+        return projectMembers;
+    }
+
+    public List<RefreshToken> getRefreshTokens() {
+        return refreshTokens;
+    }
+
+    public List<PasswordResetToken> getPasswordResetTokens() {
+        return passwordResetTokens;
+    }
+
+    public List<Task> getAssignedTasks() {
+        return assignedTasks;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public List<ProjectInvite> getSentInvites() {
+        return sentInvites;
+    }
+
+    public List<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public List<Notification> getActedNotifications() {
+        return actedNotifications;
     }
 }
