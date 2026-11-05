@@ -12,8 +12,10 @@ import com.tasky.project.dto.CreateProjectRequest;
 import com.tasky.project.dto.CreatedProjectResponse;
 import com.tasky.project.dto.ProjectDetailResponse;
 import com.tasky.project.dto.ProjectResponse;
+import com.tasky.project.dto.UpdateProjectRequest;
 import com.tasky.project.exception.ProjectAccessDeniedException;
 import com.tasky.project.exception.ProjectNotFoundException;
+import com.tasky.project.exception.ProjectUpdateForbiddenException;
 
 import com.tasky.user.User;
 import com.tasky.user.UserRepository;
@@ -72,6 +74,27 @@ public class ProjectService {
         }
 
         return ProjectDetailResponse.from(project);
+    }
+
+    @Transactional
+    public ProjectResponse updateProject(String id, UpdateProjectRequest request) {
+        String userId = currentUser().getId();
+        Project project = projectRepository.findById(id)
+            .orElseThrow(ProjectNotFoundException::new);
+
+        if (!project.getOwnerId().equals(userId)) {
+            throw new ProjectUpdateForbiddenException();
+        }
+
+        if (request.namePresent()) {
+            project.setName(request.name());
+        }
+        if (request.emojiPresent()) {
+            project.setEmoji(request.emoji());
+        }
+
+        project = projectRepository.save(project);
+        return ProjectResponse.from(project);
     }
 
     private User currentUser() {
