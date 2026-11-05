@@ -15,6 +15,7 @@ import com.tasky.auth.exception.UserNotFoundException;
 import com.tasky.project.exception.ProjectAccessDeniedException;
 import com.tasky.project.exception.ProjectNotFoundException;
 import com.tasky.project.exception.ProjectUpdateForbiddenException;
+import com.tasky.project.exception.ProjectDeleteForbiddenException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -87,5 +88,10 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ProjectUpdateForbiddenException.class)
     ResponseEntity<ApiError> projectUpdateForbidden() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiError.of("Only the owner can update this project"));
+    }
+
+    @ExceptionHandler(ProjectDeleteForbiddenException.class)
+    ResponseEntity<ApiError> projectDeleteForbidden() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiError.of("Only the owner can delete this project"));
     }
 }

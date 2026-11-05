@@ -14,6 +14,7 @@ import com.tasky.project.dto.ProjectDetailResponse;
 import com.tasky.project.dto.ProjectResponse;
 import com.tasky.project.dto.UpdateProjectRequest;
 import com.tasky.project.exception.ProjectAccessDeniedException;
+import com.tasky.project.exception.ProjectDeleteForbiddenException;
 import com.tasky.project.exception.ProjectNotFoundException;
 import com.tasky.project.exception.ProjectUpdateForbiddenException;
 
@@ -95,6 +96,19 @@ public class ProjectService {
 
         project = projectRepository.save(project);
         return ProjectResponse.from(project);
+    }
+
+    @Transactional
+    public void deleteProject(String id) {
+        String userId = currentUser().getId();
+        Project project = projectRepository.findById(id)
+            .orElseThrow(ProjectNotFoundException::new);
+
+        if (!project.getOwnerId().equals(userId)) {
+            throw new ProjectDeleteForbiddenException();
+        }
+
+        projectRepository.delete(project);
     }
 
     private User currentUser() {
