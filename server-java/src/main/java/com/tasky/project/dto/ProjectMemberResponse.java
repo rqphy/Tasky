@@ -21,15 +21,7 @@ public record ProjectMemberResponse(
             member.getProjectId(),
             member.getRole().name(),
             member.getCreatedAt(),
-            new PublicUser(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getImageUrl(),
-                user.getBio(),
-                user.getJobTitle(),
-                user.getCompany()
-            )
+            PublicUser.from(user)
         );
     }
 
@@ -42,5 +34,17 @@ public record ProjectMemberResponse(
         String jobTitle,
         String company
     ) {
+
+        public static PublicUser from(User user) {
+            return new PublicUser(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getImageUrl(),
+                user.getBio(),
+                user.getJobTitle(),
+                user.getCompany()
+            );
+        }
     }
 }

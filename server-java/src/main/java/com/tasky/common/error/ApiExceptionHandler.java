@@ -12,6 +12,9 @@ import com.tasky.auth.exception.RefreshTokenRequiredException;
 import com.tasky.auth.exception.UnknownLogoutTokenException;
 import com.tasky.auth.exception.UserNotFoundException;
 
+import com.tasky.project.exception.ProjectAccessDeniedException;
+import com.tasky.project.exception.ProjectNotFoundException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -68,5 +71,15 @@ public class ApiExceptionHandler {
             details.put(error.getField(), error.getDefaultMessage())
         );
         return ResponseEntity.badRequest().body(new ApiError("Validation failed", details));
+    }
+
+    @ExceptionHandler(ProjectAccessDeniedException.class)
+    ResponseEntity<ApiError> projectAccessDenied() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiError.of("Access denied"));
+    }
+
+    @ExceptionHandler(ProjectNotFoundException.class)
+    ResponseEntity<ApiError> projectNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.of("Project not found"));
     }
 }

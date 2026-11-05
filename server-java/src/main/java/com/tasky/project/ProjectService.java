@@ -3,12 +3,18 @@ package com.tasky.project;
 import java.util.List;
 
 import com.tasky.auth.exception.UserNotFoundException;
+
 import com.tasky.member.ProjectMember;
 import com.tasky.member.ProjectMemberRepository;
 import com.tasky.member.ProjectRole;
+
 import com.tasky.project.dto.CreateProjectRequest;
 import com.tasky.project.dto.CreatedProjectResponse;
+import com.tasky.project.dto.ProjectDetailResponse;
 import com.tasky.project.dto.ProjectResponse;
+import com.tasky.project.exception.ProjectAccessDeniedException;
+import com.tasky.project.exception.ProjectNotFoundException;
+
 import com.tasky.user.User;
 import com.tasky.user.UserRepository;
 
@@ -52,6 +58,20 @@ public class ProjectService {
         Project project = projectRepository.save(new Project(request.name(), emoji, user.getId()));
         ProjectMember member = members.save(new ProjectMember(user.getId(), project.getId(), ProjectRole.OWNER));
         return CreatedProjectResponse.from(project, member, user);
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectDetailResponse getProjectById(String id) {
+        String userId = currentUser().getId();
+        Project project = projectRepository.findById(id)
+            .orElseThrow(ProjectNotFoundException::new);
+
+        boolean isMember = project.getMembers().stream().anyMatch(member -> member.getUserId().equals(userId));
+        if (!project.getOwnerId().equals(userId) && !isMember) {
+            throw new ProjectAccessDeniedException();
+        }
+
+        return ProjectDetailResponse.from(project);
     }
 
     private User currentUser() {

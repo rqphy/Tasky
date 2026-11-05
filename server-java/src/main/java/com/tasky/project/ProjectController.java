@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.tasky.project.dto.CreateProjectRequest;
 import com.tasky.project.dto.CreatedProjectResponse;
+import com.tasky.project.dto.ProjectDetailResponse;
 import com.tasky.project.dto.ProjectResponse;
 
 import jakarta.validation.Valid;
@@ -14,7 +15,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
 @RequestMapping("/projects")
@@ -34,5 +37,10 @@ public class ProjectController {
     @PostMapping
     public ResponseEntity<CreatedProjectResponse> createProject(@Valid @RequestBody CreateProjectRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(projectService.createProject(request));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProjectDetailResponse> getProjectById(@PathVariable String id) {
+        return ResponseEntity.ok(projectService.getProjectById(id));
     }
 }
