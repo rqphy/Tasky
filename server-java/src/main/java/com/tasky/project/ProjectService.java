@@ -2,8 +2,6 @@ package com.tasky.project;
 
 import java.util.List;
 
-import com.tasky.auth.exception.UserNotFoundException;
-
 import com.tasky.member.ProjectMember;
 import com.tasky.member.ProjectMemberRepository;
 import com.tasky.member.ProjectRole;
@@ -13,16 +11,12 @@ import com.tasky.project.dto.CreatedProjectResponse;
 import com.tasky.project.dto.ProjectDetailResponse;
 import com.tasky.project.dto.ProjectResponse;
 import com.tasky.project.dto.UpdateProjectRequest;
-import com.tasky.project.exception.ProjectAccessDeniedException;
 import com.tasky.project.exception.ProjectDeleteForbiddenException;
 import com.tasky.project.exception.ProjectNotFoundException;
 import com.tasky.project.exception.ProjectUpdateForbiddenException;
 
 import com.tasky.user.User;
-import com.tasky.user.UserRepository;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,21 +25,21 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository members;
-    private final UserRepository users;
+    private final ProjectAccess projectAccess;
 
     public ProjectService(
         ProjectRepository projectRepository,
         ProjectMemberRepository members,
-        UserRepository users
+        ProjectAccess projectAccess
     ) {
         this.projectRepository = projectRepository;
         this.members = members;
-        this.users = users;
+        this.projectAccess = projectAccess;
     }
 
     @Transactional(readOnly = true)
     public List<ProjectResponse> getProjects() {
-        String userId = currentUser().getId();
+        String userId = projectAccess.currentUser().getId();
 
         return projectRepository
             .findDistinctByOwnerIdOrMembersUserIdOrderByUpdatedAtDesc(userId, userId)
@@ -56,7 +50,7 @@ public class ProjectService {
 
     @Transactional
     public CreatedProjectResponse createProject(CreateProjectRequest request) {
-        User user = currentUser();
+        User user = projectAccess.currentUser();
         String emoji = request.emoji() == null ? "📋" : request.emoji();
         Project project = projectRepository.save(new Project(request.name(), emoji, user.getId()));
         ProjectMember member = members.save(new ProjectMember(user.getId(), project.getId(), ProjectRole.OWNER));
@@ -65,21 +59,13 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public ProjectDetailResponse getProjectById(String id) {
-        String userId = currentUser().getId();
-        Project project = projectRepository.findById(id)
-            .orElseThrow(ProjectNotFoundException::new);
-
-        boolean isMember = project.getMembers().stream().anyMatch(member -> member.getUserId().equals(userId));
-        if (!project.getOwnerId().equals(userId) && !isMember) {
-            throw new ProjectAccessDeniedException();
-        }
-
+        Project project = projectAccess.requireMember(id);
         return ProjectDetailResponse.from(project);
     }
 
     @Transactional
     public ProjectResponse updateProject(String id, UpdateProjectRequest request) {
-        String userId = currentUser().getId();
+        String userId = projectAccess.currentUser().getId();
         Project project = projectRepository.findById(id)
             .orElseThrow(ProjectNotFoundException::new);
 
@@ -100,7 +86,7 @@ public class ProjectService {
 
     @Transactional
     public void deleteProject(String id) {
-        String userId = currentUser().getId();
+        String userId = projectAccess.currentUser().getId();
         Project project = projectRepository.findById(id)
             .orElseThrow(ProjectNotFoundException::new);
 
@@ -109,16 +95,5 @@ public class ProjectService {
         }
 
         projectRepository.delete(project);
-    }
-
-    private User currentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof String userId)) {
-            throw new UserNotFoundException();
-        }
-
-        return users.findById(userId)
-            .filter(found -> !found.getEmail().endsWith("@deleted.tasky"))
-            .orElseThrow(UserNotFoundException::new);
     }
 }
