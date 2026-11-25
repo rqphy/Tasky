@@ -51,4 +51,15 @@ public class ColumnService {
         columnRepository.saveAndFlush(column);
         return ColumnResponse.from(column);
     }
+
+    @Transactional
+    public void deleteColumn(String projectId, String columnId) {
+        Project project = projectAccess.requireMember(projectId);
+
+        Column column = columnRepository.findById(columnId)
+            .filter(found -> found.getProjectId().equals(project.getId()))
+            .orElseThrow(ColumnNotFoundException::new);
+            
+        columnRepository.delete(column);
+    }
 }
