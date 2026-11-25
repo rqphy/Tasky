@@ -5,8 +5,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tasky.column.dto.ColumnResponse;
 import com.tasky.column.dto.CreateColumnRequest;
+import com.tasky.column.dto.UpdateColumnRequest;
 import com.tasky.project.Project;
 import com.tasky.project.ProjectAccess;
+import com.tasky.column.exception.ColumnNotFoundException;
 
 @Service
 public class ColumnService {
@@ -28,6 +30,25 @@ public class ColumnService {
         String color = request.color() == null ? "#6366f1" : request.color();
 
         Column column = columnRepository.save(new Column(project.getId(), request.name(), color, position));
+        return ColumnResponse.from(column);
+    }
+
+    @Transactional
+    public ColumnResponse updateColumn(String projectId, String columnId, UpdateColumnRequest request) {
+        Project project = projectAccess.requireMember(projectId);
+
+        Column column = columnRepository.findById(columnId)
+            .filter(found -> found.getProjectId().equals(project.getId()))
+            .orElseThrow(ColumnNotFoundException::new);
+
+        if (request.name() != null) {
+            column.setName(request.name());
+        }
+        if (request.color() != null) {
+            column.setColor(request.color());
+        }
+
+        columnRepository.saveAndFlush(column);
         return ColumnResponse.from(column);
     }
 }

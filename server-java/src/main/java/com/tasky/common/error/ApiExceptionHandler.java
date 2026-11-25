@@ -17,6 +17,8 @@ import com.tasky.project.exception.ProjectNotFoundException;
 import com.tasky.project.exception.ProjectUpdateForbiddenException;
 import com.tasky.project.exception.ProjectDeleteForbiddenException;
 
+import com.tasky.column.exception.ColumnNotFoundException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -93,5 +95,10 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ProjectDeleteForbiddenException.class)
     ResponseEntity<ApiError> projectDeleteForbidden() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiError.of("Only the owner can delete this project"));
+    }
+
+    @ExceptionHandler(ColumnNotFoundException.class)
+    ResponseEntity<ApiError> columnNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.of("Column not found"));
     }
 }
