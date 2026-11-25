@@ -18,6 +18,7 @@ import com.tasky.project.exception.ProjectUpdateForbiddenException;
 import com.tasky.project.exception.ProjectDeleteForbiddenException;
 
 import com.tasky.column.exception.ColumnNotFoundException;
+import com.tasky.column.exception.ColumnsNotInProjectException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -100,5 +101,10 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ColumnNotFoundException.class)
     ResponseEntity<ApiError> columnNotFound() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.of("Column not found"));
+    }
+
+    @ExceptionHandler(ColumnsNotInProjectException.class)
+    ResponseEntity<ApiError> columnsNotInProject() {
+        return ResponseEntity.badRequest().body(ApiError.of("Some column IDs do not belong to this project"));
     }
 }

@@ -3,12 +3,20 @@ package com.tasky.column;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.tasky.column.dto.ColumnResponse;
 import com.tasky.column.dto.CreateColumnRequest;
 import com.tasky.column.dto.UpdateColumnRequest;
+import com.tasky.column.dto.ReorderColumnsRequest;
+import com.tasky.column.dto.ReorderColumnsResponse;
 import com.tasky.project.Project;
 import com.tasky.project.ProjectAccess;
 import com.tasky.column.exception.ColumnNotFoundException;
+import com.tasky.column.exception.ColumnsNotInProjectException;
 
 @Service
 public class ColumnService {
@@ -61,5 +69,24 @@ public class ColumnService {
             .orElseThrow(ColumnNotFoundException::new);
             
         columnRepository.delete(column);
+    }
+
+    @Transactional
+    public ReorderColumnsResponse reorderColumns(String projectId, ReorderColumnsRequest request) {
+        Project project = projectAccess.requireMember(projectId);
+
+        List<Column> projectColumns = columnRepository.findByProjectId(project.getId());
+        Map<String, Column> columnsById = projectColumns.stream()
+            .collect(Collectors.toMap(Column::getId, Function.identity()));
+        if (!columnsById.keySet().containsAll(request.columnIds())) {
+            throw new ColumnsNotInProjectException();
+        }
+
+        List<String> columnIds = request.columnIds();
+        for (int index = 0; index < columnIds.size(); index++) {
+            columnsById.get(columnIds.get(index)).setPosition(index + 1);
+        }
+        columnRepository.saveAllAndFlush(projectColumns);
+        return new ReorderColumnsResponse("Columns reordered");
     }
 }

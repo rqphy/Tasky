@@ -2,7 +2,9 @@ package com.tasky.column;
 
 import com.tasky.column.dto.CreateColumnRequest;
 import com.tasky.column.dto.UpdateColumnRequest;
+import com.tasky.column.dto.ReorderColumnsRequest;
 import com.tasky.column.dto.ColumnResponse;
+import com.tasky.column.dto.ReorderColumnsResponse;
 
 import jakarta.validation.Valid;
 
@@ -49,5 +51,13 @@ public class ColumnController {
     ) {
         columnService.deleteColumn(projectId, columnId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reorder")
+    public ResponseEntity<ReorderColumnsResponse> reorderColumns(
+        @PathVariable("projectId") String projectId,
+        @Valid @RequestBody ReorderColumnsRequest request
+    ) {
+        return ResponseEntity.ok(columnService.reorderColumns(projectId, request));
     }
 }
